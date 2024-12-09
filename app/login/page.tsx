@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { signInWithEmailAndPassword } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card"
@@ -22,29 +24,11 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const response = await fetch('http://localhost:5001/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Login failed')
-      }
-
-      const data = await response.json()
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('userName', data.userName)
+      await signInWithEmailAndPassword(auth, email, password)
       router.push('/dashboard')
     } catch (err) {
       if (err instanceof Error) {
-        if (err.message === 'Failed to fetch') {
-          setError('Unable to connect to the server. Please check your internet connection and try again.')
-        } else {
-          setError('Invalid email or password. Please try again.')
-        }
+        setError(err.message)
       } else {
         setError('An unexpected error occurred. Please try again.')
       }
