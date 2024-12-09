@@ -81,7 +81,7 @@ export default function Dashboard() {
               </Link>
               <nav className="flex space-x-6">
                 <Link href="/dashboard" className="text-[#333333] hover:text-[#800000] font-medium">My scores</Link>
-                <Link href="#" className="text-[#333333] hover:text-[#800000] font-medium">Community</Link>
+                <Link href="/community" className="text-[#333333] hover:text-[#800000] font-medium">Community</Link>
                 <Link href="#" className="text-[#333333] hover:text-[#800000] font-medium">Browse & Explore</Link>
                 <Link href="#" className="text-[#333333] hover:text-[#800000] font-medium">Learn</Link>
               </nav>
