@@ -28,7 +28,17 @@ export default function LoginPage() {
       router.push('/dashboard')
     } catch (err) {
       if (err instanceof Error) {
-        setError(err.message)
+        switch (err.message) {
+          case 'Firebase: Error (auth/user-not-found).':
+          case 'Firebase: Error (auth/wrong-password).':
+            setError('Invalid email or password. Please try again.')
+            break
+          case 'Firebase: Error (auth/network-request-failed).':
+            setError('Unable to connect to the server. Please check your internet connection and try again.')
+            break
+          default:
+            setError('An unexpected error occurred. Please try again.')
+        }
       } else {
         setError('An unexpected error occurred. Please try again.')
       }

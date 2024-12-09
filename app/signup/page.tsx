@@ -4,6 +4,8 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft } from 'lucide-react'
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
@@ -44,29 +46,25 @@ export default function SignupPage() {
     }
 
     try {
-      console.log('Sending signup request:', { name, email })
-      const response = await fetch('http://localhost:5001/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ name, email, password }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'An error occurred during signup')
-      }
-
-      const data = await response.json()
-      console.log('Signup response:', data)
-
-      localStorage.setItem('token', data.token)
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password)
+      await updateProfile(userCredential.user, { displayName: name })
       router.push('/dashboard')
     } catch (err) {
       console.error('Signup error:', err)
       if (err instanceof Error) {
-        setError(err.message)
+        switch (err.message) {
+          case 'Firebase: Error (auth/email-already-in-use).':
+            setError('This email is already in use. Please try another one.')
+            break
+          case 'Firebase: Error (auth/invalid-email).':
+            setError('Invalid email address. Please check and try again.')
+            break
+          case 'Firebase: Password should be at least 6 characters (auth/weak-password).':
+            setError('Password should be at least 6 characters long.')
+            break
+          default:
+            setError('An unexpected error occurred during signup. Please try again.')
+        }
       } else {
         setError('An unexpected error occurred during signup')
       }
