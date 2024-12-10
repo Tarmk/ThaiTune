@@ -6,10 +6,11 @@ import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { Button } from "@/app/components/ui/button"
 import { Input } from "@/app/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/app/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/app/components/ui/card"
 import { Label } from "@/app/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert"
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -48,7 +49,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex items-center justify-center min-h-screen bg-gray-100 relative">
       <Card className="w-[350px]">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
@@ -57,6 +58,10 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <Link href="/" className="absolute top-4 left-4 flex items-center text-[#800000] hover:text-[#600000]">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Homepage
+          </Link>
           <form onSubmit={handleSubmit}>
             {error && (
               <Alert variant="destructive" className="mb-4">
@@ -96,9 +101,9 @@ export default function LoginPage() {
         <CardFooter className="flex justify-center">
           <p className="text-sm text-gray-600">
             Don&apos;t have an account?{' '}
-            <a href="/signup" className="text-[#800000] hover:underline">
+            <Link href="/signup" className="text-[#800000] hover:underline">
               Sign up
-            </a>
+            </Link>
           </p>
         </CardFooter>
       </Card>
