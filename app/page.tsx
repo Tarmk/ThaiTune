@@ -77,7 +77,7 @@ export default function HomePage() {
             <Button variant="ghost">Log In</Button>
           </Link>
           <Link href="/signup">
-            <Button>Get started for free</Button>
+            <Button>Get started for free!!</Button>
           </Link>
           <Button variant="ghost" className="w-10 px-0" aria-label="Change language">
             🇺🇸
