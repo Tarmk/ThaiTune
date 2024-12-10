@@ -102,6 +102,7 @@ export default function ScoreDetailsPage({ params }: { params: Promise<{ id: str
               allowFullScreen
               allow="autoplay; midi"
             ></iframe>
+            <iframe src="https://flat.io/embed/67580d42a87b63dd1b4fb8dd?appId=6755790be2eebcce112acde7" height="450" width="100%" frameBorder="0" allowFullScreen allow="autoplay; midi"></iframe>
           </div>
         </main>
       </div>
