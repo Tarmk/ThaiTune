@@ -10,18 +10,40 @@ import { auth } from '@/lib/firebase'
 import { signOut, onAuthStateChanged } from 'firebase/auth'
 import { ProtectedRoute } from '@/app/components/protectedroute'
 
-export default function ScoreDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+interface Score {
+  id: string;
+  name: string;
+  author: string;
+  modified: string;
+}
+
+export default function ScoreDetailsPage({ params }: { params: { id: string } }) {
   const [user, setUser] = React.useState<any>(null)
+  const [score, setScore] = React.useState<Score | null>(null)
   const router = useRouter()
-  const { id } = React.use(params)
+  const { id } = params
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user)
     })
 
+    // Fetch score details
+    const fetchScore = async () => {
+      // This is a mock fetch. Replace with actual API call when available.
+      const mockScore: Score = {
+        id: id,
+        name: `Song ${id}`,
+        author: "Composer Name",
+        modified: "2 days ago"
+      }
+      setScore(mockScore)
+    }
+
+    fetchScore()
+
     return () => unsubscribe()
-  }, [])
+  }, [id])
 
   const handleLogout = async () => {
     try {
@@ -32,10 +54,8 @@ export default function ScoreDetailsPage({ params }: { params: Promise<{ id: str
     }
   }
 
-  const score = {
-    id: "67580d42a87b63dd1b4fb8dd", 
-    name: "Song 1",
-    author: "Composer 1",
+  if (!score) {
+    return <div>Loading...</div>
   }
 
   return (

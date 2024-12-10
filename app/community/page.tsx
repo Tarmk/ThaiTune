@@ -21,9 +21,9 @@ interface CommunityScore {
 
 export default function CommunityPage() {
   const [scores, setScores] = React.useState<CommunityScore[]>([
-    { id: "1", name: "Moonlight Sonata", author: "Ludwig van Beethoven", modified: "2 days ago" },
-    { id: "2", name: "Für Elise", author: "Ludwig van Beethoven", modified: "1 week ago" },
-    { id: "3", name: "Claire de Lune", author: "Claude Debussy", modified: "3 weeks ago" },
+    { id: "1", name: "Song 1", author: "Ludwig van Beethoven", modified: "2 days ago" },
+    { id: "2", name: "Song 2", author: "Ludwig van Beethoven", modified: "1 week ago" },
+    { id: "3", name: "Song 3", author: "Claude Debussy", modified: "3 weeks ago" },
   ]);
 
   const [sortColumn, setSortColumn] = React.useState<keyof CommunityScore | null>(null)

@@ -12,4 +12,14 @@ const nextConfig = {
   },
 }
 
+module.exports = {
+  async rewrites() {
+    return [
+      {
+        source: '/score/:id',
+        destination: '/score/[id]',
+      },
+    ]
+  },
+}
 module.exports = nextConfig
