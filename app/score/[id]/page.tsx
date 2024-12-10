@@ -32,11 +32,10 @@ export default function ScoreDetailsPage({ params }: { params: Promise<{ id: str
     }
   }
 
-  // Mock data - replace with actual data fetching logic
   const score = {
-    id,
-    name: "Moonlight Sonata",
-    author: "Ludwig van Beethoven",
+    id: "67580d42a87b63dd1b4fb8dd", 
+    name: "Song 1",
+    author: "Composer 1",
   }
 
   return (

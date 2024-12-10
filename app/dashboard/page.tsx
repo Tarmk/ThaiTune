@@ -19,9 +19,9 @@ interface Score {
 
 export default function Dashboard() {
   const [scores, setScores] = React.useState<Score[]>([
-    { name: "Thing", modified: "almost 4 years ago", sharing: "Only me" },
-    { name: "Canon in D", modified: "about 4 years ago", sharing: "Only me" },
-    { name: "Canon in D Arrangement", modified: "about 4 years ago", sharing: "Only me" },
+    { name: "Song 1", modified: "almost 4 years ago", sharing: "Only me" },
+    { name: "Song 2", modified: "about 4 years ago", sharing: "Only me" },
+    { name: "Song 3", modified: "about 4 years ago", sharing: "Only me" },
   ]);
 
   const [sortColumn, setSortColumn] = React.useState<keyof Score | null>(null)
