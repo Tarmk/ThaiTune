@@ -1,159 +1,140 @@
-"use client"
+'use client'
 
-import * as React from "react"
-import { useRouter } from 'next/navigation'
-import { Bell, ChevronDown, User, ArrowLeft } from 'lucide-react'
-import { Button } from "@/app/components/ui/button"
-import { Card, CardContent } from "@/app/components/ui/card"
-import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover"
+import { useState, useEffect } from 'react'
+import Image from "next/image"
 import Link from "next/link"
-import { auth, db } from '@/lib/firebase'
-import { signOut, onAuthStateChanged } from 'firebase/auth'
-import { doc, getDoc } from 'firebase/firestore'
-import { ProtectedRoute } from '@/app/components/protectedroute'
+import { ChevronDown } from 'lucide-react'
+import Footer from './components/Footer'
 
-interface Score {
-  id: string;
-  name: string;
-  author: string;
-  modified: Date;
+const Button = ({ 
+  children, 
+  className = "", 
+  variant = "default", 
+  ...props 
+}: React.ButtonHTMLAttributes<HTMLButtonElement> & { 
+  variant?: 'default' | 'ghost' 
+}) => {
+  const baseStyles = "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background"
+  const variantStyles = {
+    default: "bg-[#4A1D2C] text-white hover:bg-[#3A1622] px-4 py-2",
+    ghost: "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+  }
+  
+  return (
+    <button 
+      className={`${baseStyles} ${variantStyles[variant]} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  )
 }
 
-export default function ScoreDetailsPage({ params }: { params: { id: string } }) {
-  const [user, setUser] = React.useState<any>(null)
-  const [score, setScore] = React.useState<Score | null>(null)
-  const [loading, setLoading] = React.useState(true)
-  const [error, setError] = React.useState<string | null>(null)
-  const router = useRouter()
-  const { id } = params
+export default function HomePage() {
+  const [isClient, setIsClient] = useState(false)
 
-  React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user)
-    })
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
-    const fetchScore = async () => {
-      setLoading(true)
-      setError(null)
-      try {
-        const scoreDoc = await getDoc(doc(db, 'scores', id))
-        if (scoreDoc.exists()) {
-          const scoreData = scoreDoc.data()
-          setScore({
-            id: scoreDoc.id,
-            name: scoreData.name,
-            author: scoreData.author,
-            modified: scoreData.modified.toDate()
-          })
-        } else {
-          setError('Score not found')
-        }
-      } catch (err) {
-        console.error('Error fetching score:', err)
-        setError('An error occurred while fetching the score')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchScore()
-
-    return () => unsubscribe()
-  }, [id])
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth)
-      router.push('/login')
-    } catch (error) {
-      console.error('Error signing out:', error)
-    }
-  }
-
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
-  }
-
-  if (error) {
-    return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>
-  }
-
-  if (!score) {
-    return <div className="min-h-screen flex items-center justify-center">Score not found</div>
+  if (!isClient) {
+    return null // or a loading spinner
   }
 
   return (
-    <ProtectedRoute>
-      <div className="min-h-screen bg-[#F5F5F5]">
-        <header className="bg-white shadow">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div className="flex items-center space-x-6">
-              <Link href="/dashboard">
-                <img src="/tmdb-logo.png" alt="TMDB Logo" className="h-10" />
-              </Link>
-              <nav className="flex space-x-6">
-                <Link href="/dashboard" className="text-[#333333] hover:text-[#800000] font-medium">My scores</Link>
-                <Link href="/community" className="text-[#333333] hover:text-[#800000] font-medium">Community</Link>
-                <Link href="#" className="text-[#333333] hover:text-[#800000] font-medium">Browse & Explore</Link>
-                <Link href="#" className="text-[#333333] hover:text-[#800000] font-medium">Learn</Link>
-              </nav>
+    <div className="min-h-screen bg-white flex flex-col">
+      <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center px-6 border-b border-gray-100 bg-white">
+        <nav className="flex flex-1 items-center gap-12">
+          <Link className="flex items-center gap-3" href="/">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-[#4A1D2C] p-1.5 w-9 h-9 flex items-center justify-center">
+                <Image
+                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202567-11-20%20at%2008.30.37-mljPNNQJsQS2B2AQGZE6ZAddGGGhuQ.png"
+                  alt="TMDB Logo"
+                  width={24}
+                  height={24}
+                  className="rounded-lg"
+                />
+              </div>
+              <span className="text-lg font-bold text-gray-900">TMDB</span>
             </div>
-            <div className="flex items-center space-x-4">
-              <Bell className="text-[#333333] hover:text-[#800000] cursor-pointer" />
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-2">
-                    <User className="text-[#333333]" />
-                    <ChevronDown className="text-[#333333]" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-56 p-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="h-10 w-10 rounded-full bg-[#800000] flex items-center justify-center text-white">
-                      {user?.displayName ? user.displayName[0].toUpperCase() : 'U'}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{user?.displayName || 'User'}</p>
-                      <Link href="#" className="text-xs text-[#800000] hover:underline">View profile</Link>
-                    </div>
+          </Link>
+          <div className="hidden md:flex items-center gap-8">
+            <Button variant="ghost" className="flex items-center gap-1.5">
+              Features
+              <ChevronDown className="h-4 w-4 opacity-50" />
+            </Button>
+            <Button variant="ghost">Tutorials</Button>
+            <Button variant="ghost">Community</Button>
+            <Button variant="ghost" className="flex items-center gap-1.5">
+              Our Products
+              <ChevronDown className="h-4 w-4 opacity-50" />
+            </Button>
+          </div>
+        </nav>
+        <div className="flex items-center gap-3">
+          <Link href="/login">
+            <Button variant="ghost">Log In</Button>
+          </Link>
+          <Link href="/signup">
+            <Button>Get started for free</Button>
+          </Link>
+          <Button variant="ghost" className="w-10 px-0" aria-label="Change language">
+            🇺🇸
+          </Button>
+        </div>
+      </header>
+      <main className="flex-1 pt-16">
+        <section className="w-full py-20">
+          <div className="container px-4 md:px-6 max-w-7xl mx-auto">
+            <div className="grid gap-12 lg:grid-cols-2">
+              <div className="flex flex-col justify-center space-y-8">
+                <div className="space-y-6">
+                  <h1 className="text-5xl font-bold tracking-tight text-gray-900 lg:text-6xl/none">
+                    Learn Traditional Thai Music
+                  </h1>
+                  <p className="text-xl text-gray-500 max-w-[600px]">
+                    TMDB is a program that allows users to contribute their knowledge of Traditional Thai Melodies by adding songs they know, while also providing an opportunity to discover and learn new melodies from the existing database.
+                  </p>
+                </div>
+                <div>
+                  <Link href="/signup">
+                    <Button className="text-base px-6 py-3">
+                      Get started for free
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+              <div className="flex items-center justify-center">
+                <div className="relative w-full aspect-[4/3]">
+                  <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
+                    <span className="text-gray-400">Placeholder Image</span>
                   </div>
-                  <div className="mt-4 space-y-2">
-                    <Link href="#" className="block text-sm text-[#333333] hover:text-[#800000]">Account settings</Link>
-                    <Link href="#" className="block text-sm text-[#333333] hover:text-[#800000]">Contact us</Link>
-                    <Link href="#" className="block text-sm text-[#333333] hover:text-[#800000]">Help</Link>
-                    <button onClick={handleLogout} className="block w-full text-left text-sm text-[#333333] hover:text-[#800000]">Logout</button>
-                  </div>
-                </PopoverContent>
-              </Popover>
+                </div>
+              </div>
             </div>
           </div>
-        </header>
-        <main className="max-w-7xl mx-auto px-4 py-6">
-          <div className="mb-6">
-            <Link href="/community" className="flex items-center text-[#800000] hover:underline">
-              <ArrowLeft className="mr-2" />
-              Back to Community Scores
-            </Link>
+        </section>
+
+        <section className="w-full py-20 bg-gray-50">
+          <div className="container px-4 md:px-6 max-w-7xl mx-auto">
+            <div className="space-y-12">
+              <div className="max-w-3xl mx-auto text-center">
+                <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+                  Widen your Thai Music Repertoire
+                </h2>
+                <p className="mt-4 text-xl text-gray-500">
+                  TMDB allows you to upload your favorite Thai Traditional Songs, whilst accessing other songs uploaded by users.
+                </p>
+              </div>
+              <div className="relative rounded-xl overflow-hidden shadow-2xl bg-gray-100 aspect-[2/1] flex items-center justify-center">
+                <span className="text-gray-400">Music Score Editor Interface</span>
+              </div>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-[#333333] mb-4">{score.name}</h1>
-          <p className="text-lg text-[#666666] mb-6">By {score.author}</p>
-          <Card className="bg-white shadow-md">
-            <CardContent className="p-4">
-              <iframe
-                src={`https://flat.io/embed/${score.id}?appId=6755790be2eebcce112acde7`}
-                height="450"
-                width="100%"
-                frameBorder="0"
-                allowFullScreen
-                allow="autoplay; midi"
-              ></iframe>
-            </CardContent>
-          </Card>
-          <div className="mt-6">
-            <p className="text-sm text-[#666666]">Last modified: {score.modified.toLocaleString()}</p>
-          </div>
-        </main>
-      </div>
-    </ProtectedRoute>
+        </section>
+      </main>
+      <Footer />
+    </div>
   )
 }
