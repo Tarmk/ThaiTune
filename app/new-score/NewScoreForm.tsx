@@ -1,0 +1,153 @@
+"use client"
+
+import * as React from "react"
+import { useRouter } from 'next/navigation'
+import { Bell, ChevronDown, User, ArrowLeft } from 'lucide-react'
+import { Button } from "@/app/components/ui/button"
+import { Card, CardContent } from "@/app/components/ui/card"
+import { Input } from "@/app/components/ui/input"
+import { Label } from "@/app/components/ui/label"
+import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover"
+import Link from "next/link"
+import { auth, db } from '@/lib/firebase'
+import { signOut, onAuthStateChanged } from 'firebase/auth'
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
+import { ProtectedRoute } from '@/app/components/protectedroute'
+
+export default function NewScoreForm() {
+  const [user, setUser] = React.useState<any>(null)
+  const [name, setName] = React.useState('')
+  const [isLoading, setIsLoading] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
+  const router = useRouter()
+
+  React.useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user)
+    })
+
+    return () => unsubscribe()
+  }, [])
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth)
+      router.push('/login')
+    } catch (error) {
+      console.error('Error signing out:', error)
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      if (!user) throw new Error('You must be logged in to create a score')
+      if (!name.trim()) throw new Error('Score name is required')
+
+      const scoreData = {
+        name: name.trim(),
+        author: user.displayName || 'Anonymous',
+        modified: serverTimestamp(),
+        userId: user.uid,
+        sharing: 'public'
+      }
+
+      const docRef = await addDoc(collection(db, 'scores'), scoreData)
+      router.push(`/new-score/${docRef.id}/details`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <ProtectedRoute>
+      <div className="min-h-screen bg-[#F5F5F5]">
+        <header className="bg-white shadow">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div className="flex items-center space-x-6">
+              <Link href="/dashboard">
+                <img src="/tmdb-logo.png" alt="TMDB Logo" className="h-10" />
+              </Link>
+              <nav className="flex space-x-6">
+                <Link href="/dashboard" className="text-[#800000] font-medium">My scores</Link>
+                <Link href="/community" className="text-[#333333] hover:text-[#800000] font-medium">Community</Link>
+                <Link href="#" className="text-[#333333] hover:text-[#800000] font-medium">Browse & Explore</Link>
+                <Link href="#" className="text-[#333333] hover:text-[#800000] font-medium">Learn</Link>
+              </nav>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Bell className="text-[#333333] hover:text-[#800000] cursor-pointer" />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="ghost" className="flex items-center space-x-2">
+                    <User className="text-[#333333]" />
+                    <ChevronDown className="text-[#333333]" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-56 p-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="h-10 w-10 rounded-full bg-[#800000] flex items-center justify-center text-white">
+                      {user?.displayName ? user.displayName[0].toUpperCase() : 'U'}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{user?.displayName || 'User'}</p>
+                      <Link href="#" className="text-xs text-[#800000] hover:underline">View profile</Link>
+                    </div>
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    <Link href="#" className="block text-sm text-[#333333] hover:text-[#800000]">Account settings</Link>
+                    <Link href="#" className="block text-sm text-[#333333] hover:text-[#800000]">Contact us</Link>
+                    <Link href="#" className="block text-sm text-[#333333] hover:text-[#800000]">Help</Link>
+                    <button onClick={handleLogout} className="block w-full text-left text-sm text-[#333333] hover:text-[#800000]">Logout</button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
+        </header>
+        <main className="max-w-7xl mx-auto px-4 py-6">
+          <div className="mb-6">
+            <Link href="/dashboard" className="flex items-center text-[#800000] hover:underline">
+              <ArrowLeft className="mr-2" />
+              Back to My Scores
+            </Link>
+          </div>
+          <h1 className="text-2xl font-bold text-[#333333] mb-6">Create New Score</h1>
+          <Card className="max-w-2xl">
+            <CardContent className="p-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                  <div className="bg-red-50 text-red-500 p-4 rounded-md">
+                    {error}
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="name">Score Name</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter score name"
+                    required
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full bg-[#800000] hover:bg-[#600000]"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Creating...' : 'Next'}
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    </ProtectedRoute>
+  )
+}

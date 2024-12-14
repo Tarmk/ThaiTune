@@ -119,9 +119,11 @@ export default function Dashboard() {
         <main className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-[#333333]">Scores</h1>
-            <Button className="bg-[#800000] text-white hover:bg-[#600000]">
-              New score
-            </Button>
+            <Link href="/new-score">
+              <Button className="bg-[#800000] text-white hover:bg-[#600000]">
+                New score
+              </Button>
+            </Link>
           </div>
           <Card className="bg-white shadow-md">
             <CardContent>

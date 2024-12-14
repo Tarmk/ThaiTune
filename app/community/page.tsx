@@ -11,6 +11,9 @@ import Link from "next/link"
 import { auth } from '@/lib/firebase'
 import { signOut, onAuthStateChanged } from 'firebase/auth'
 import { ProtectedRoute } from '@/app/components/protectedroute'
+import { db } from '@/lib/firebase'
+import { collection, getDocs } from 'firebase/firestore'
+import { Timestamp } from 'firebase/firestore'
 
 interface CommunityScore {
   id: string;
@@ -20,17 +23,37 @@ interface CommunityScore {
 }
 
 export default function CommunityPage() {
-  const [scores, setScores] = React.useState<CommunityScore[]>([
-    { id: "1", name: "Song 1", author: "Ludwig van Beethoven", modified: "2 days ago" },
-    { id: "2", name: "Song 2", author: "Ludwig van Beethoven", modified: "1 week ago" },
-    { id: "3", name: "Song 3", author: "Claude Debussy", modified: "3 weeks ago" },
-  ]);
+  const [scores, setScores] = React.useState<CommunityScore[]>([]);
 
   const [sortColumn, setSortColumn] = React.useState<keyof CommunityScore | null>(null)
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc')
   const [user, setUser] = React.useState<any>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
   const router = useRouter()
+
+  React.useEffect(() => {
+    const fetchScores = async () => {
+      try {
+        const scoresCollection = collection(db, 'scores')
+        const scoresSnapshot = await getDocs(scoresCollection)
+        const scoresList = scoresSnapshot.docs.map(doc => {
+          const data = doc.data()
+          const timestamp = data.modified as Timestamp
+          return {
+            id: doc.id,
+            name: data.name,
+            author: data.author,
+            modified: timestamp?.toDate().toLocaleDateString() || 'Unknown date',
+          }
+        })
+        setScores(scoresList)
+      } catch (error) {
+        console.error('Error fetching scores:', error)
+      }
+    }
+
+    fetchScores()
+  }, [])
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
