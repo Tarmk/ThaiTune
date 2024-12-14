@@ -1,3 +1,5 @@
+"use client"
+
 import { Suspense, useEffect, useState } from 'react'
 import ScoreDetailsPage from './ScoreDetailsPage'
 
