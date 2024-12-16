@@ -13,12 +13,14 @@ import { auth, db } from '@/lib/firebase'
 import { signOut, onAuthStateChanged } from 'firebase/auth'
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { ProtectedRoute } from '@/app/components/protectedroute'
+import CreateNewScorePage2 from './createNewScore'
 
 export default function NewScoreForm() {
   const [user, setUser] = React.useState<any>(null)
   const [name, setName] = React.useState('')
   const [isLoading, setIsLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [showCreateScore, setShowCreateScore] = React.useState(false)
   const router = useRouter()
 
   React.useEffect(() => {
@@ -56,12 +58,16 @@ export default function NewScoreForm() {
       }
 
       const docRef = await addDoc(collection(db, 'scores'), scoreData)
-      router.push(`/new-score/${docRef.id}/details`)
+      setShowCreateScore(true)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  if (showCreateScore) {
+    return <CreateNewScorePage2 />
   }
 
   return (
