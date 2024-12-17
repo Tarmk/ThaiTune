@@ -54,7 +54,8 @@ export default function NewScoreForm() {
         author: user.displayName || 'Anonymous',
         modified: serverTimestamp(),
         userId: user.uid,
-        sharing: 'public'
+        sharing: 'public',
+        flatid: ''
       }
 
       const docRef = await addDoc(collection(db, 'scores'), scoreData)

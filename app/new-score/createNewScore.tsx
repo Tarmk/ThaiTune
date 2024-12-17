@@ -7,6 +7,8 @@ import Link from "next/link"
 import { auth } from '@/lib/firebase'
 import { signOut, onAuthStateChanged } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
+import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { db } from '@/lib/firebase'
 
 declare global {
   interface Window {
@@ -66,9 +68,23 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
           privacy: "public"
         }
       });
-      console.log('Score created:', response.data);
-      setScoreId(response.data.id);
-      return response.data.id;
+
+      const newScoreId = response.data.id;
+      setScoreId(newScoreId);
+
+      // Update the Firebase document with the Flat.io score ID
+      const scoresRef = collection(db, 'scores');
+      const q = query(scoresRef, where("name", "==", title));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const scoreDoc = querySnapshot.docs[0];
+        await updateDoc(doc(db, 'scores', scoreDoc.id), {
+          flatid: newScoreId
+        });
+      }
+
+      return newScoreId;
     } catch (error) {
       console.error('Error creating score:', error);
       return null;
