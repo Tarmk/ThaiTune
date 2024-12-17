@@ -1,6 +1,6 @@
-/*!****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[2].use[1]!./node_modules/next/dist/build/webpack/loaders/next-font-loader/index.js??ruleSet[1].rules[13].oneOf[2].use[2]!./node_modules/next/font/google/target.css?{"path":"app/layout.tsx","import":"Inter","arguments":[{"subsets":["latin"]}],"variableName":"inter"} ***!
-  \****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
+/*!*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[13].oneOf[2].use[1]!./node_modules/next/dist/build/webpack/loaders/next-font-loader/index.js??ruleSet[1].rules[13].oneOf[2].use[2]!./node_modules/next/font/google/target.css?{"path":"app\\layout.tsx","import":"Inter","arguments":[{"subsets":["latin"]}],"variableName":"inter"} ***!
+  \*****************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************************/
 /* cyrillic-ext */
 @font-face {
   font-family: 'Inter';
@@ -177,7 +177,7 @@
   --tw-contain-paint:  ;
   --tw-contain-style:  ;
 }/*
-! tailwindcss v3.4.15 | MIT License | https://tailwindcss.com
+! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com
 *//*
 1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)
 2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)
@@ -662,6 +662,9 @@ video {
 .mb-1 {
   margin-bottom: 0.25rem;
 }
+.mb-2 {
+  margin-bottom: 0.5rem;
+}
 .mb-4 {
   margin-bottom: 1rem;
 }
@@ -682,9 +685,6 @@ video {
 }
 .mt-6 {
   margin-top: 1.5rem;
-}
-.mb-2 {
-  margin-bottom: 0.5rem;
 }
 .block {
   display: block;
@@ -865,6 +865,9 @@ video {
 .overflow-hidden {
   overflow: hidden;
 }
+.rounded {
+  border-radius: 0.25rem;
+}
 .rounded-full {
   border-radius: 9999px;
 }
@@ -876,9 +879,6 @@ video {
 }
 .rounded-xl {
   border-radius: 0.75rem;
-}
-.rounded {
-  border-radius: 0.25rem;
 }
 .border {
   border-width: 1px;
@@ -918,6 +918,10 @@ video {
 .bg-background {
   background-color: hsl(var(--background));
 }
+.bg-blue-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(59 130 246 / var(--tw-bg-opacity, 1));
+}
 .bg-card {
   background-color: hsl(var(--card));
 }
@@ -936,10 +940,6 @@ video {
 .bg-white {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
-}
-.bg-blue-500 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(59 130 246 / var(--tw-bg-opacity, 1));
 }
 .p-1 {
   padding: 0.25rem;
@@ -1085,6 +1085,10 @@ video {
   --tw-text-opacity: 1;
   color: rgb(128 0 0 / var(--tw-text-opacity, 1));
 }
+.text-blue-500 {
+  --tw-text-opacity: 1;
+  color: rgb(59 130 246 / var(--tw-text-opacity, 1));
+}
 .text-card-foreground {
   color: hsl(var(--card-foreground));
 }
@@ -1120,10 +1124,6 @@ video {
 .text-white {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-}
-.text-blue-500 {
-  --tw-text-opacity: 1;
-  color: rgb(59 130 246 / var(--tw-text-opacity, 1));
 }
 .opacity-50 {
   opacity: 0.5;
@@ -1217,19 +1217,14 @@ video {
   background-color: rgb(96 0 0 / var(--tw-bg-opacity, 1));
 }
  
-.hover\:bg-gray-100:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
-}
- 
-.hover\:bg-blue-700:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgb(29 78 216 / var(--tw-bg-opacity, 1));
-}
- 
 .hover\:bg-blue-600:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(37 99 235 / var(--tw-bg-opacity, 1));
+}
+ 
+.hover\:bg-gray-100:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
 }
  
 .hover\:text-\[\#4A1D2C\]:hover {
@@ -1247,14 +1242,14 @@ video {
   color: rgb(128 0 0 / var(--tw-text-opacity, 1));
 }
  
-.hover\:text-gray-900:hover {
-  --tw-text-opacity: 1;
-  color: rgb(17 24 39 / var(--tw-text-opacity, 1));
-}
- 
 .hover\:text-blue-600:hover {
   --tw-text-opacity: 1;
   color: rgb(37 99 235 / var(--tw-text-opacity, 1));
+}
+ 
+.hover\:text-gray-900:hover {
+  --tw-text-opacity: 1;
+  color: rgb(17 24 39 / var(--tw-text-opacity, 1));
 }
  
 .hover\:underline:hover {

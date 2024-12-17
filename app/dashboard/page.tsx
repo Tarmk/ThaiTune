@@ -7,9 +7,10 @@ import { Button } from "@/app/components/ui/button"
 import { Card, CardContent } from "@/app/components/ui/card"
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover"
 import Link from "next/link"
-import { auth } from '@/lib/firebase'
+import { auth, db } from '@/lib/firebase'
 import { signOut, onAuthStateChanged } from 'firebase/auth'
 import { ProtectedRoute } from '@/app/components/protectedroute'
+import { collection, query, where, getDocs } from 'firebase/firestore'
 
 interface Score {
   name: string;
@@ -18,11 +19,7 @@ interface Score {
 }
 
 export default function Dashboard() {
-  const [scores, setScores] = React.useState<Score[]>([
-    { name: "Song 1", modified: "almost 4 years ago", sharing: "Only me" },
-    { name: "Song 2", modified: "about 4 years ago", sharing: "Only me" },
-    { name: "Song 3", modified: "about 4 years ago", sharing: "Only me" },
-  ]);
+  const [scores, setScores] = React.useState<Score[]>([]);
 
   const [sortColumn, setSortColumn] = React.useState<keyof Score | null>(null)
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc')
@@ -36,6 +33,28 @@ export default function Dashboard() {
 
     return () => unsubscribe()
   }, [])
+
+  React.useEffect(() => {
+    const fetchUserScores = async () => {
+      if (user?.uid) {
+        const q = query(
+          collection(db, "scores"),
+          where("userId", "==", user.uid)
+        );
+        
+        const querySnapshot = await getDocs(q);
+        const userScores = querySnapshot.docs.map(doc => ({
+          name: doc.data().name,
+          modified: new Date(doc.data().modified.toDate()).toLocaleDateString(),
+          sharing: doc.data().sharing || "Only me"
+        }));
+        
+        setScores(userScores);
+      }
+    };
+
+    fetchUserScores();
+  }, [user]);
 
   const handleSort = (column: keyof Score) => {
     if (sortColumn === column) {
