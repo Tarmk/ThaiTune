@@ -214,6 +214,7 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
           appId: '675579130b7f5c8a374ac19a',
           branding: false,
           controlsPosition: 'top',
+          themePrimary: '#800000'
         }
       });
     }

@@ -145,7 +145,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
           <Card className="bg-white shadow-md">
             <CardContent className="p-4">
               <iframe
-                src={`https://flat.io/embed/${score.flatid}?appId=6755790be2eebcce112acde7`}
+                src={`https://flat.io/embed/${score.flatid}?themePrimary=%23800000&appId=6755790be2eebcce112acde7`}
                 height="450"
                 width="100%"
                 frameBorder="0"
