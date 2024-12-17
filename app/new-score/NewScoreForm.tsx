@@ -67,7 +67,7 @@ export default function NewScoreForm() {
   }
 
   if (showCreateScore) {
-    return <CreateNewScorePage2 />
+    return <CreateNewScorePage2 title={name} />
   }
 
   return (
