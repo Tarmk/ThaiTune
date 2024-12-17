@@ -1,4 +1,4 @@
-// File: C:\Users\tarmk\OneDrive\Documents\GitHub\music-frontend\app\new-score\page.tsx
+// File: /Users/tarmkunkhongkaphan/Documents/github/music-frontend/app/new-score/page.tsx
 import * as entry from '../../../../app/new-score/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

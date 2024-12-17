@@ -25,7 +25,7 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
   const [exportCount, setExportCount] = useState(0);
   const [scoreId, setScoreId] = useState<string | null>(null);
   const maxExports = 5;
-  const exportInterval = 5000;
+  const exportInterval = 30000;
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -71,19 +71,7 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
 
       const newScoreId = response.data.id;
       setScoreId(newScoreId);
-
-      // Update the Firebase document with the Flat.io score ID
-      const scoresRef = collection(db, 'scores');
-      const q = query(scoresRef, where("name", "==", title));
-      const querySnapshot = await getDocs(q);
-      
-      if (!querySnapshot.empty) {
-        const scoreDoc = querySnapshot.docs[0];
-        await updateDoc(doc(db, 'scores', scoreDoc.id), {
-          flatid: newScoreId
-        });
-      }
-
+      console.log('Score created with ID:', newScoreId);
       return newScoreId;
     } catch (error) {
       console.error('Error creating score:', error);
@@ -91,7 +79,63 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
     }
   };
 
-  const handleExport = React.useCallback(async () => {
+  const handleManualSave = async () => {
+    if (embedRef.current && scoreId) {
+      try {
+        const buffer = await embedRef.current.getMusicXML({ compressed: true });
+        
+        const base64String = btoa(
+          new Uint8Array(buffer)
+            .reduce((data, byte) => data + String.fromCharCode(byte), '')
+        );
+
+        // Save to localStorage
+        const saveData = {
+          title,
+          timestamp: new Date().toISOString(),
+          content: base64String
+        };
+
+        const storageKey = `score_${title}_manual_${Date.now()}`;
+        localStorage.setItem(storageKey, JSON.stringify(saveData));
+
+        // Update versions list
+        const versionsList = JSON.parse(localStorage.getItem(`score_${title}_versions`) || '[]');
+        versionsList.push({
+          version: `Manual Save ${versionsList.length + 1}`,
+          timestamp: saveData.timestamp,
+          storageKey
+        });
+        localStorage.setItem(`score_${title}_versions`, JSON.stringify(versionsList));
+
+        // Save to Flat.io API
+        try {
+          const response = await axios({
+            method: 'post',
+            url: `https://api.flat.io/v2/scores/${scoreId}/revisions`,
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': '069432b451ffceb35e2407e24093bd43a99e6a560963f9e92254da031a2e04e1527f86dfade9eb5cdb222720566f7a8dd8ac3beeed9a2d9d15a6d398123d125c'
+            },
+            data: {
+              data: base64String,
+              dataEncoding: "base64",
+              autosave: false // Set to false for manual saves
+            }
+          });
+          console.log('Manual save to Flat.io successful:', response.data);
+        } catch (apiError) {
+          console.error('Error saving to Flat.io:', apiError);
+        }
+      } catch (error) {
+        console.error('Error in manual save:', error);
+      }
+    }
+  };
+
+  const handleAutoSave = React.useCallback(async () => {
+    console.log('Auto-save triggered');
     if (embedRef.current && scoreId) {
       try {
         const buffer = await embedRef.current.getMusicXML({ compressed: true });
@@ -112,7 +156,7 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
 
         const versionsList = JSON.parse(localStorage.getItem(`score_${title}_versions`) || '[]');
         versionsList.push({
-          version: exportCount + 1,
+          version: `Auto Save ${exportCount + 1}`,
           timestamp: saveData.timestamp,
           storageKey
         });
@@ -133,17 +177,22 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
               autosave: true
             }
           });
-          console.log('Revision saved to Flat.io:', response.data);
+          console.log('Auto-save to Flat.io successful:', response.data);
         } catch (apiError) {
-          console.error('Error saving revision to Flat.io:', apiError);
+          console.error('Error auto-saving to Flat.io:', apiError);
         }
         
         setExportCount(prev => prev + 1);
-        console.log(`Auto-saved score to storage and Flat.io (${exportCount + 1}/${maxExports})`);
+        console.log(`Auto-saved (${exportCount + 1}/${maxExports})`);
 
       } catch (error) {
-        console.error('Error saving MusicXML:', error);
+        console.error('Error in auto-save:', error);
       }
+    } else {
+      console.log('Auto-save skipped - conditions not met:', { 
+        hasEmbed: !!embedRef.current, 
+        scoreId 
+      });
     }
   }, [scoreId, exportCount, title, maxExports]);
 
@@ -170,6 +219,7 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
     return null;
   };
 
+  // Initialize score and embed
   useEffect(() => {
     if (initializeRef.current) return;
     initializeRef.current = true;
@@ -180,30 +230,39 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
       const script = document.createElement('script');
       script.src = 'https://prod.flat-cdn.com/embed-js/v1.5.1/embed.min.js';
       script.async = true;
-      script.onload = () => initializeEmbed(scoreId);
-      document.body.appendChild(script);
-
-      return () => {
-        document.body.removeChild(script);
+      script.onload = () => {
+        initializeEmbed(scoreId);
+        console.log('Embed initialized');
       };
+      document.body.appendChild(script);
     };
 
     initializeScore();
   }, []);
 
+  // Set up auto-save interval
   useEffect(() => {
-    if (!scoreId || !embedRef.current || exportCount >= maxExports) return;
+    // if (!scoreId || !embedRef.current || exportCount >= maxExports) {
+    //   console.log('Auto-save setup skipped:', { 
+    //     hasScoreId: !!scoreId, 
+    //     hasEmbed: !!embedRef.current, 
+    //     exportCount, 
+    //     maxExports 
+    //   });
+    //   return;
+    // }
+
+    // Execute first auto-save immediately
+    handleAutoSave();
 
     console.log('Setting up auto-save interval');
-    const intervalId = setInterval(() => {
-      handleExport();
-    }, exportInterval);
+    const intervalId = setInterval(handleAutoSave, exportInterval);
 
     return () => {
       console.log('Clearing auto-save interval');
       clearInterval(intervalId);
     };
-  }, [exportCount, scoreId, handleExport]);
+  }, [scoreId, handleAutoSave, exportCount, maxExports]);
 
   const initializeEmbed = (scoreId: string | null) => {
     if (containerRef.current && window.Flat && scoreId) {
@@ -217,6 +276,7 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
           themePrimary: '#800000'
         }
       });
+      console.log('Embed ref set');
     }
   };
 
@@ -282,7 +342,7 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
           <div className="p-6 border-t">
             <div className="flex items-center justify-between">
               <button 
-                onClick={handleExport}
+                onClick={handleManualSave}
                 className="px-4 py-2 bg-[#800000] text-white rounded hover:bg-[#600000]"
               >
                 Save Version

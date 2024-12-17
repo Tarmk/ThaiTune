@@ -1,4 +1,4 @@
-// File: C:\Users\tarmk\OneDrive\Documents\GitHub\music-frontend\app\layout.tsx
+// File: /Users/tarmkunkhongkaphan/Documents/github/music-frontend/app/layout.tsx
 import * as entry from '../../../app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
