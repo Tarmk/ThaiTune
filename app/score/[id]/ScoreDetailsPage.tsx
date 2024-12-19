@@ -75,6 +75,10 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
     }
   }
 
+  const handleEdit = () => {
+    router.push(`/score/${id}/edit`);
+  }
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>
   }
@@ -154,8 +158,11 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
               ></iframe>
             </CardContent>
           </Card>
-          <div className="mt-6">
+          <div className="mt-6 flex justify-between items-center">
             <p className="text-sm text-[#666666]">Last modified: {score.modified.toLocaleString()}</p>
+            <button onClick={handleEdit} className="text-[#333333] hover:text-[#800000] font-medium">
+              Edit
+            </button>
           </div>
         </main>
       </div>
