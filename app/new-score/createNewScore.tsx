@@ -7,7 +7,7 @@ import Link from "next/link"
 import { auth } from '@/lib/firebase'
 import { signOut, onAuthStateChanged } from 'firebase/auth'
 import { useRouter } from 'next/navigation'
-import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, doc, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase'
 
 declare global {
@@ -59,6 +59,7 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
             scoreData: {
               instruments: [
                 {
+                  
                   group: "keyboards",
                   instrument: "piano"
                 }
@@ -71,6 +72,19 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
 
       const newScoreId = response.data.id;
       setScoreId(newScoreId);
+
+      // Update the Firebase document with the flatid
+      const scoresRef = collection(db, 'scores');
+      const q = query(scoresRef, where('name', '==', title));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const scoreDoc = querySnapshot.docs[0];
+        await updateDoc(doc(db, 'scores', scoreDoc.id), {
+          flatid: newScoreId
+        });
+      }
+
       console.log('Score created with ID:', newScoreId);
       return newScoreId;
     } catch (error) {
