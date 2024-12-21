@@ -5,6 +5,9 @@ import Image from "next/image"
 import Link from "next/link"
 import { ChevronDown } from 'lucide-react'
 import Footer from './components/Footer'
+import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover"
+import { useTranslation } from 'react-i18next'
+import '@/i18n'
 
 const Button = ({ 
   children, 
@@ -31,14 +34,18 @@ const Button = ({
 }
 
 export default function HomePage() {
-  const [isClient, setIsClient] = useState(false)
+  const [language, setLanguage] = useState('en')
+  const [open, setOpen] = useState(false)
+  const { t, i18n } = useTranslation('common')
 
   useEffect(() => {
-    setIsClient(true)
-  }, [])
+    i18n.changeLanguage(language)
+  }, [language, i18n])
 
-  if (!isClient) {
-    return null
+  const handleLanguageChange = (lang: string) => {
+    setLanguage(lang)
+    i18n.changeLanguage(lang)
+    setOpen(false)
   }
 
   return (
@@ -48,41 +55,65 @@ export default function HomePage() {
           <Link className="flex items-center gap-3" href="/">
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-[#4A1D2C] p-1.5 w-9 h-9 flex items-center justify-center">
-                <Image
+                {/* <Image
                   src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Screenshot%202567-11-20%20at%2008.30.37-mljPNNQJsQS2B2AQGZE6ZAddGGGhuQ.png"
                   alt="TMDB Logo"
                   width={24}
                   height={24}
                   className="rounded-lg"
-                />
+                /> */}
               </div>
               <span className="text-lg font-bold text-gray-900">TMDB</span>
             </div>
           </Link>
           <div className="hidden md:flex items-center gap-8">
             <Button variant="ghost" className="flex items-center gap-1.5">
-              Features
+              {t('features')}
               <ChevronDown className="h-4 w-4 opacity-50" />
             </Button>
             <Link href="/community">
-              <Button variant="ghost">Community</Button>
+              <Button variant="ghost">{t('community')}</Button>
             </Link>
             <Button variant="ghost" className="flex items-center gap-1.5">
-              Our Products
+              {t('ourProducts')}
               <ChevronDown className="h-4 w-4 opacity-50" />
             </Button>
           </div>
         </nav>
         <div className="flex items-center gap-3">
           <Link href="/login">
-            <Button variant="ghost">Log In</Button>
+            <Button variant="ghost">{t('login')}</Button>
           </Link>
           <Link href="/signup">
-            <Button>Get started for free</Button>
+            <Button>{t('getStarted')}</Button>
           </Link>
-          <Button variant="ghost" className="w-10 px-0" aria-label="Change language">
-            🇺🇸
-          </Button>
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" className="w-10 px-0" aria-label="Change language">
+                {language === 'en' ? '🇺🇸' : '🇹🇭'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48 p-2">
+              <div className="space-y-2">
+                <button
+                  className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 ${
+                    language === 'en' ? 'text-[#800000]' : 'text-gray-600'
+                  }`}
+                  onClick={() => handleLanguageChange('en')}
+                >
+                  🇺🇸 English
+                </button>
+                <button
+                  className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 ${
+                    language === 'th' ? 'text-[#800000]' : 'text-gray-600'
+                  }`}
+                  onClick={() => handleLanguageChange('th')}
+                >
+                  🇹🇭 ไทย
+                </button>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
       </header>
       <main className="flex-1 pt-16">
@@ -92,16 +123,16 @@ export default function HomePage() {
               <div className="flex flex-col justify-center space-y-8">
                 <div className="space-y-6">
                   <h1 className="text-5xl font-bold tracking-tight text-gray-900 lg:text-6xl/none">
-                    Learn Traditional Thai Music
+                    {t('learnTitle')}
                   </h1>
                   <p className="text-xl text-gray-500 max-w-[600px]">
-                    TMDB is a program that allows users to contribute their knowledge of Traditional Thai Melodies by adding songs they know, while also providing an opportunity to discover and learn new melodies from the existing database.
+                    {t('description')}
                   </p>
                 </div>
                 <div>
                   <Link href="/signup">
                     <Button className="text-base px-6 py-3">
-                      Get started for free
+                    {t('getStarted')}
                     </Button>
                   </Link>
                 </div>
@@ -122,14 +153,14 @@ export default function HomePage() {
             <div className="space-y-12">
               <div className="max-w-3xl mx-auto text-center">
                 <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-                  Widen your Thai Music Repertoire
+                  {t('widenRepertoire')}
                 </h2>
                 <p className="mt-4 text-xl text-gray-500">
-                  TMDB allows you to upload your favorite Thai Traditional Songs, whilst accessing other songs uploaded by users.
+                  {t('uploadDescription')}
                 </p>
               </div>
               <div className="relative rounded-xl overflow-hidden shadow-2xl bg-gray-100 aspect-[2/1] flex items-center justify-center">
-                <span className="text-gray-400">Music Score Editor Interface</span>
+                <span className="text-gray-400">{t('editorInterface')}</span>
               </div>
             </div>
           </div>

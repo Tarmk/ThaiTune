@@ -1,14 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'hebbkx1anhila5yf.public.blob.vercel-storage.com',
-        port: '',
-        pathname: '/**',
-      },
-    ],
+    domains: ['hebbkx1anhila5yf.public.blob.vercel-storage.com'],
   },
 }
 
@@ -23,3 +16,9 @@ module.exports = {
   },
 }
 module.exports = nextConfig
+
+const { i18n } = require('./next-i18next.config')
+
+module.exports = {
+  i18n,
+}
