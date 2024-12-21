@@ -16,6 +16,7 @@ interface Score {
   name: string;
   modified: string;
   sharing: string;
+  score_id: string;
 }
 
 export default function Dashboard() {
@@ -46,8 +47,11 @@ export default function Dashboard() {
         const userScores = querySnapshot.docs.map(doc => ({
           name: doc.data().name,
           modified: new Date(doc.data().modified.toDate()).toLocaleDateString(),
-          sharing: doc.data().sharing || "Only me"
+          sharing: doc.data().sharing || "Only me",
+          score_id: doc.id
         }));
+        console.log("User Score:")
+        console.log(userScores);
         
         setScores(userScores);
       }
@@ -99,7 +103,7 @@ export default function Dashboard() {
                 <img src="/tmdb-logo.png" alt="TMDB Logo" className="h-10" />
               </Link>
               <nav className="flex space-x-6">
-                <Link href="/dashboard" className="text-[#333333] hover:text-[#800000] font-medium">My scores</Link>
+                <Link href="/dashboard" className="text-[#800000] font-medium">My scores</Link>
                 <Link href="/community" className="text-[#333333] hover:text-[#800000] font-medium">Community</Link>
                 <Link href="#" className="text-[#333333] hover:text-[#800000] font-medium">Browse & Explore</Link>
                 <Link href="#" className="text-[#333333] hover:text-[#800000] font-medium">Learn</Link>
@@ -164,9 +168,13 @@ export default function Dashboard() {
                   </tr>
                 </thead>
                 <tbody>
-                  {scores.map((score, index) => (
-                    <tr key={index} className="border-b last:border-b-0">
-                      <td className="py-3 text-[#333333]">{score.name}</td>
+                  {scores.map((score) => (
+                    <tr key={score.score_id} className="border-b last:border-b-0">
+                      <td className="py-3 text-[#333333]">
+                        <Link href={`/score/${score.score_id}`}>
+                          {score.name}
+                        </Link>
+                      </td>
                       <td className="py-3 text-[#666666]">{score.modified}</td>
                       <td className="py-3 text-[#666666]">{score.sharing}</td>
                       <td className="py-3">

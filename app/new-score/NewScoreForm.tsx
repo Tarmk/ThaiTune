@@ -21,6 +21,7 @@ export default function NewScoreForm() {
   const [isLoading, setIsLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [showCreateScore, setShowCreateScore] = React.useState(false)
+  const [sharing, setSharing] = React.useState('public')
   const router = useRouter()
 
   React.useEffect(() => {
@@ -54,7 +55,7 @@ export default function NewScoreForm() {
         author: user.displayName || 'Anonymous',
         modified: serverTimestamp(),
         userId: user.uid,
-        sharing: 'public',
+        sharing: sharing,
         flatid: ''
       }
 
@@ -142,6 +143,18 @@ export default function NewScoreForm() {
                     placeholder="Enter score name"
                     required
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="sharing">Sharing Option</Label>
+                  <select
+                    id="sharing"
+                    value={sharing}
+                    onChange={(e) => setSharing(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md p-2"
+                  >
+                    <option value="public">Public</option>
+                    <option value="private">Private</option>
+                  </select>
                 </div>
                 <Button
                   type="submit"

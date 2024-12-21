@@ -64,8 +64,9 @@ export default function HomePage() {
               Features
               <ChevronDown className="h-4 w-4 opacity-50" />
             </Button>
-            <Button variant="ghost">Tutorials</Button>
-            <Button variant="ghost">Community</Button>
+            <Link href="/community">
+              <Button variant="ghost">Community</Button>
+            </Link>
             <Button variant="ghost" className="flex items-center gap-1.5">
               Our Products
               <ChevronDown className="h-4 w-4 opacity-50" />
