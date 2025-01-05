@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { Bell, ChevronDown, User, ArrowLeft } from 'lucide-react'
-import { Button } from "@/app/components/ui/button"
-import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover"
+import { Button } from "@/_app/components/ui/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/_app/components/ui/popover"
 import Link from "next/link"
 import { auth } from '@/lib/firebase'
 import { signOut, onAuthStateChanged } from 'firebase/auth'

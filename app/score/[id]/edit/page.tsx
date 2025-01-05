@@ -8,10 +8,9 @@ import { signOut, onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import router from 'next/router';
 
-const CreateAnotherScorePage = () => {
+const CreateAnotherScorePage = ({ title }: { title: string }) => {
   const [user, setUser] = useState<any>(null);
   const [flatId, setFlatId] = useState<string | null>(null);
-  const [title, setTitle] = useState<string>('');
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -41,10 +40,11 @@ const CreateAnotherScorePage = () => {
         console.log('Score id:', id);
         if (scoreDoc.exists()) {
           const scoreData = scoreDoc.data();
-          if (scoreData) {
-            if (scoreData.flatid) setFlatId(scoreData.flatid);
-            if (scoreData.title) setTitle(scoreData.title);
-            if (scoreData.sharing) setSharingSetting(scoreData.sharing);
+          if (scoreData && scoreData.flatid) {
+            setFlatId(scoreData.flatid);
+            if (scoreData.sharing) {
+              setSharingSetting(scoreData.sharing);
+            }
             if (scoreData.modified) {
               const modifiedDate = scoreData.modified.toDate();
               setFirestoreModifiedTime(
@@ -52,7 +52,7 @@ const CreateAnotherScorePage = () => {
               );
             }
           } else {
-            console.error('Score data is undefined');
+            console.error('Score data or flatid is undefined');
           }
         } else {
           console.error('Score not found');

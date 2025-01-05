@@ -13,7 +13,7 @@ export default function Page({ params }: PageProps) {
   useEffect(() => {
     const fetchParams = async () => {
       const resolvedParams = await params;
-      setId(resolvedParams.id);
+      setId(resolvedParams.id); 
     };
 
     fetchParams();

@@ -4,11 +4,11 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signInWithEmailAndPassword } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
-import { Button } from "@/app/components/ui/button"
-import { Input } from "@/app/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/app/components/ui/card"
-import { Label } from "@/app/components/ui/label"
-import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert"
+import { Button } from "@/_app/components/ui/button"
+import { Input } from "@/_app/components/ui/input"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/_app/components/ui/card"
+import { Label } from "@/_app/components/ui/label"
+import { Alert, AlertDescription, AlertTitle } from "@/_app/components/ui/alert"
 import { AlertCircle, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 

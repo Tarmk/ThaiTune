@@ -3,11 +3,11 @@
 import * as React from "react"
 import { useRouter } from 'next/navigation'
 import { Bell, ChevronDown, User, ArrowLeft } from 'lucide-react'
-import { Button } from "@/app/components/ui/button"
-import { Card, CardContent } from "@/app/components/ui/card"
-import { Input } from "@/app/components/ui/input"
-import { Label } from "@/app/components/ui/label"
-import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover"
+import { Button } from "@/_app/components/ui/button"
+import { Card, CardContent } from "@/_app/components/ui/card"
+import { Input } from "@/_app/components/ui/input"
+import { Label } from "@/_app/components/ui/label"
+import { Popover, PopoverContent, PopoverTrigger } from "@/_app/components/ui/popover"
 import Link from "next/link"
 import { auth, db } from '@/lib/firebase'
 import { signOut, onAuthStateChanged } from 'firebase/auth'
