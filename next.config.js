@@ -4,15 +4,16 @@ const nextConfig = {
     defaultLocale: 'en',
     locales: ['en', 'th'],
   },
-  swcMinify: true,
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
   experimental: {
-    serverComponentsExternalPackages: ['@prisma/client'],
     workerThreads: true,
     cpus: 4
   },
+  serverExternalPackages: [
+    // Add any packages that need to be externalized
+  ],
 }
 
 module.exports = nextConfig
