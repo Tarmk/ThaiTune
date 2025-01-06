@@ -4,12 +4,10 @@ import { useState, useRef, useEffect } from 'react';
 import { usePathname, useSearchParams } from 'next/navigation';
 
 interface ClientProps {
-  params: {
-    id: string;
-  };
+  id: string;
 }
 
-export default function EditScoreClient({ params }: ClientProps) {
+export default function EditScoreClient({ id }: ClientProps) {
   const [flatId, setFlatId] = useState<string | null>(null);
   const [title, setTitle] = useState<string>('');
   const pathname = usePathname();
