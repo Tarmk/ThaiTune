@@ -240,13 +240,14 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
     initializeRef.current = true;
 
     const initializeScore = async () => {
-      const scoreId = await createScore();
+      const newScoreId = await createScore();
+      setScoreId(newScoreId); // Ensure scoreId is set
       
       const script = document.createElement('script');
       script.src = 'https://prod.flat-cdn.com/embed-js/v1.5.1/embed.min.js';
       script.async = true;
       script.onload = () => {
-        initializeEmbed(scoreId);
+        initializeEmbed(newScoreId);
         console.log('Embed initialized');
       };
       document.body.appendChild(script);
@@ -255,7 +256,7 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
     initializeScore();
   }, []);
 
-  // Set up auto-save interval
+  // Set up auto-save interval in a separate effect that depends on scoreId
   useEffect(() => {
     // if (!scoreId || !embedRef.current || exportCount >= maxExports) {
     //   console.log('Auto-save setup skipped:', { 
@@ -266,9 +267,6 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
     //   });
     //   return;
     // }
-
-    // Execute first auto-save immediately
-    handleAutoSave();
 
     console.log('Setting up auto-save interval');
     const intervalId = setInterval(handleAutoSave, exportInterval);
