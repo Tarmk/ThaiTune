@@ -11,6 +11,8 @@ import { Label } from "@/_app/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/_app/components/ui/alert"
 import { AlertCircle, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { useTranslation } from 'react-i18next'
+import '@/i18n'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -18,6 +20,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { t } = useTranslation(['auth'])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,16 +35,16 @@ export default function LoginPage() {
         switch (err.message) {
           case 'Firebase: Error (auth/user-not-found).':
           case 'Firebase: Error (auth/wrong-password).':
-            setError('Invalid email or password. Please try again.')
+            setError(t('auth:errors.invalidCredentials'))
             break
           case 'Firebase: Error (auth/network-request-failed).':
-            setError('Unable to connect to the server. Please check your internet connection and try again.')
+            setError(t('auth:errors.networkError'))
             break
           default:
-            setError('An unexpected error occurred. Please try again.')
+            setError(t('auth:errors.unexpected'))
         }
       } else {
-        setError('An unexpected error occurred. Please try again.')
+        setError(t('auth:errors.unexpected'))
       }
     } finally {
       setIsLoading(false)
@@ -52,27 +55,27 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100 relative">
       <Card className="w-[350px]">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">{t('auth:login')}</CardTitle>
           <CardDescription className="text-center">
-            Enter your email and password to login
+            {t('auth:enterCredentials')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Link href="/" className="absolute top-4 left-4 flex items-center text-[#800000] hover:text-[#600000]">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Homepage
+            {t('auth:backToHome')}
           </Link>
           <form onSubmit={handleSubmit}>
             {error && (
               <Alert variant="destructive" className="mb-4">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
+                <AlertTitle>{t('error')}</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">{t('auth:email')}</Label>
                 <Input
                   id="email"
                   type="email"
@@ -83,7 +86,7 @@ export default function LoginPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{t('auth:password')}</Label>
                 <Input
                   id="password"
                   type="password"
@@ -93,16 +96,20 @@ export default function LoginPage() {
                 />
               </div>
             </div>
-            <Button className="w-full mt-4 bg-[#4A1D2C] text-white hover:bg-[#3A1622]" type="submit" disabled={isLoading}>
-              {isLoading ? 'Logging in...' : 'Login'}
+            <Button 
+              className="w-full mt-4 bg-[#4A1D2C] text-white hover:bg-[#3A1622]" 
+              type="submit" 
+              disabled={isLoading}
+            >
+              {isLoading ? t('auth:loggingIn') : t('auth:loginButton')}
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-gray-600">
-            Don&apos;t have an account?{' '}
+            {t('auth:dontHaveAccount')}{' '}
             <Link href="/signup" className="text-[#800000] hover:underline">
-              Sign up
+              {t('auth:signup')}
             </Link>
           </p>
         </CardFooter>

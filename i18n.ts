@@ -9,7 +9,9 @@ i18n
     backend: {
       loadPath: '/locales/{{lng}}/{{ns}}.json',
     },
-    lng: 'en', // default language
+    ns: ['common', 'auth', 'dashboard', 'editor'],
+    defaultNS: 'common',
+    lng: 'en',
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false,

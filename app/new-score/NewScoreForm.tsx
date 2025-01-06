@@ -14,6 +14,7 @@ import { signOut, onAuthStateChanged } from 'firebase/auth'
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { ProtectedRoute } from '@/app/components/protectedroute'
 import CreateNewScorePage2 from './createNewScore'
+import { TopMenu } from '@/app/components/TopMenu'
 
 export default function NewScoreForm() {
   const [user, setUser] = React.useState<any>(null)
@@ -75,50 +76,9 @@ export default function NewScoreForm() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-[#F5F5F5]">
-        <header className="bg-white shadow">
-          <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div className="flex items-center space-x-6">
-              <Link href="/dashboard">
-                <img src="/tmdb-logo.png" alt="TMDB Logo" className="h-10" />
-              </Link>
-              <nav className="flex space-x-6">
-                <Link href="/dashboard" className="text-[#800000] font-medium">My scores</Link>
-                <Link href="/community" className="text-[#333333] hover:text-[#800000] font-medium">Community</Link>
-                <Link href="#" className="text-[#333333] hover:text-[#800000] font-medium">Browse & Explore</Link>
-                <Link href="#" className="text-[#333333] hover:text-[#800000] font-medium">Learn</Link>
-              </nav>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Bell className="text-[#333333] hover:text-[#800000] cursor-pointer" />
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-2">
-                    <User className="text-[#333333]" />
-                    <ChevronDown className="text-[#333333]" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-56 p-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="h-10 w-10 rounded-full bg-[#800000] flex items-center justify-center text-white">
-                      {user?.displayName ? user.displayName[0].toUpperCase() : 'U'}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{user?.displayName || 'User'}</p>
-                      <Link href="#" className="text-xs text-[#800000] hover:underline">View profile</Link>
-                    </div>
-                  </div>
-                  <div className="mt-4 space-y-2">
-                    <Link href="#" className="block text-sm text-[#333333] hover:text-[#800000]">Account settings</Link>
-                    <Link href="#" className="block text-sm text-[#333333] hover:text-[#800000]">Contact us</Link>
-                    <Link href="#" className="block text-sm text-[#333333] hover:text-[#800000]">Help</Link>
-                    <button onClick={handleLogout} className="block w-full text-left text-sm text-[#333333] hover:text-[#800000]">Logout</button>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            </div>
-          </div>
-        </header>
-        <main className="max-w-7xl mx-auto px-4 py-6">
+        <TopMenu user={user} />
+        
+        <main className="max-w-7xl mx-auto px-4 py-6 mt-16">
           <div className="mb-6">
             <Link href="/dashboard" className="flex items-center text-[#800000] hover:underline">
               <ArrowLeft className="mr-2" />

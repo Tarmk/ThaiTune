@@ -1,0 +1,18 @@
+{
+  "communityScores": "Community Scores",
+  "searchScores": "Search scores...",
+  "scoreName": "Score Name",
+  "author": "Author",
+  "modified": "Modified",
+  "viewScore": "View Score",
+  "user": "User",
+  "viewProfile": "View Profile",
+  "accountSettings": "Account Settings",
+  "contactUs": "Contact Us",
+  "help": "Help",
+  "logout": "Logout",
+  "noScores": "No scores found",
+  "loading": "Loading scores...",
+  "error": "Error loading scores",
+  "community": "Community"
+} 
