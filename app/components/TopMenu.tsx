@@ -46,112 +46,114 @@ export function TopMenu({ user }: TopMenuProps) {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center px-6 border-b border-gray-100 bg-white">
-      <nav className="flex flex-1 items-center gap-12">
-        <Link className="flex items-center gap-3" href="/">
-          <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-[#4A1D2C] p-1.5 w-9 h-9 flex items-center justify-center">
+    <div className="relative z-10">
+      <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center px-6 border-b border-gray-100 bg-white">
+        <nav className="flex flex-1 items-center gap-12">
+          <Link className="flex items-center gap-3" href="/">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-[#4A1D2C] p-1.5 w-9 h-9 flex items-center justify-center">
+              </div>
+              <span className="text-lg font-bold text-gray-900">TMDB</span>
             </div>
-            <span className="text-lg font-bold text-gray-900">TMDB</span>
-          </div>
-        </Link>
-        {user ? (
-          <div className="hidden md:flex items-center gap-8">
-            <Link href="/dashboard">
-              <Button variant="ghost">{t('myScore')}</Button>
-            </Link>
-            <Link href="/community">
-              <Button variant="ghost">{t('community')}</Button>
-            </Link>
-          </div>
-        ) : (
-          <div className="hidden md:flex items-center gap-8">
-            <Button variant="ghost" className="flex items-center gap-1.5">
-              {t('features')}
-              <ChevronDown className="h-4 w-4 opacity-50" />
-            </Button>
-            <Link href="/community">
-              <Button variant="ghost">{t('community')}</Button>
-            </Link>
-            <Button variant="ghost" className="flex items-center gap-1.5">
-              {t('ourProducts')}
-              <ChevronDown className="h-4 w-4 opacity-50" />
-            </Button>
-          </div>
-        )}
-      </nav>
-      <div className="flex items-center gap-3">
-        
-        {user ? (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-full bg-[#4A1D2C] text-white flex items-center justify-center">
-                  {user?.displayName ? user.displayName.charAt(0) : 'U'}
-                </div>
+          </Link>
+          {user ? (
+            <div className="hidden md:flex items-center gap-8">
+              <Link href="/dashboard">
+                <Button variant="ghost">{t('myScore')}</Button>
+              </Link>
+              <Link href="/community">
+                <Button variant="ghost">{t('community')}</Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="hidden md:flex items-center gap-8">
+              <Button variant="ghost" className="flex items-center gap-1.5">
+                {t('features')}
                 <ChevronDown className="h-4 w-4 opacity-50" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <div className="px-2 py-2 border-b">
-                <div className="font-medium">{user?.displayName || 'User'}</div>
-                <div className="text-sm text-gray-500">View profile</div>
-              </div>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <Settings className="h-4 w-4" />
-                <span>Account settings</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
-                <HelpCircle className="h-4 w-4" />
-                <span>Help</span>
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                className="flex items-center gap-2 cursor-pointer"
-                onClick={handleLogout}
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Logout</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        ) : (
-          <>
-            <Link href="/login">
-              <Button variant="ghost">{t('login')}</Button>
-            </Link>
-            <Link href="/signup">
-              <Button>{t('getStarted')}</Button>
-            </Link>
-          </>
-        )}
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <Button variant="ghost" className="w-10 px-0" aria-label="Change language">
-              {language === 'en' ? '🇺🇸' : '🇹🇭'}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-48 p-2">
-            <div className="space-y-2">
-              <button
-                className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 ${
-                  language === 'en' ? 'text-[#800000]' : 'text-gray-600'
-                }`}
-                onClick={() => handleLanguageChange('en')}
-              >
-                🇺🇸 English
-              </button>
-              <button
-                className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 ${
-                  language === 'th' ? 'text-[#800000]' : 'text-gray-600'
-                }`}
-                onClick={() => handleLanguageChange('th')}
-              >
-                🇹🇭 ไทย
-              </button>
+              <Link href="/community">
+                <Button variant="ghost">{t('community')}</Button>
+              </Link>
+              <Button variant="ghost" className="flex items-center gap-1.5">
+                {t('ourProducts')}
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </Button>
             </div>
-          </PopoverContent>
-        </Popover>
-      </div>
-    </header>
+          )}
+        </nav>
+        <div className="flex items-center gap-3">
+          
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-full bg-[#4A1D2C] text-white flex items-center justify-center">
+                    {user?.displayName ? user.displayName.charAt(0) : 'U'}
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <div className="px-2 py-2 border-b">
+                  <div className="font-medium">{user?.displayName || 'User'}</div>
+                  <div className="text-sm text-gray-500">View profile</div>
+                </div>
+                <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                  <Settings className="h-4 w-4" />
+                  <span>Account settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                  <HelpCircle className="h-4 w-4" />
+                  <span>Help</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="flex items-center gap-2 cursor-pointer"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Link href="/login">
+                <Button variant="ghost">{t('login')}</Button>
+              </Link>
+              <Link href="/signup">
+                <Button>{t('getStarted')}</Button>
+              </Link>
+            </>
+          )}
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" className="w-10 px-0" aria-label="Change language">
+                {language === 'en' ? '🇺🇸' : '🇹🇭'}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48 p-2">
+              <div className="space-y-2">
+                <button
+                  className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 ${
+                    language === 'en' ? 'text-[#800000]' : 'text-gray-600'
+                  }`}
+                  onClick={() => handleLanguageChange('en')}
+                >
+                  🇺🇸 English
+                </button>
+                <button
+                  className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 ${
+                    language === 'th' ? 'text-[#800000]' : 'text-gray-600'
+                  }`}
+                  onClick={() => handleLanguageChange('th')}
+                >
+                  🇹🇭 ไทย
+                </button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+      </header>
+    </div>
   )
 } 

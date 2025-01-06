@@ -99,7 +99,7 @@ export default function CommunityPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <TopMenu user={user} />
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-7xl mx-auto px-4 pt-20 pb-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-[#333333]">{t('community:communityScores')}</h1>
           <div className="flex items-center space-x-4">
