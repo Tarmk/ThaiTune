@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import { Bell, ChevronDown, User, ArrowLeft } from 'lucide-react'
