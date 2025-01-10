@@ -12,6 +12,7 @@ import { useRouter } from 'next/navigation'
 import { collection, query, where, getDocs, updateDoc, doc, addDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase'
 import { TopMenu } from '@/app/components/TopMenu'
+import dynamic from 'next/dynamic'
 
 declare global {
   interface Window {
@@ -20,17 +21,16 @@ declare global {
 }
 
 const CreateNewScorePage2 = ({ title }: { title: string }) => {
-  const [user, setUser] = React.useState<any>(null)
+  const [user, setUser] = useState<any>(null)
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null);
   const embedRef = useRef<any>(null);
-  const initializeRef = useRef(false);
   const [exportCount, setExportCount] = useState(0);
   const [scoreId, setScoreId] = useState<string | null>(null);
   const maxExports = 5;
   const exportInterval = 30000;
 
-  React.useEffect(() => {
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user)
     })
@@ -62,7 +62,6 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
             scoreData: {
               instruments: [
                 {
-                  
                   group: "keyboards",
                   instrument: "piano"
                 }
@@ -76,7 +75,6 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
       const newScoreId = response.data.id;
       setScoreId(newScoreId);
 
-      // Update the Firebase document with the flatid
       const scoresRef = collection(db, 'scores');
       const q = query(scoresRef, where('name', '==', title));
       const querySnapshot = await getDocs(q);
@@ -88,7 +86,6 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
         });
       }
 
-      console.log('Score created with ID:', newScoreId);
       return newScoreId;
     } catch (error) {
       console.error('Error creating score:', error);
@@ -96,122 +93,62 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
     }
   };
 
-  const handleManualSave = async () => {
-    if (embedRef.current && scoreId) {
+  const handleSave = async (isAutoSave = false) => {
+    if (!embedRef.current || !scoreId) return;
+
+    try {
+      const buffer = await embedRef.current.getMusicXML({ compressed: true });
+      const base64String = btoa(
+        new Uint8Array(buffer)
+          .reduce((data, byte) => data + String.fromCharCode(byte), '')
+      );
+
+      const saveData = {
+        title,
+        timestamp: new Date().toISOString(),
+        content: base64String
+      };
+
+      const storageKey = isAutoSave 
+        ? `score_${title}_autosave_${exportCount + 1}`
+        : `score_${title}_manual_${Date.now()}`;
+      
+      localStorage.setItem(storageKey, JSON.stringify(saveData));
+
+      const versionsList = JSON.parse(localStorage.getItem(`score_${title}_versions`) || '[]');
+      versionsList.push({
+        version: isAutoSave ? `Auto Save ${exportCount + 1}` : `Manual Save ${versionsList.length + 1}`,
+        timestamp: saveData.timestamp,
+        storageKey
+      });
+      localStorage.setItem(`score_${title}_versions`, JSON.stringify(versionsList));
+
       try {
-        const buffer = await embedRef.current.getMusicXML({ compressed: true });
-        
-        const base64String = btoa(
-          new Uint8Array(buffer)
-            .reduce((data, byte) => data + String.fromCharCode(byte), '')
-        );
-
-        // Save to localStorage
-        const saveData = {
-          title,
-          timestamp: new Date().toISOString(),
-          content: base64String
-        };
-
-        const storageKey = `score_${title}_manual_${Date.now()}`;
-        localStorage.setItem(storageKey, JSON.stringify(saveData));
-
-        // Update versions list
-        const versionsList = JSON.parse(localStorage.getItem(`score_${title}_versions`) || '[]');
-        versionsList.push({
-          version: `Manual Save ${versionsList.length + 1}`,
-          timestamp: saveData.timestamp,
-          storageKey
+        await axios({
+          method: 'post',
+          url: `https://api.flat.io/v2/scores/${scoreId}/revisions`,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': '069432b451ffceb35e2407e24093bd43a99e6a560963f9e92254da031a2e04e1527f86dfade9eb5cdb222720566f7a8dd8ac3beeed9a2d9d15a6d398123d125c'
+          },
+          data: {
+            data: base64String,
+            dataEncoding: "base64",
+            autosave: isAutoSave
+          }
         });
-        localStorage.setItem(`score_${title}_versions`, JSON.stringify(versionsList));
 
-        // Save to Flat.io API
-        try {
-          const response = await axios({
-            method: 'post',
-            url: `https://api.flat.io/v2/scores/${scoreId}/revisions`,
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'Authorization': '069432b451ffceb35e2407e24093bd43a99e6a560963f9e92254da031a2e04e1527f86dfade9eb5cdb222720566f7a8dd8ac3beeed9a2d9d15a6d398123d125c'
-            },
-            data: {
-              data: base64String,
-              dataEncoding: "base64",
-              autosave: false // Set to false for manual saves
-            }
-          });
-          console.log('Manual save to Flat.io successful:', response.data);
-        } catch (apiError) {
-          console.error('Error saving to Flat.io:', apiError);
+        if (isAutoSave) {
+          setExportCount(prev => prev + 1);
         }
-      } catch (error) {
-        console.error('Error in manual save:', error);
+      } catch (apiError) {
+        console.error('Error saving to Flat.io:', apiError);
       }
+    } catch (error) {
+      console.error('Error in save:', error);
     }
   };
-
-  const handleAutoSave = React.useCallback(async () => {
-    console.log('Auto-save triggered');
-    if (embedRef.current && scoreId) {
-      try {
-        const buffer = await embedRef.current.getMusicXML({ compressed: true });
-        
-        const base64String = btoa(
-          new Uint8Array(buffer)
-            .reduce((data, byte) => data + String.fromCharCode(byte), '')
-        );
-
-        const saveData = {
-          title,
-          timestamp: new Date().toISOString(),
-          content: base64String
-        };
-
-        const storageKey = `score_${title}_autosave_${exportCount + 1}`;
-        localStorage.setItem(storageKey, JSON.stringify(saveData));
-
-        const versionsList = JSON.parse(localStorage.getItem(`score_${title}_versions`) || '[]');
-        versionsList.push({
-          version: `Auto Save ${exportCount + 1}`,
-          timestamp: saveData.timestamp,
-          storageKey
-        });
-        localStorage.setItem(`score_${title}_versions`, JSON.stringify(versionsList));
-
-        try {
-          const response = await axios({
-            method: 'post',
-            url: `https://api.flat.io/v2/scores/${scoreId}/revisions`,
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-              'Authorization': '069432b451ffceb35e2407e24093bd43a99e6a560963f9e92254da031a2e04e1527f86dfade9eb5cdb222720566f7a8dd8ac3beeed9a2d9d15a6d398123d125c'
-            },
-            data: {
-              data: base64String,
-              dataEncoding: "base64",
-              autosave: true
-            }
-          });
-          console.log('Auto-save to Flat.io successful:', response.data);
-        } catch (apiError) {
-          console.error('Error auto-saving to Flat.io:', apiError);
-        }
-        
-        setExportCount(prev => prev + 1);
-        console.log(`Auto-saved (${exportCount + 1}/${maxExports})`);
-
-      } catch (error) {
-        console.error('Error in auto-save:', error);
-      }
-    } else {
-      console.log('Auto-save skipped - conditions not met:', { 
-        hasEmbed: !!embedRef.current, 
-        scoreId 
-      });
-    }
-  }, [scoreId, exportCount, title, maxExports]);
 
   const getSavedVersions = () => {
     try {
@@ -236,64 +173,49 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
     return null;
   };
 
-  // Initialize score and embed
   useEffect(() => {
-    if (initializeRef.current) return;
-    initializeRef.current = true;
+    let mounted = true;
 
-    const initializeScore = async () => {
+    const initialize = async () => {
       const newScoreId = await createScore();
-      setScoreId(newScoreId); // Ensure scoreId is set
-      
+      if (!mounted) return;
+
       const script = document.createElement('script');
       script.src = 'https://prod.flat-cdn.com/embed-js/v1.5.1/embed.min.js';
       script.async = true;
       script.onload = () => {
-        initializeEmbed(newScoreId);
-        console.log('Embed initialized');
+        if (!mounted || !containerRef.current || !window.Flat || !newScoreId) return;
+        
+        embedRef.current = new window.Flat.Embed(containerRef.current, {
+          score: newScoreId,
+          embedParams: {
+            mode: 'edit',
+            appId: '675579130b7f5c8a374ac19a',
+            branding: false,
+            controlsPosition: 'top',
+            themePrimary: '#800000'
+          }
+        });
       };
       document.body.appendChild(script);
     };
 
-    initializeScore();
-  }, []);
-
-  // Set up auto-save interval in a separate effect that depends on scoreId
-  useEffect(() => {
-    // if (!scoreId || !embedRef.current || exportCount >= maxExports) {
-    //   console.log('Auto-save setup skipped:', { 
-    //     hasScoreId: !!scoreId, 
-    //     hasEmbed: !!embedRef.current, 
-    //     exportCount, 
-    //     maxExports 
-    //   });
-    //   return;
-    // }
-
-    console.log('Setting up auto-save interval');
-    const intervalId = setInterval(handleAutoSave, exportInterval);
+    initialize();
 
     return () => {
-      console.log('Clearing auto-save interval');
-      clearInterval(intervalId);
+      mounted = false;
     };
-  }, [scoreId, handleAutoSave, exportCount, maxExports]);
+  }, []);
 
-  const initializeEmbed = (scoreId: string | null) => {
-    if (containerRef.current && window.Flat && scoreId) {
-      embedRef.current = new window.Flat.Embed(containerRef.current, {
-        score: scoreId,
-        embedParams: {
-          mode: 'edit',
-          appId: '675579130b7f5c8a374ac19a',
-          branding: false,
-          controlsPosition: 'top',
-          themePrimary: '#800000'
-        }
-      });
-      console.log('Embed ref set');
-    }
-  };
+  useEffect(() => {
+    if (!scoreId || exportCount >= maxExports) return;
+
+    const intervalId = setInterval(() => {
+      handleSave(true);
+    }, exportInterval);
+
+    return () => clearInterval(intervalId);
+  }, [scoreId, exportCount]);
 
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
@@ -315,7 +237,7 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
           <div className="p-6 border-t">
             <div className="flex items-center justify-between">
               <button 
-                onClick={handleManualSave}
+                onClick={() => handleSave(false)}
                 className="px-4 py-2 bg-[#800000] text-white rounded hover:bg-[#600000]"
               >
                 Save Version
