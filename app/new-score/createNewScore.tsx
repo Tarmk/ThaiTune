@@ -14,13 +14,19 @@ import { db } from '@/lib/firebase'
 import { TopMenu } from '@/app/components/TopMenu'
 import dynamic from 'next/dynamic'
 
+interface FlatEmbed {
+  getMusicXML: (options: { compressed: boolean }) => Promise<ArrayBuffer>;
+}
+
 declare global {
   interface Window {
-    Flat: any;
+    Flat: {
+      Embed: new (container: HTMLDivElement, options: any) => FlatEmbed;
+    };
   }
 }
 
-const CreateNewScorePage2 = ({ title }: { title: string }) => {
+const ScoreEditor = ({ title }: { title: string }) => {
   const [user, setUser] = useState<any>(null)
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null);
@@ -164,7 +170,6 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
       const savedData = JSON.parse(localStorage.getItem(storageKey) || '');
       if (savedData) {
         const content = savedData.content;
-        console.log('Loaded version:', savedData.timestamp);
         return content;
       }
     } catch (error) {
@@ -180,24 +185,26 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
       const newScoreId = await createScore();
       if (!mounted) return;
 
-      const script = document.createElement('script');
-      script.src = 'https://prod.flat-cdn.com/embed-js/v1.5.1/embed.min.js';
-      script.async = true;
-      script.onload = () => {
-        if (!mounted || !containerRef.current || !window.Flat || !newScoreId) return;
-        
-        embedRef.current = new window.Flat.Embed(containerRef.current, {
-          score: newScoreId,
-          embedParams: {
-            mode: 'edit',
-            appId: '675579130b7f5c8a374ac19a',
-            branding: false,
-            controlsPosition: 'top',
-            themePrimary: '#800000'
-          }
-        });
-      };
-      document.body.appendChild(script);
+      if (typeof window !== 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://prod.flat-cdn.com/embed-js/v1.5.1/embed.min.js';
+        script.async = true;
+        script.onload = () => {
+          if (!mounted || !containerRef.current || !window.Flat || !newScoreId) return;
+          
+          embedRef.current = new window.Flat.Embed(containerRef.current, {
+            score: newScoreId,
+            embedParams: {
+              mode: 'edit',
+              appId: '675579130b7f5c8a374ac19a',
+              branding: false,
+              controlsPosition: 'top',
+              themePrimary: '#800000'
+            }
+          });
+        };
+        document.body.appendChild(script);
+      }
     };
 
     initialize();
@@ -268,5 +275,7 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
     </div>
   );
 };
+
+const CreateNewScorePage2 = dynamic(() => Promise.resolve(ScoreEditor), { ssr: false });
 
 export default CreateNewScorePage2;
