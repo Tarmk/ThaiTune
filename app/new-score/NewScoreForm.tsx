@@ -85,10 +85,10 @@ export default function NewScoreForm() {
               Back to My Scores
             </Link>
           </div>
-          <h1 className="text-2xl font-bold text-[#333333] mb-6">Create New Score</h1>
-          <Card className="max-w-2xl">
+          <h1 className="text-2xl font-bold text-[#333333] mb-6 text-center">Create New Score</h1>
+          <Card className="w-full max-w-md mx-auto px-4 py-8">
             <CardContent className="p-6">
-              <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6 max-w-md mx-auto">
                 {error && (
                   <div className="bg-red-50 text-red-500 p-4 rounded-md">
                     {error}
