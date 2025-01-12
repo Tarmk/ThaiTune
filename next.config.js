@@ -8,8 +8,8 @@ const nextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
   experimental: {
-    workerThreads: true,
-    cpus: 4
+    workerThreads: false,
+    // cpus: 1
   },
   serverExternalPackages: [
     // Add any packages that need to be externalized
