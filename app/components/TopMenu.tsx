@@ -48,8 +48,9 @@ export function TopMenu({ user }: TopMenuProps) {
   return (
     <div className="relative z-10">
       <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center px-6 border-b border-gray-100 bg-white">
+      
         <nav className="flex flex-1 items-center gap-12">
-          <Link className="flex items-center gap-3" href="/">
+          <Link className="flex items-center gap-3" href={user ? "/dashboard" : "/"}>
             <div className="flex items-center gap-3">
               <div className="rounded-lg bg-[#4A1D2C] p-1.5 w-9 h-9 flex items-center justify-center">
               </div>
