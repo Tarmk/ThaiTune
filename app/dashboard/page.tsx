@@ -15,6 +15,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore'
 import { useTranslation } from 'react-i18next'
 import '@/i18n'
 import { TopMenu } from '@/app/components/TopMenu'
+import OpenAI from "openai";
 
 interface Score {
   name: string;
@@ -22,6 +23,15 @@ interface Score {
   sharing: string;
   score_id: string;
 }
+
+const loadChatMessages = () => {
+  const savedMessages = localStorage.getItem('chatMessages');
+  return savedMessages ? JSON.parse(savedMessages) : [];
+};
+
+const saveChatMessages = (messages: string[]) => {
+  localStorage.setItem('chatMessages', JSON.stringify(messages));
+};
 
 export default function Dashboard() {
   const { t } = useTranslation(['dashboard'])
@@ -33,9 +43,42 @@ export default function Dashboard() {
   const router = useRouter()
 
   const [isChatOpen, setIsChatOpen] = React.useState(false);
-  const [chatMessages, setChatMessages] = React.useState<string[]>([]);
+  const [chatMessages, setChatMessages] = React.useState<string[]>(loadChatMessages());
 
   const chatEndRef = React.useRef<HTMLDivElement | null>(null);
+
+  console.log("OPENAI_API_KEY:")
+  console.log(process.env.OPENAI_API_KEY)
+
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY || 'sk-svcacct-U1ZLkSvtRFwAzPLrR-XseW0sNZ-rHNf1Mtw5k2s_DNhjj5HxrU_SnVsxlikcjKaT3BlbkFJKFNz4Cza_cDEewCihVQ22wduNQ_JVG6qI-cDZJqgEuWMp0cuAmTn5lY8vdeFYUAA', dangerouslyAllowBrowser: true 
+  });
+
+  const sendMessageToChatGPT = async (message: string) => {
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o", // or any other model you prefer
+        messages: [{
+          role: "user",
+          content: message
+        }],
+        max_tokens: 150,
+      });
+
+      const chatGPTResponse = response.choices[0].message.content?.trim();
+
+      console.log("ChatGPT Response:")
+      console.log(chatGPTResponse)
+
+      setChatMessages((prevMessages) => {
+        const updatedMessages = [...prevMessages, `ChatGPT: ${chatGPTResponse}`];
+        saveChatMessages(updatedMessages);
+        return updatedMessages;
+      });
+    } catch (error) {
+      console.error("Error communicating with ChatGPT:", error);
+    }
+  };
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -112,7 +155,12 @@ export default function Dashboard() {
       const input = event.target as HTMLInputElement;
       const newMessage = input.value.trim();
       if (newMessage) {
-        setChatMessages([...chatMessages, newMessage]);
+        setChatMessages((prevMessages) => {
+          const updatedMessages = [...prevMessages, `You: ${newMessage}`];
+          saveChatMessages(updatedMessages);
+          return updatedMessages;
+        });
+        sendMessageToChatGPT(newMessage); // Send the message to ChatGPT
         input.value = ''; // Clear the input field
       }
     }
