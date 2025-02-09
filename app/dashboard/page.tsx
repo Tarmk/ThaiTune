@@ -25,8 +25,18 @@ interface Score {
 }
 
 const loadChatMessages = () => {
+  if (typeof window === 'undefined') {
+    // Return an empty array if localStorage is not available (e.g., during SSR)
+    return [];
+  }
+
   const savedMessages = localStorage.getItem('chatMessages');
-  return savedMessages ? JSON.parse(savedMessages) : [];
+  try {
+    return savedMessages ? JSON.parse(savedMessages) : [];
+  } catch (error) {
+    console.error("Error parsing chat messages from localStorage:", error);
+    return [];
+  }
 };
 
 const saveChatMessages = (messages: string[]) => {
@@ -71,7 +81,7 @@ export default function Dashboard() {
       console.log(chatGPTResponse)
 
       setChatMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages, `ChatGPT: ${chatGPTResponse}`];
+        const updatedMessages = [...prevMessages, `MusicAI: ${chatGPTResponse}`];
         saveChatMessages(updatedMessages);
         return updatedMessages;
       });
