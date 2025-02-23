@@ -153,15 +153,15 @@ const Editor = ({ title, user }: EditorProps) => {
 
     const initialize = async () => {
       const newScoreId = await createScore();
-      if (!mounted) return;
+      if (!mounted || !newScoreId) return;
 
       if (typeof window !== 'undefined') {
         const script = document.createElement('script');
         script.src = 'https://prod.flat-cdn.com/embed-js/v1.5.1/embed.min.js';
         script.async = true;
         script.onload = () => {
-          if (!mounted || !containerRef.current || !window.Flat || !newScoreId) return;
-          
+          if (!mounted || !containerRef.current || !window.Flat) return;
+
           embedRef.current = new window.Flat.Embed(containerRef.current, {
             score: newScoreId,
             embedParams: {
@@ -172,6 +172,10 @@ const Editor = ({ title, user }: EditorProps) => {
               themePrimary: '#800000'
             }
           });
+
+          if (!embedRef.current) {
+            console.error('Failed to initialize Flat.Embed');
+          }
         };
         document.body.appendChild(script);
       }

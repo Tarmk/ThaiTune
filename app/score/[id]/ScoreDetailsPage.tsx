@@ -33,6 +33,8 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
   const [error, setError] = React.useState<string | null>(null)
   const [authChecked, setAuthChecked] = React.useState(false)
   const router = useRouter()
+  const containerRef = React.useRef<HTMLDivElement>(null);
+  const embedRef = React.useRef<any>(null);
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -87,6 +89,49 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
     fetchScore()
   }, [id, user, authChecked])
 
+  React.useEffect(() => {
+    if (!score || !score.flatid) return;
+
+    const script = document.createElement('script');
+    script.src = 'https://prod.flat-cdn.com/embed-js/v1.5.1/embed.min.js';
+    script.async = true;
+    script.onload = () => {
+      if (!containerRef.current || !window.Flat) return;
+
+      embedRef.current = new window.Flat.Embed(containerRef.current, {
+        score: score.flatid,
+        embedParams: {
+          mode: 'view',
+          appId: '675579130b7f5c8a374ac19a',
+          branding: false,
+          themePrimary: '#800000'
+        }
+      });
+      console.log('embedRef.current')
+      console.log(embedRef.current)
+      embedRef.current.getPNG({
+        result: 'dataURL',
+        layout: 'layout',
+        dpi: 300,
+      })
+      .then(function (png) {
+        console.log('png')
+        // 300 DPI PNG with the score as a page, returned as a DataURL
+        console.log(png);
+      })
+      .catch(function (error) {
+        console.error('Error generating PNG:', error);
+      });
+    };
+    document.body.appendChild(script);
+
+    return () => {
+      if (embedRef.current) {
+        embedRef.current.destroy();
+      }
+    };
+  }, [score]);
+
   const handleLogout = async () => {
     try {
       await signOut(auth)
@@ -98,6 +143,27 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
 
   const handleEdit = () => {
     router.push(`/score/${id}/edit`);
+  }
+
+  const handleAIAssistant = () => {
+    // Ensure embedRef is initialized and has the getPNG method
+    console.log(embedRef.current)
+    if (embedRef.current ) {
+      embedRef.current.getPNG({
+        result: 'dataURL',
+        layout: 'layout',
+        dpi: 300,
+      })
+      .then(function (png) {
+        // 300 DPI PNG with the score as a page, returned as a DataURL
+        console.log(png);
+      })
+      .catch(function (error) {
+        console.error('Error generating PNG:', error);
+      });
+    } else {
+      console.error('embedRef is not initialized or getPNG method is not available');
+    }
   }
 
   if (loading) {
@@ -131,23 +197,21 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
         <p className="text-lg text-[#666666] mb-6">By {score.author}</p>
         <Card className="bg-white shadow-md">
           <CardContent className="p-4">
-            <iframe
-              src={`https://flat.io/embed/${score.flatid}?themePrimary=%23800000&branding=false&appId=6755790be2eebcce112acde7`}
-              height="450"
-              width="100%"
-              frameBorder="0"
-              allowFullScreen
-              allow="autoplay; midi"
-            ></iframe>
+            <div ref={containerRef} style={{ height: '450px', width: '100%' }} />
           </CardContent>
         </Card>
         <div className="mt-6 flex justify-between items-center">
           <p className="text-sm text-[#666666]">Last modified: {score.modified.toLocaleString()}</p>
           {isOwner && (
-            <button onClick={handleEdit} className="text-[#333333] hover:text-[#800000] font-medium">
-              Edit
-            </button>
+            <>
+              <button onClick={handleEdit} className="text-[#333333] hover:text-[#800000] font-medium">
+                Edit
+              </button>
+            </>
           )}
+          <button onClick={handleAIAssistant} className="ml-4 text-[#333333] hover:text-[#800000] font-medium">
+            AI Assistant
+          </button>
         </div>
       </main>
     </div>
