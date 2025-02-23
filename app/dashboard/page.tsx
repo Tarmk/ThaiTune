@@ -14,6 +14,7 @@ import { ProtectedRoute } from '@/app/components/protectedroute'
 import { collection, query, where, getDocs } from 'firebase/firestore'
 import { TopMenu } from '@/app/components/TopMenu'
 import OpenAI from "openai";
+import { useTranslation } from 'react-i18next';
 
 interface Score {
   name: string;
@@ -86,6 +87,8 @@ export default function Dashboard() {
       console.error("Error communicating with ChatGPT:", error);
     }
   };
+
+  const { t } = useTranslation();
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -185,11 +188,11 @@ export default function Dashboard() {
         <TopMenu user={user} />
         <main className="max-w-7xl mx-auto px-4 pt-20 pb-6">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-[#333333]">My Scores</h1>
+            <h1 className="text-2xl font-bold text-[#333333]">{t('myScores')}</h1>
    
             <Link href="/new-score" className="inline-block">
               <Button className="bg-[#800000] text-white hover:bg-[#600000]">
-                New Score
+                {t('newScore')}
               </Button>
             </Link>
           </div>
@@ -200,19 +203,19 @@ export default function Dashboard() {
                   <tr className="border-b">
                     <th className="py-2 font-medium text-[#333333]">
                       <button className="flex items-center focus:outline-none" onClick={() => handleSort('name')}>
-                        Score Name
+                        {t('scoreName')}
                         <SortIcon column="name" />
                       </button>
                     </th>
                     <th className="py-2 font-medium text-[#333333]">
                       <button className="flex items-center focus:outline-none" onClick={() => handleSort('modified')}>
-                        Modified
+                        {t('modified')}
                         <SortIcon column="modified" />
                       </button>
                     </th>
                     <th className="py-2 font-medium text-[#333333]">
                       <button className="flex items-center focus:outline-none" onClick={() => handleSort('sharing')}>
-                        Sharing
+                        {t('sharing')}
                         <SortIcon column="sharing" />
                       </button>
                     </th>
