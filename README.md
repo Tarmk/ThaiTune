@@ -36,3 +36,15 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+
+npm run build --verbose
+
+NEXT_DEBUG=true npm run build
+
+
+Failed to build /community/page: /community (attempt 1 of 3) because it took more than 60 seconds. Retrying again shortly.
+Failed to build /new-score/page: /new-score (attempt 1 of 3) because it took more than 60 seconds. Retrying again shortly.
+Failed to build /login/page: /login (attempt 1 of 3) because it took more than 60 seconds. Retrying again shortly.
+Failed to build /signup/page: /signup (attempt 1 of 3) because it took more than 60 seconds. Retrying again shortly.
+Failed to build /page: / (attempt 1 of 3) because it took more than 60 seconds. Retrying again shortly.

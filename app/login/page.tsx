@@ -11,8 +11,6 @@ import { Label } from "@/_app/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/_app/components/ui/alert"
 import { AlertCircle, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import { useTranslation } from 'react-i18next'
-import '@/i18n'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -20,7 +18,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const { t } = useTranslation(['auth'])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,16 +32,16 @@ export default function LoginPage() {
         switch (err.message) {
           case 'Firebase: Error (auth/user-not-found).':
           case 'Firebase: Error (auth/wrong-password).':
-            setError(t('auth:errors.invalidCredentials'))
+            setError('Invalid credentials')
             break
           case 'Firebase: Error (auth/network-request-failed).':
-            setError(t('auth:errors.networkError'))
+            setError('Network error')
             break
           default:
-            setError(t('auth:errors.unexpected'))
+            setError('Unexpected error')
         }
       } else {
-        setError(t('auth:errors.unexpected'))
+        setError('Unexpected error')
       }
     } finally {
       setIsLoading(false)
@@ -55,27 +52,27 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100 relative">
       <Card className="w-[350px]">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">{t('auth:login')}</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">Login</CardTitle>
           <CardDescription className="text-center">
-            {t('auth:enterCredentials')}
+            Enter your credentials
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Link href="/" className="absolute top-4 left-4 flex items-center text-[#800000] hover:text-[#600000]">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            {t('auth:backToHome')}
+            Back to Home
           </Link>
           <form onSubmit={handleSubmit}>
             {error && (
               <Alert variant="destructive" className="mb-4">
                 <AlertCircle className="h-4 w-4" />
-                <AlertTitle>{t('error')}</AlertTitle>
+                <AlertTitle>Error</AlertTitle>
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">{t('auth:email')}</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -86,7 +83,7 @@ export default function LoginPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">{t('auth:password')}</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
@@ -101,15 +98,15 @@ export default function LoginPage() {
               type="submit" 
               disabled={isLoading}
             >
-              {isLoading ? t('auth:loggingIn') : t('auth:loginButton')}
+              {isLoading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-gray-600">
-            {t('auth:dontHaveAccount')}{' '}
+            Don't have an account?{' '}
             <Link href="/signup" className="text-[#800000] hover:underline">
-              {t('auth:signup')}
+              Sign up
             </Link>
           </p>
         </CardFooter>

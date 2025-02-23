@@ -12,8 +12,6 @@ import { auth, db } from '@/lib/firebase'
 import { signOut, onAuthStateChanged } from 'firebase/auth'
 import { ProtectedRoute } from '@/app/components/protectedroute'
 import { collection, query, where, getDocs } from 'firebase/firestore'
-import { useTranslation } from 'react-i18next'
-import '@/i18n'
 import { TopMenu } from '@/app/components/TopMenu'
 import OpenAI from "openai";
 
@@ -44,7 +42,6 @@ const saveChatMessages = (messages: string[]) => {
 };
 
 export default function Dashboard() {
-  const { t } = useTranslation(['dashboard'])
   const [scores, setScores] = React.useState<Score[]>([]);
 
   const [sortColumn, setSortColumn] = React.useState<keyof Score | null>(null)
@@ -188,11 +185,11 @@ export default function Dashboard() {
         <TopMenu user={user} />
         <main className="max-w-7xl mx-auto px-4 pt-20 pb-6">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-[#333333]">{t('dashboard:myScores')}</h1>
+            <h1 className="text-2xl font-bold text-[#333333]">My Scores</h1>
    
             <Link href="/new-score" className="inline-block">
               <Button className="bg-[#800000] text-white hover:bg-[#600000]">
-                {t('dashboard:newScore')}
+                New Score
               </Button>
             </Link>
           </div>
@@ -203,19 +200,19 @@ export default function Dashboard() {
                   <tr className="border-b">
                     <th className="py-2 font-medium text-[#333333]">
                       <button className="flex items-center focus:outline-none" onClick={() => handleSort('name')}>
-                        {t('dashboard:scoreName')}
+                        Score Name
                         <SortIcon column="name" />
                       </button>
                     </th>
                     <th className="py-2 font-medium text-[#333333]">
                       <button className="flex items-center focus:outline-none" onClick={() => handleSort('modified')}>
-                        {t('dashboard:modified')}
+                        Modified
                         <SortIcon column="modified" />
                       </button>
                     </th>
                     <th className="py-2 font-medium text-[#333333]">
                       <button className="flex items-center focus:outline-none" onClick={() => handleSort('sharing')}>
-                        {t('dashboard:sharing')}
+                        Sharing
                         <SortIcon column="sharing" />
                       </button>
                     </th>
