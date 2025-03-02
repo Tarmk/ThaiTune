@@ -18,5 +18,7 @@
   "help": "Help",
   "logout": "Logout",
   "backToScores": "Back to My Scores",
-  "community": "Community"
+  "community": "Community",
+  "chat": "Chat",  
+  "typeAMessage": "Type a message..."  
 } 

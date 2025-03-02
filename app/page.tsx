@@ -7,7 +7,7 @@ import Main from '@/app/components/Main'
 import { TopMenu } from '@/app/components/TopMenu'
 import { I18nextProvider } from 'react-i18next'
 import i18n from '../i18n'
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from 'next-i18next'
 
 export default function HomePage() {
   const [language, setLanguage] = useState('en')

@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { ChevronDown } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from "@/_app/components/ui/popover"
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from 'next-i18next'
 import { useState } from 'react'
 import { Button } from './Button'
 

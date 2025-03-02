@@ -1,26 +1,25 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import enCommon from './public/locales/en/common.json';
-import enDashboard from './public/locales/en/dashboard.json';
-
-// the translations
-const resources = {
-  en: {
-    common: enCommon,
-    dashboard: enDashboard
-  }
-};
-
+import Backend from 'i18next-http-backend';
+import LanguageDetector from 'i18next-browser-languagedetector';
 i18n
-  .use(initReactI18next) // passes i18n down to react-i18next
+
+
+  .use(Backend)
+  .use(LanguageDetector)
+  .use(initReactI18next) 
   .init({
-    resources,
-    lng: 'en', // if you're using a language detector, do not define the lng option
-    ns: ['common', 'dashboard'], // specify the namespaces
-    defaultNS: 'common', // set the default namespace
+    backend: {
+      loadPath: '/locales/{{lng}}/{{ns}}.json',
+    },
+    ns: ['common', 'auth', 'dashboard', 'editor'],
+    defaultNS: 'common',
+    lng: 'en',
+    fallbackLng: 'en',
+    debug: true,
     interpolation: {
-      escapeValue: false // react already safes from xss
-    }
+      escapeValue: false,
+    },
   });
 
-export default i18n;
+export default i18n; 
