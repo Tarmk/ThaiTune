@@ -166,7 +166,7 @@ const Editor = ({ title, user }: EditorProps) => {
             score: newScoreId,
             embedParams: {
               mode: 'edit',
-              appId: '675579130b7f5c8a374ac19a',
+              appId: '6755790be2eebcce112acde7',
               branding: false,
               controlsPosition: 'top',
               themePrimary: '#800000'
