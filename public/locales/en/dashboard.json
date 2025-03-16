@@ -1,0 +1,22 @@
+{
+  "myScores": "My Scores",
+  "communityScores": "Community Scores",
+  "browseExplore": "Browse & Explore",
+  "learn": "Learn",
+  "newScore": "New Score",
+  "createNewScore": "Create New Score",
+  "scoreName": "Score Name",
+  "sharingOption": "Sharing Option",
+  "public": "Public",
+  "private": "Private",
+  "modified": "Modified",
+  "author": "Author",
+  "sharing": "Sharing",
+  "search": "Search scores...",
+  "accountSettings": "Account settings",
+  "contactUs": "Contact us",
+  "help": "Help",
+  "logout": "Logout",
+  "backToScores": "Back to My Scores",
+  "community": "Community"
+} 
