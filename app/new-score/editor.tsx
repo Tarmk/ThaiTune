@@ -14,6 +14,7 @@ interface EditorProps {
 }
 
 const Editor = ({ title, user }: EditorProps) => {
+  const API_KEY = process.env.NEXT_PUBLIC_FLAT_IO_API_KEY;
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null);
   const embedRef = useRef<any>(null);
@@ -30,9 +31,9 @@ const Editor = ({ title, user }: EditorProps) => {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Authorization': '069432b451ffceb35e2407e24093bd43a99e6a560963f9e92254da031a2e04e1527f86dfade9eb5cdb222720566f7a8dd8ac3beeed9a2d9d15a6d398123d125c'
+          'Authorization': `Bearer ${API_KEY}`,
         },
-        data: {
+        data: { // ✅ Fix: Move `data` outside `headers`
           title: title,
           builderData: {
             scoreData: {
@@ -47,28 +48,28 @@ const Editor = ({ title, user }: EditorProps) => {
           privacy: "public"
         }
       });
-
+  
       const newScoreId = response.data.id;
       setScoreId(newScoreId);
-
+  
       const scoresRef = collection(db, 'scores');
       const q = query(scoresRef, where('name', '==', title));
       const querySnapshot = await getDocs(q);
-      
+  
       if (!querySnapshot.empty) {
         const scoreDoc = querySnapshot.docs[0];
         await updateDoc(doc(db, 'scores', scoreDoc.id), {
           flatid: newScoreId
         });
       }
-
+  
       return newScoreId;
     } catch (error) {
       console.error('Error creating score:', error);
       return null;
     }
   };
-
+  
   const handleSave = async (isAutoSave = false) => {
     if (!embedRef.current || !scoreId) return;
 

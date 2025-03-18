@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from 'react'
 import ScoreDetailsPage from './ScoreDetailsPage'
 
 interface PageProps {
-  params: Promise<{ id: string }>
+  params: { id: string };
 }
 
 export default function Page({ params }: PageProps) {
