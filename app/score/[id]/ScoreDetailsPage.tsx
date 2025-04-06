@@ -127,7 +127,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
           result: 'dataURL',
           layout: 'track',
           dpi: 300,
-        }).then(function (png) {
+        }).then(function (png: string) {
           console.log('PNG generated on load:', png);
         })
       });
@@ -136,7 +136,8 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
 
     return () => {
       if (embedRef.current) {
-        embedRef.current.destroy();
+        // Clean up by setting to null, no need to call destroy
+        embedRef.current = null;
       }
     };
   }, [score]);

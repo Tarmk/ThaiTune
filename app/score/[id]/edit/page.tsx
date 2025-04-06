@@ -8,9 +8,12 @@ interface PageProps {
 }
 
 export default function EditScorePage({ params }: PageProps) {
+  // Params is already a resolved object in Next.js App Router
+  const id = params.id;
+  
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <EditScoreClient id={params.id} />
+      <EditScoreClient id={id} />
     </Suspense>
   );
 }
