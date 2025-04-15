@@ -63,7 +63,7 @@ export default function HomePage() {
                   className="rounded-lg"
                 /> */}
               </div>
-              <span className="text-lg font-bold text-gray-900">TMDB</span>
+              <span className="text-lg font-bold text-gray-900">ThaiTune</span>
             </div>
           </Link>
           <div className="hidden md:flex items-center gap-8">
