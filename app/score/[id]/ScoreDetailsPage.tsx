@@ -3,10 +3,8 @@
 import * as React from "react"
 import { useRouter } from 'next/navigation'
 import { Bell, ChevronDown, User, ArrowLeft, MessageCircle, X } from 'lucide-react'
-import { Button } from "@/_app/components/ui/button"
-import { Card, CardContent } from "@/_app/components/ui/card"
-import { Popover, PopoverContent, PopoverTrigger } from "@/_app/components/ui/popover"
-import Link from "next/link"
+
+import { Card, CardContent } from "@/app/components/ui/card"
 import { auth, db } from '@/lib/firebase'
 import { signOut, onAuthStateChanged } from 'firebase/auth'
 import { doc, getDoc } from 'firebase/firestore'

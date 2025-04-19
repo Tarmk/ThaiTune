@@ -2,9 +2,9 @@
 
 import * as React from "react"
 import { MoreVertical, ChevronUp, ChevronDown, Search } from 'lucide-react'
-import { Button } from "@/_app/components/ui/button"
-import { Card, CardContent } from "@/_app/components/ui/card"
-import { Input } from "@/_app/components/ui/input"
+import { Button } from "@/app/components/ui/button"
+import { Card, CardContent } from "@/app/components/ui/card"
+import { Input } from "@/app/components/ui/input"
 import Link from "next/link"
 import { auth } from '@/lib/firebase'
 import { onAuthStateChanged } from 'firebase/auth'

@@ -7,8 +7,8 @@ import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { TopMenu } from "@/app/components/TopMenu";
-import { Card, CardContent } from "@/_app/components/ui/card";
-import { Button } from "@/_app/components/ui/button";
+import { Card, CardContent } from "@/app/components/ui/card";
+import { Button } from "@/app/components/ui/button";
 import { ArrowLeft } from 'lucide-react';
 
 interface ClientProps {

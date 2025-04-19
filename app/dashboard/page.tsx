@@ -4,9 +4,9 @@ import * as React from "react"
 import { useRouter } from 'next/navigation'
 import { Bell, ChevronDown, User, MoreVertical, ChevronUp, X as CloseIcon } from 'lucide-react'
 import { MessageCircle as ChatIcon } from 'lucide-react'
-import { Button } from "@/_app/components/ui/button"
-import { Card, CardContent } from "@/_app/components/ui/card"
-import { Popover, PopoverContent, PopoverTrigger } from "@/_app/components/ui/popover"
+import { Button } from "@/app/components/ui/button"
+import { Card, CardContent } from "@/app/components/ui/card"
+import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover"
 import Link from "next/link"
 import { auth, db } from '@/lib/firebase'
 import { signOut, onAuthStateChanged } from 'firebase/auth'

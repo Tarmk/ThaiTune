@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Header from '@/app/components/Header'
-import Footer from '@/_app/components/Footer'
+import Footer from '@/app/components/Footer'
 import Main from '@/app/components/Main'
 import { TopMenu } from '@/app/components/TopMenu'
 import { useTranslation } from 'react-i18next'

@@ -4,7 +4,7 @@ import Link from "next/link"
 import { useTranslation } from 'react-i18next'
 import { Button } from './Button'
 import { ChevronDown, LogOut, User, Settings, HelpCircle } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from "@/_app/components/ui/popover"
+import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover"
 import { useState } from 'react'
 import {
   DropdownMenu,
