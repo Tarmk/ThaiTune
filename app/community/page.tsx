@@ -2,18 +2,18 @@
 
 import * as React from "react"
 import { MoreVertical, ChevronUp, ChevronDown, Search } from 'lucide-react'
-import { Button } from "@/_app/components/ui/button"
-import { Card, CardContent } from "@/_app/components/ui/card"
-import { Input } from "@/_app/components/ui/input"
+import { Button } from "@/app/components/ui/button"
+import { Card, CardContent } from "@/app/components/ui/card"
+import { Input } from "@/app/components/ui/input"
 import Link from "next/link"
 import { auth } from '@/lib/firebase'
 import { onAuthStateChanged } from 'firebase/auth'
 import { db } from '@/lib/firebase'
 import { collection, getDocs } from 'firebase/firestore'
 import { Timestamp } from 'firebase/firestore'
-import { useTranslation } from 'react-i18next'
-import '@/i18n'
 import { TopMenu } from "@/app/components/TopMenu"
+import { useCallback, useMemo } from 'react'
+import debounce from 'lodash.debounce'
 
 interface CommunityScore {
   id: string;
@@ -24,13 +24,21 @@ interface CommunityScore {
 }
 
 export default function CommunityPage() {
-  const { t } = useTranslation(['community', 'common'])
   const [scores, setScores] = React.useState<CommunityScore[]>([]);
 
   const [sortColumn, setSortColumn] = React.useState<keyof CommunityScore | null>(null)
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc')
   const [user, setUser] = React.useState<any>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
+
+  const debouncedSetSearchQuery = useCallback(
+    debounce((query) => setSearchQuery(query), 300),
+    []
+  );
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    debouncedSetSearchQuery(e.target.value);
+  };
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -91,25 +99,26 @@ export default function CommunityPage() {
       <ChevronDown className="ml-1 h-4 w-4 text-[#800000]" />
   }
 
-  const filteredScores = scores.filter(score => 
-    score.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    score.author.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredScores = useMemo(() => {
+    return scores.filter(score => 
+      score.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      score.author.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [scores, searchQuery]);
 
   return (
     <div className="min-h-screen bg-gray-50">
       <TopMenu user={user} />
       <main className="max-w-7xl mx-auto px-4 pt-20 pb-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-[#333333]">{t('community:communityScores')}</h1>
+          <h1 className="text-2xl font-bold text-[#333333]">Community Scores</h1>
           <div className="flex items-center space-x-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <Input
                 type="text"
-                placeholder={t('community:searchScores')}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search Scores"
+                onChange={handleSearchChange}
                 className="pl-10 pr-4 py-2 w-64"
               />
             </div>
@@ -122,19 +131,19 @@ export default function CommunityPage() {
                 <tr className="border-b">
                   <th className="py-2 font-medium text-[#333333]">
                     <button className="flex items-center focus:outline-none" onClick={() => handleSort('name')}>
-                      {t('community:scoreName')}
+                      Score Name
                       <SortIcon column="name" />
                     </button>
                   </th>
                   <th className="py-2 font-medium text-[#333333]">
                     <button className="flex items-center focus:outline-none" onClick={() => handleSort('author')}>
-                      {t('community:author')}
+                      Author
                       <SortIcon column="author" />
                     </button>
                   </th>
                   <th className="py-2 font-medium text-[#333333]">
                     <button className="flex items-center focus:outline-none" onClick={() => handleSort('modified')}>
-                      {t('community:modified')}
+                      Modified
                       <SortIcon column="modified" />
                     </button>
                   </th>

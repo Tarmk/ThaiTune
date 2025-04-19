@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useTranslation } from 'react-i18next'
-import { Button } from './Button'
+import { Button } from "@/app/components/ui/button"
 
 export default function Main() {
   const { t } = useTranslation('common')

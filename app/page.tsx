@@ -1,20 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useTranslation } from 'react-i18next'
-import '@/i18n'
+import { useState } from 'react'
 import Header from '@/app/components/Header'
-import Footer from '@/_app/components/Footer'
+import Footer from '@/app/components/Footer'
 import Main from '@/app/components/Main'
 import { TopMenu } from '@/app/components/TopMenu'
+import { useTranslation } from 'react-i18next'
+
 export default function HomePage() {
   const [language, setLanguage] = useState('en')
-  const { i18n } = useTranslation('common')
   const [user, setUser] = useState<any>(null)
-
-  useEffect(() => {
-    i18n.changeLanguage(language)
-  }, [language, i18n])
+  const { t } = useTranslation()
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -24,3 +20,4 @@ export default function HomePage() {
     </div>
   )
 }
+
