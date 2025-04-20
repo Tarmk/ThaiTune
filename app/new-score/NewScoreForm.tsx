@@ -18,6 +18,7 @@ import { TopMenu } from '@/app/components/TopMenu'
 export default function NewScoreForm() {
   const [user, setUser] = React.useState<any>(null)
   const [name, setName] = React.useState('')
+  const [description, setDescription] = React.useState('')
   const [isLoading, setIsLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [showCreateScore, setShowCreateScore] = React.useState(false)
@@ -52,6 +53,7 @@ export default function NewScoreForm() {
 
       const scoreData = {
         name: name.trim(),
+        description: description.trim(),
         author: user.displayName || 'Anonymous',
         modified: serverTimestamp(),
         userId: user.uid,
@@ -101,6 +103,16 @@ export default function NewScoreForm() {
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Enter score name"
                     required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Score Description</Label>
+                  <textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Enter score description"
+                    className="w-full border border-gray-300 rounded-md p-2 min-h-[100px]"
                   />
                 </div>
                 <div className="space-y-2">

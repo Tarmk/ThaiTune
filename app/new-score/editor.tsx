@@ -34,6 +34,7 @@ const Editor = ({ title, user }: EditorProps) => {
         },
         data: {
           title: title,
+          privacy: "public",
           builderData: {
             scoreData: {
               instruments: [
@@ -43,8 +44,7 @@ const Editor = ({ title, user }: EditorProps) => {
                 }
               ]
             }
-          },
-          privacy: "public"
+          }
         }
       });
 
@@ -201,9 +201,9 @@ const Editor = ({ title, user }: EditorProps) => {
   return (
     <main className="max-w-7xl mx-auto px-4 py-6 mt-16">
       <div className="mb-6">
-        <Link href="/new-score" className="flex items-center text-[#800000] hover:text-[#600000]">
+        <Link href="/dashboard" className="flex items-center text-[#800000] hover:text-[#600000]">
           <ArrowLeft className="mr-2" />
-          Back to Score Details
+          Back to My Scores
         </Link>
       </div>
       

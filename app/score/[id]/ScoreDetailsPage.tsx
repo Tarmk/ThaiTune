@@ -19,6 +19,7 @@ interface Score {
   flatid: string;
   userId: string;
   sharing: string;
+  description: string;
 }
 
 interface ScoreDetailsPageProps {
@@ -80,7 +81,8 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
             modified: scoreData.modified.toDate(),
             flatid: scoreData.flatid,
             userId: scoreData.userId,
-            sharing: scoreData.sharing
+            sharing: scoreData.sharing,
+            description: scoreData.description
           })
         } else {
           setError('Score not found')
@@ -262,7 +264,10 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
           </button>
         </div>
         <h1 className="text-2xl font-bold text-[#333333] mb-4">{score.name}</h1>
-        <p className="text-lg text-[#666666] mb-6">By {score.author}</p>
+        <p className="text-lg text-[#666666] mb-2">By {score.author}</p>
+        {score.description && (
+          <p className="text-gray-600 mb-6">{score.description}</p>
+        )}
         <Card className="bg-white shadow-md">
           <CardContent className="p-4">
             <div ref={containerRef} style={{ height: '450px', width: '100%' }} />
