@@ -29,7 +29,7 @@ declare global {
 const Editor = dynamic(() => import('./editor'), { ssr: false });
 
 // Main component
-const CreateNewScorePage2 = ({ title }: { title: string }) => {
+const CreateNewScorePage2 = ({ title, docRef }: { title: string; docRef: any }) => {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
       <TopMenu user={user} />
-      <Editor title={title} user={user} />
+      <Editor title={title} user={user} docRef={docRef} />
     </div>
   );
 };

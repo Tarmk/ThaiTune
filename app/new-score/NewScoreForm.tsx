@@ -24,6 +24,7 @@ export default function NewScoreForm() {
   const [showCreateScore, setShowCreateScore] = React.useState(false)
   const [sharing, setSharing] = React.useState('public')
   const router = useRouter()
+  const [docRef, setDocRef] = React.useState<any>(null)
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -63,6 +64,8 @@ export default function NewScoreForm() {
 
       const docRef = await addDoc(collection(db, 'scores'), scoreData)
       setShowCreateScore(true)
+      setDocRef(docRef)
+      return docRef
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred')
     } finally {
@@ -71,7 +74,7 @@ export default function NewScoreForm() {
   }
 
   if (showCreateScore) {
-    return <CreateNewScorePage2 title={name} />
+    return <CreateNewScorePage2 title={name} docRef={docRef} />
   }
 
   return (

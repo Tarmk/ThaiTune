@@ -11,9 +11,10 @@ import { db } from '@/lib/firebase'
 interface EditorProps {
   title: string;
   user: any;
+  docRef: any;
 }
 
-const Editor = ({ title, user }: EditorProps) => {
+const Editor = ({ title, user, docRef }: EditorProps) => {
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null);
   const embedRef = useRef<any>(null);
@@ -34,7 +35,6 @@ const Editor = ({ title, user }: EditorProps) => {
         },
         data: {
           title: title,
-          privacy: "public",
           builderData: {
             scoreData: {
               instruments: [
@@ -44,23 +44,18 @@ const Editor = ({ title, user }: EditorProps) => {
                 }
               ]
             }
-          }
+          },
+          privacy: "public"
         }
       });
 
       const newScoreId = response.data.id;
       setScoreId(newScoreId);
 
-      const scoresRef = collection(db, 'scores');
-      const q = query(scoresRef, where('name', '==', title));
-      const querySnapshot = await getDocs(q);
-      
-      if (!querySnapshot.empty) {
-        const scoreDoc = querySnapshot.docs[0];
-        await updateDoc(doc(db, 'scores', scoreDoc.id), {
-          flatid: newScoreId
-        });
-      }
+      // Update the document with the flatid
+      await updateDoc(docRef, {
+        flatid: newScoreId
+      });
 
       return newScoreId;
     } catch (error) {
@@ -86,18 +81,18 @@ const Editor = ({ title, user }: EditorProps) => {
       };
 
       const storageKey = isAutoSave 
-        ? `score_${title}_autosave_${exportCount + 1}`
-        : `score_${title}_manual_${Date.now()}`;
+        ? `score_${docRef}_autosave_${exportCount + 1}`
+        : `score_${docRef}_manual_${Date.now()}`;
       
       localStorage.setItem(storageKey, JSON.stringify(saveData));
 
-      const versionsList = JSON.parse(localStorage.getItem(`score_${title}_versions`) || '[]');
+      const versionsList = JSON.parse(localStorage.getItem(`score_${docRef}_versions`) || '[]');
       versionsList.push({
         version: isAutoSave ? `Auto Save ${exportCount + 1}` : `Manual Save ${versionsList.length + 1}`,
         timestamp: saveData.timestamp,
         storageKey
       });
-      localStorage.setItem(`score_${title}_versions`, JSON.stringify(versionsList));
+      localStorage.setItem(`score_${docRef}_versions`, JSON.stringify(versionsList));
 
       try {
         await axios({
@@ -128,7 +123,7 @@ const Editor = ({ title, user }: EditorProps) => {
 
   const getSavedVersions = () => {
     try {
-      return JSON.parse(localStorage.getItem(`score_${title}_versions`) || '[]');
+      return JSON.parse(localStorage.getItem(`score_${docRef}_versions`) || '[]');
     } catch (error) {
       console.error('Error retrieving saved versions:', error);
       return [];
