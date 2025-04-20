@@ -159,12 +159,6 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
     router.push(`/score/${id}/edit`);
   }
 
-  const handleAIAssistant = () => {
-    // Ensure embedRef is initialized and has the getPNG method
-
-  
-  }
-
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
   };
@@ -277,9 +271,6 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
               </button>
             </>
           )}
-          <button onClick={handleAIAssistant} className="ml-4 text-[#333333] hover:text-[#800000] font-medium">
-            AI Assistant
-          </button>
         </div>
       </main>
 
