@@ -258,10 +258,16 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
           </button>
         </div>
         <h1 className="text-2xl font-bold text-[#333333] mb-4">{score.name}</h1>
-        <p className="text-lg text-[#666666] mb-2">By {score.author}</p>
-        {score.description && (
-          <p className="text-gray-600 mb-6">{score.description}</p>
+        {score.description ? (
+          <div className="mb-4">
+            <p className="text-gray-700">{score.description}</p>
+          </div>
+        ) : (
+          <div className="mb-4">
+            <p className="text-gray-500 italic">No description available</p>
+          </div>
         )}
+        <p className="text-base text-[#666666] mb-6">By {score.author}</p>
         <Card className="bg-white shadow-md">
           <CardContent className="p-4">
             <div ref={containerRef} style={{ height: '450px', width: '100%' }} />
