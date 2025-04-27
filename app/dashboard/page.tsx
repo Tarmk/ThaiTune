@@ -45,7 +45,7 @@ const saveChatMessages = (messages: string[]) => {
 export default function Dashboard() {
   const [scores, setScores] = React.useState<Score[]>([]);
 
-  const [sortColumn, setSortColumn] = React.useState<keyof Score | null>(null)
+  const [sortColumn, setSortColumn] = React.useState<keyof Score | null>("name")
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc')
   const [user, setUser] = React.useState<any>(null)
   const router = useRouter()
@@ -112,18 +112,25 @@ export default function Dashboard() {
         const userScores = querySnapshot.docs.map(doc => ({
           name: doc.data().name,
           modified: new Date(doc.data().modified.toDate()).toLocaleDateString(),
-          sharing: doc.data().sharing || "Only me",
+          sharing: doc.data().sharing ? doc.data().sharing.charAt(0).toUpperCase() + doc.data().sharing.slice(1) : "Only me",
           score_id: doc.id
         }));
         console.log("User Score:")
         console.log(userScores);
         
-        setScores(userScores);
+        // Sort scores by name before setting them
+        const sortedScores = [...userScores].sort((a, b) => {
+          if (a.name < b.name) return sortDirection === 'asc' ? -1 : 1;
+          if (a.name > b.name) return sortDirection === 'asc' ? 1 : -1;
+          return 0;
+        });
+        
+        setScores(sortedScores);
       }
     };
 
     fetchUserScores();
-  }, [user]);
+  }, [user, sortDirection]);
 
   const handleSort = (column: keyof Score) => {
     if (sortColumn === column) {
