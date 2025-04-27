@@ -16,6 +16,9 @@ bun dev
 
 
 
+
+
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
@@ -48,3 +51,7 @@ Failed to build /new-score/page: /new-score (attempt 1 of 3) because it took mor
 Failed to build /login/page: /login (attempt 1 of 3) because it took more than 60 seconds. Retrying again shortly.
 Failed to build /signup/page: /signup (attempt 1 of 3) because it took more than 60 seconds. Retrying again shortly.
 Failed to build /page: / (attempt 1 of 3) because it took more than 60 seconds. Retrying again shortly.
+
+
+<!-- Score Image Path
+scores/${user.uid}/${scoreId}.png -->

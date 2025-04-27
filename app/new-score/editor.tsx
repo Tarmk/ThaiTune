@@ -6,7 +6,8 @@ import { ArrowLeft } from 'lucide-react'
 import Link from "next/link"
 import { useRouter } from 'next/navigation'
 import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase'
+import { db, storage } from '@/lib/firebase'
+import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 
 interface EditorProps {
   title: string;
@@ -115,7 +116,41 @@ const Editor = ({ title, user }: EditorProps) => {
           }
         });
 
+        // Export as PNG and save to Firebase Storage if it's an auto-save
         if (isAutoSave) {
+          try {
+            // Get PNG of the score using dataURL approach
+            const pngDataURL = await embedRef.current.getPNG({
+              result: 'dataURL',
+              layout: 'layout',
+              dpi: 300,
+            });
+            
+            // Create a reference in Firebase Storage with consistent filename (no timestamp)
+            const pngRef = ref(storage, `scores/${user.uid}/${scoreId}.png`);
+            
+            // Upload the PNG to Firebase Storage (dataURL already includes data:image/png;base64,)
+            await uploadString(pngRef, pngDataURL, 'data_url');
+            
+            // Get the download URL
+            const downloadURL = await getDownloadURL(pngRef);
+            
+            // Update the Firestore document with the image URL
+            const scoresRef = collection(db, 'scores');
+            const q = query(scoresRef, where('flatid', '==', scoreId));
+            const querySnapshot = await getDocs(q);
+            
+            if (!querySnapshot.empty) {
+              const scoreDoc = querySnapshot.docs[0];
+              await updateDoc(doc(db, 'scores', scoreDoc.id), {
+                imageUrl: downloadURL,
+                lastUpdated: new Date().toISOString()
+              });
+            }
+          } catch (pngError) {
+            console.error('Error exporting or saving PNG:', pngError);
+          }
+          
           setExportCount(prev => prev + 1);
         }
       } catch (apiError) {
