@@ -14,5 +14,8 @@
   "noScores": "No scores found",
   "loading": "Loading scores...",
   "error": "Error loading scores",
-  "community": "Community"
+  "community": "Community",
+  "searchPlaceholder": "Search scores",
+  "actions": "Actions",
+  "unknownDate": "Unknown date"
 } 

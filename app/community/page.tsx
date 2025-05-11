@@ -14,6 +14,7 @@ import { Timestamp } from 'firebase/firestore'
 import { TopMenu } from "@/app/components/TopMenu"
 import { useCallback, useMemo } from 'react'
 import debounce from 'lodash.debounce'
+import { useTranslation } from 'react-i18next'
 
 interface CommunityScore {
   id: string;
@@ -24,15 +25,15 @@ interface CommunityScore {
 }
 
 export default function CommunityPage() {
+  const { t } = useTranslation('community')
   const [scores, setScores] = React.useState<CommunityScore[]>([]);
-
   const [sortColumn, setSortColumn] = React.useState<keyof CommunityScore | null>(null)
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc')
   const [user, setUser] = React.useState<any>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
 
   const debouncedSetSearchQuery = useCallback(
-    debounce((query) => setSearchQuery(query), 300),
+    debounce((query: string) => setSearchQuery(query), 300),
     []
   );
 
@@ -61,7 +62,7 @@ export default function CommunityPage() {
               id: doc.id,
               name: data.name,
               author: data.author,
-              modified: timestamp?.toDate().toLocaleDateString() || 'Unknown date',
+              modified: timestamp?.toDate().toLocaleDateString() || t('unknownDate'),
               sharing: data.sharing
             }
           })
@@ -73,7 +74,7 @@ export default function CommunityPage() {
     }
 
     fetchScores()
-  }, [])
+  }, [t])
 
   const handleSort = (column: keyof CommunityScore) => {
     if (sortColumn === column) {
@@ -111,13 +112,13 @@ export default function CommunityPage() {
       <TopMenu user={user} />
       <main className="max-w-7xl mx-auto px-4 pt-20 pb-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-[#333333]">Community Scores</h1>
+          <h1 className="text-2xl font-bold text-[#333333]">{t('communityScores')}</h1>
           <div className="flex items-center space-x-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Search Scores"
+                placeholder={t('searchPlaceholder')}
                 onChange={handleSearchChange}
                 className="pl-10 pr-4 py-2 w-64"
               />
@@ -131,42 +132,50 @@ export default function CommunityPage() {
                 <tr className="border-b">
                   <th className="py-2 font-medium text-[#333333]">
                     <button className="flex items-center focus:outline-none" onClick={() => handleSort('name')}>
-                      Score Name
+                      {t('scoreName')}
                       <SortIcon column="name" />
                     </button>
                   </th>
                   <th className="py-2 font-medium text-[#333333]">
                     <button className="flex items-center focus:outline-none" onClick={() => handleSort('author')}>
-                      Author
+                      {t('author')}
                       <SortIcon column="author" />
                     </button>
                   </th>
                   <th className="py-2 font-medium text-[#333333]">
                     <button className="flex items-center focus:outline-none" onClick={() => handleSort('modified')}>
-                      Modified
+                      {t('modified')}
                       <SortIcon column="modified" />
                     </button>
                   </th>
-                  <th className="py-2"></th>
+                  <th className="py-2">{t('actions')}</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredScores.map((score) => (
-                  <tr key={score.id} className="border-b last:border-b-0">
-                    <td className="py-3 text-[#333333]">
-                      <Link href={`/score/${score.id}`} className="hover:text-[#800000]">
-                        {score.name}
-                      </Link>
-                    </td>
-                    <td className="py-3 text-[#666666]">{score.author}</td>
-                    <td className="py-3 text-[#666666]">{score.modified}</td>
-                    <td className="py-3">
-                      <Button variant="ghost" className="p-1">
-                        <MoreVertical className="h-5 w-5 text-[#666666]" />
-                      </Button>
+                {filteredScores.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="py-4 text-center text-gray-500">
+                      {t('noScores')}
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredScores.map((score) => (
+                    <tr key={score.id} className="border-b last:border-b-0">
+                      <td className="py-3 text-[#333333]">
+                        <Link href={`/score/${score.id}`} className="hover:text-[#800000]">
+                          {score.name}
+                        </Link>
+                      </td>
+                      <td className="py-3 text-[#666666]">{score.author}</td>
+                      <td className="py-3 text-[#666666]">{score.modified}</td>
+                      <td className="py-3">
+                        <Button variant="ghost" className="p-1">
+                          <MoreVertical className="h-5 w-5 text-[#666666]" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </CardContent>

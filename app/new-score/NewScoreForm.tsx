@@ -14,8 +14,10 @@ import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { ProtectedRoute } from '@/app/components/protectedroute'
 import CreateNewScorePage2 from './createNewScore'
 import { TopMenu } from '@/app/components/TopMenu'
+import { useTranslation } from 'react-i18next'
 
 export default function NewScoreForm() {
+  const { t } = useTranslation('editor')
   const [user, setUser] = React.useState<any>(null)
   const [name, setName] = React.useState('')
   const [isLoading, setIsLoading] = React.useState(false)
@@ -47,8 +49,8 @@ export default function NewScoreForm() {
     setError(null)
 
     try {
-      if (!user) throw new Error('You must be logged in to create a score')
-      if (!name.trim()) throw new Error('Score name is required')
+      if (!user) throw new Error(t('errors.loginRequired'))
+      if (!name.trim()) throw new Error(t('errors.nameRequired'))
 
       const scoreData = {
         name: name.trim(),
@@ -62,7 +64,7 @@ export default function NewScoreForm() {
       const docRef = await addDoc(collection(db, 'scores'), scoreData)
       setShowCreateScore(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+      setError(err instanceof Error ? err.message : t('errors.unexpected'))
     } finally {
       setIsLoading(false)
     }
@@ -81,10 +83,10 @@ export default function NewScoreForm() {
           <div className="mb-6">
             <Link href="/dashboard" className="flex items-center text-[#800000] hover:underline">
               <ArrowLeft className="mr-2" />
-              Back to My Scores
+              {t('backToMyScores')}
             </Link>
           </div>
-          <h1 className="text-2xl font-bold text-[#333333] mb-6 text-center">Create New Score</h1>
+          <h1 className="text-2xl font-bold text-[#333333] mb-6 text-center">{t('createNewScore')}</h1>
           <Card className="w-full max-w-md mx-auto px-4 py-8">
             <CardContent className="p-6">
               <form onSubmit={handleSubmit} className="space-y-6 max-w-md mx-auto">
@@ -94,25 +96,25 @@ export default function NewScoreForm() {
                   </div>
                 )}
                 <div className="space-y-2">
-                  <Label htmlFor="name">Score Name</Label>
+                  <Label htmlFor="name">{t('scoreName')}</Label>
                   <Input
                     id="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="Enter score name"
+                    placeholder={t('enterScoreName')}
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="sharing">Sharing Option</Label>
+                  <Label htmlFor="sharing">{t('sharingOption')}</Label>
                   <select
                     id="sharing"
                     value={sharing}
                     onChange={(e) => setSharing(e.target.value)}
                     className="w-full border border-gray-300 rounded-md p-2"
                   >
-                    <option value="public">Public</option>
-                    <option value="private">Private</option>
+                    <option value="public">{t('public')}</option>
+                    <option value="private">{t('private')}</option>
                   </select>
                 </div>
                 <Button
@@ -120,7 +122,7 @@ export default function NewScoreForm() {
                   className="w-full bg-[#800000] hover:bg-[#600000]"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Creating...' : 'Next'}
+                  {isLoading ? t('creating') : t('next')}
                 </Button>
               </form>
             </CardContent>
