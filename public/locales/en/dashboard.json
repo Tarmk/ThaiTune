@@ -20,5 +20,7 @@
   "backToScores": "Back to My Scores",
   "community": "Community",
   "chat": "Chat",  
-  "typeAMessage": "Type a message..."  
+  "typeAMessage": "Type a message...",
+  "by": "By",
+  "edit": "Edit"
 } 

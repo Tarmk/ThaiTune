@@ -3,6 +3,7 @@
 import * as React from "react"
 import { useRouter } from 'next/navigation'
 import { Bell, ChevronDown, User, ArrowLeft, MessageCircle, X } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 import { Card, CardContent } from "@/app/components/ui/card"
 import { auth, db } from '@/lib/firebase'
@@ -37,6 +38,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
   const [isChatOpen, setIsChatOpen] = React.useState(false);
   const [chatMessages, setChatMessages] = React.useState<string[]>([]);
   const chatEndRef = React.useRef<HTMLDivElement | null>(null);
+  const { t } = useTranslation(['common', 'dashboard']);
 
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || 'sk-svcacct-U1ZLkSvtRFwAzPLrR-XseW0sNZ-rHNf1Mtw5k2s_DNhjj5HxrU_SnVsxlikcjKaT3BlbkFJKFNz4Cza_cDEewCihVQ22wduNQ_JVG6qI-cDZJqgEuWMp0cuAmTn5lY8vdeFYUAA',
@@ -189,7 +191,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
           {
             role: "user",
             content: [
-              { type: "text", text: `Score: ${score?.name} by ${score?.author}\nUser question: ${message}` },
+              { type: "text", text: `Score: ${score?.name} ${t('by', { ns: 'dashboard' })} ${score?.author}\nUser question: ${message}` },
               {
                 type: "image_url",
                 image_url: {
@@ -229,21 +231,21 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
   };
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+    return <div className="min-h-screen flex items-center justify-center font-sans">{t('loading', { ns: 'dashboard' })}</div>
   }
 
   if (error) {
-    return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>
+    return <div className="min-h-screen flex items-center justify-center text-red-500 font-sans">{error}</div>
   }
 
   if (!score) {
-    return <div className="min-h-screen flex items-center justify-center">Score not found</div>
+    return <div className="min-h-screen flex items-center justify-center font-sans">{t('noScores', { ns: 'dashboard' })}</div>
   }
 
   const isOwner = user?.uid === score.userId;
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5]">
+    <div className="min-h-screen bg-[#F5F5F5] font-sans">
       <TopMenu user={user} />
       <main className="max-w-7xl mx-auto px-4 py-6 mt-16">
         <div className="mb-6">
@@ -252,22 +254,22 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
             className="flex items-center text-[#800000] hover:underline"
           >
             <ArrowLeft className="mr-2" />
-            Back
+            {t('backToScores', { ns: 'dashboard' })}
           </button>
         </div>
         <h1 className="text-2xl font-bold text-[#333333] mb-4">{score.name}</h1>
-        <p className="text-lg text-[#666666] mb-6">By {score.author}</p>
+        <p className="text-lg text-[#666666] mb-6">{t('by', { ns: 'dashboard' })} {score.author}</p>
         <Card className="bg-white shadow-md">
           <CardContent className="p-4">
             <div ref={containerRef} style={{ height: '450px', width: '100%' }} />
           </CardContent>
         </Card>
         <div className="mt-6 flex justify-between items-center">
-          <p className="text-sm text-[#666666]">Last modified: {score.modified.toLocaleString()}</p>
+          <p className="text-sm text-[#666666]">{t('modified', { ns: 'dashboard' })}: {score.modified.toLocaleString()}</p>
           {isOwner && (
             <>
               <button onClick={handleEdit} className="text-[#333333] hover:text-[#800000] font-medium">
-                Edit
+                {t('edit', { ns: 'dashboard' })}
               </button>
             </>
           )}
@@ -284,7 +286,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
       {isChatOpen && (
         <div className="fixed bottom-16 right-4 bg-white shadow-lg rounded-lg w-80 h-96 flex flex-col">
           <div className="flex justify-between items-center p-4 border-b">
-            <h2 className="text-lg font-bold">Chat</h2>
+            <h2 className="text-lg font-bold">{t('chat', { ns: 'dashboard' })}</h2>
             <button onClick={toggleChat} className="text-gray-500 hover:text-gray-700">
               <X className="h-5 w-5" />
             </button>
@@ -304,7 +306,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
           <div className="p-4 border-t">
             <input
               type="text"
-              placeholder="Type a message..."
+              placeholder={t('typeAMessage', { ns: 'dashboard' })}
               className="w-full border rounded p-2"
               onKeyDown={handleChatInputKeyDown}
             />

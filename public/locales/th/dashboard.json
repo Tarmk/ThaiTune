@@ -20,7 +20,9 @@
   "backToScores": "กลับไปยังโน้ตเพลงของฉัน",
   "viewProfile": "ดูโปรไฟล์",
   "user": "ผู้ใช้",
-    "community": "ชุมชน",
-    "chat": "แชท",
-    "typeAMessage": "พิมพ์ข้อความ..."
+  "community": "ชุมชน",
+  "chat": "แชท",
+  "typeAMessage": "พิมพ์ข้อความ...",
+  "by": "โดย",
+  "edit": "แก้ไข"
 } 
