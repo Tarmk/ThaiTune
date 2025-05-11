@@ -10,12 +10,14 @@ import { TopMenu } from "@/app/components/TopMenu";
 import { Card, CardContent } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 interface ClientProps {
   id: string;
 }
 
 export default function EditScoreClient({ id }: ClientProps) {
+  const { t } = useTranslation('editor');
   const [user, setUser] = useState<any>(null);
   const [flatId, setFlatId] = useState<string | null>(null);
   const [title, setTitle] = useState<string>('');
@@ -272,7 +274,7 @@ export default function EditScoreClient({ id }: ClientProps) {
             className="flex items-center text-[#800000] hover:underline"
           >
             <ArrowLeft className="mr-2" />
-            Back
+            {t('back')}
           </button>
         </div>
 
@@ -280,28 +282,28 @@ export default function EditScoreClient({ id }: ClientProps) {
           <h1 className="text-2xl font-bold text-[#333333]">{title}</h1>
           <div className="flex items-center space-x-4">
             <div className="flex items-center">
-              <label htmlFor="sharing" className="mr-2 text-[#666666]">Sharing:</label>
+              <label htmlFor="sharing" className="mr-2 text-[#666666]">{t('sharing')}:</label>
               <select 
                 id="sharing"
                 value={sharingSetting}
                 onChange={handleSharingChange}
                 className="border border-gray-300 rounded px-2 py-1"
               >
-                <option value="private">Private</option>
-                <option value="public">Public</option>
+                <option value="private">{t('private')}</option>
+                <option value="public">{t('public')}</option>
               </select>
             </div>
             <Button
               onClick={handleManualSave}
               className="bg-[#800000] text-white hover:bg-[#600000]"
             >
-              Save
+              {t('save')}
             </Button>
           </div>
         </div>
 
         {lastSavedTime && (
-          <p className="text-sm text-[#666666] mb-4">Last saved: {lastSavedTime}</p>
+          <p className="text-sm text-[#666666] mb-4">{t('lastSaved')}: {lastSavedTime}</p>
         )}
 
         <Card className="bg-white shadow-md mb-6">
