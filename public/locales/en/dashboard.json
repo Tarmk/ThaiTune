@@ -22,5 +22,6 @@
   "chat": "Chat",  
   "typeAMessage": "Type a message...",
   "by": "By",
-  "edit": "Edit"
+  "edit": "Edit",
+  "delete": "Delete"
 } 

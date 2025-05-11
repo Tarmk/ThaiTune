@@ -11,7 +11,7 @@ import Link from "next/link"
 import { auth, db } from '@/lib/firebase'
 import { signOut, onAuthStateChanged } from 'firebase/auth'
 import { ProtectedRoute } from '@/app/components/protectedroute'
-import { collection, query, where, getDocs } from 'firebase/firestore'
+import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore'
 import { TopMenu } from '@/app/components/TopMenu'
 import OpenAI from "openai";
 import { useTranslation } from 'react-i18next';
@@ -191,6 +191,18 @@ export default function Dashboard() {
     }
   }, [chatMessages]);
 
+  const handleDeleteScore = async (scoreId: string) => {
+    try {
+      // Delete the score from Firestore
+      await deleteDoc(doc(db, "scores", scoreId));
+      
+      // Update the local state to remove the deleted score
+      setScores(scores.filter(score => score.score_id !== scoreId));
+    } catch (error) {
+      console.error("Error deleting score:", error);
+    }
+  };
+
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50 relative">
@@ -242,9 +254,24 @@ export default function Dashboard() {
                       <td className="py-3 text-[#666666]">{score.modified}</td>
                       <td className="py-3 text-[#666666]">{score.sharing}</td>
                       <td className="py-3">
-                        <Button variant="ghost" className="p-1">
-                          <MoreVertical className="h-5 w-5 text-[#666666]" />
-                        </Button>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button variant="ghost" className="p-1">
+                              <MoreVertical className="h-5 w-5 text-[#666666]" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-48 p-2">
+                            <div className="flex flex-col space-y-2">
+                              <Button 
+                                variant="ghost" 
+                                className="justify-start text-sm text-red-600"
+                                onClick={() => handleDeleteScore(score.score_id)}
+                              >
+                                {t('delete')}
+                              </Button>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
                       </td>
                     </tr>
                   ))}
