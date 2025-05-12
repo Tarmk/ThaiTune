@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="container mx-auto px-4 md:px-6 max-w-7xl">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           <div>
-            <h3 className="text-lg font-bold mb-4 text-[#4A1D2C]">TMDB</h3>
+            <h3 className="text-lg font-bold mb-4 text-[#4A1D2C]">ThaiTune</h3>
             <ul className="space-y-2">
               <li><Link href="#" className="text-gray-600 hover:text-[#4A1D2C]">Database Overview</Link></li>
               <li><Link href="#" className="text-gray-600 hover:text-[#4A1D2C]">Song Submission</Link></li>
@@ -60,7 +60,7 @@ export default function Footer() {
           </div>
         </div>
         <div className="mt-12 border-t pt-8 flex flex-col md:flex-row items-center justify-between">
-          <p className="text-sm text-gray-600">&copy; 2024 TMDB. All rights reserved.</p>
+          <p className="text-sm text-gray-600">&copy; 2025 ThaiTune. All rights reserved.</p>
           <div className="flex space-x-4 mt-4 md:mt-0">
             <Link href="#" aria-label="Twitter"><Twitter className="h-5 w-5 text-gray-600 hover:text-[#4A1D2C]" /></Link>
             <Link href="#" aria-label="Instagram"><Instagram className="h-5 w-5 text-gray-600 hover:text-[#4A1D2C]" /></Link>
