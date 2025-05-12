@@ -27,7 +27,7 @@ export default function Header() {
           <div className="flex items-center gap-3">
             <div className="rounded-lg bg-[#4A1D2C] p-1.5 w-9 h-9 flex items-center justify-center">
             </div>
-            <span className="text-lg font-bold text-gray-900">TMDB</span>
+            <span className="text-lg font-bold text-gray-900">ThaiTune</span>
           </div>
         </Link>
         <div className="hidden md:flex items-center gap-8">
