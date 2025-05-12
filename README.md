@@ -4,7 +4,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 test from remote
 First, run the development server:
 
-```bash
+\`\`\`bash
 npm run dev
 # or
 yarn dev
@@ -12,7 +12,7 @@ yarn dev
 pnpm dev
 # or
 bun dev
-```
+\`\`\`
 
 
 

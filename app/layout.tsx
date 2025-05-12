@@ -1,13 +1,19 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import './globals.css'
-import I18nProvider from './components/I18nProvider'
+import type React from "react"
+import type { Metadata } from "next"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import I18nProvider from "./components/I18nProvider"
+import { ErrorBoundary } from "./components/ErrorBoundary"
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: 'TMDB - Traditional Thai Music Database',
-  description: 'Explore and contribute to the world of Traditional Thai Music',
+  title: "ThaiTune - Traditional Thai Music Database",
+  description: "Explore and contribute to the world of Traditional Thai Music",
+  icons: {
+    icon: "/favicon.png",
+  },
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({
@@ -18,9 +24,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <I18nProvider>
-          {children}
-        </I18nProvider>
+        <ErrorBoundary>
+          <I18nProvider>{children}</I18nProvider>
+        </ErrorBoundary>
       </body>
     </html>
   )

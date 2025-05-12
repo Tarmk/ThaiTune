@@ -1,26 +1,26 @@
 "use client"
 
-import { Suspense, useEffect, useState } from 'react'
-import ScoreDetailsPage from './ScoreDetailsPage'
+import { Suspense, useEffect, useState } from "react"
+import ScoreDetailsPage from "./ScoreDetailsPage"
 
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
 export default function Page({ params }: PageProps) {
-  const [id, setId] = useState<string | null>(null);
+  const [id, setId] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchParams = async () => {
-      const resolvedParams = await params;
-      setId(resolvedParams.id);
-    };
+      const resolvedParams = await params
+      setId(resolvedParams.id)
+    }
 
-    fetchParams();
-  }, [params]);
+    fetchParams()
+  }, [params])
 
   if (id === null) {
-    return <div>Loading...</div>;
+    return <div>Loading...</div>
   }
 
   return (
@@ -29,4 +29,3 @@ export default function Page({ params }: PageProps) {
     </Suspense>
   )
 }
-

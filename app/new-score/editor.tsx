@@ -1,36 +1,38 @@
-'use client'
+"use client"
 
-import React, { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
-import { ArrowLeft } from 'lucide-react'
+import { useEffect, useRef, useState } from "react"
+import axios from "axios"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
-import { useRouter } from 'next/navigation'
-import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase'
+import { useRouter } from "next/navigation"
+import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore"
+import { db } from "@/lib/firebase"
+import { Button } from "@/app/components/ui/button"
 
 interface EditorProps {
-  title: string;
-  user: any;
+  title: string
+  user: any
 }
 
 const Editor = ({ title, user }: EditorProps) => {
   const router = useRouter()
-  const containerRef = useRef<HTMLDivElement>(null);
-  const embedRef = useRef<any>(null);
-  const [exportCount, setExportCount] = useState(0);
-  const [scoreId, setScoreId] = useState<string | null>(null);
-  const maxExports = 5;
-  const exportInterval = 30000;
+  const containerRef = useRef<HTMLDivElement>(null)
+  const embedRef = useRef<any>(null)
+  const [exportCount, setExportCount] = useState(0)
+  const [scoreId, setScoreId] = useState<string | null>(null)
+  const maxExports = 5
+  const exportInterval = 30000
 
   const createScore = async () => {
     try {
       const response = await axios({
-        method: 'post',
-        url: 'https://api.flat.io/v2/scores',
+        method: "post",
+        url: "https://api.flat.io/v2/scores",
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': '069432b451ffceb35e2407e24093bd43a99e6a560963f9e92254da031a2e04e1527f86dfade9eb5cdb222720566f7a8dd8ac3beeed9a2d9d15a6d398123d125c'
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization:
+            "069432b451ffceb35e2407e24093bd43a99e6a560963f9e92254da031a2e04e1527f86dfade9eb5cdb222720566f7a8dd8ac3beeed9a2d9d15a6d398123d125c",
         },
         data: {
           title: title,
@@ -39,164 +41,162 @@ const Editor = ({ title, user }: EditorProps) => {
               instruments: [
                 {
                   group: "keyboards",
-                  instrument: "piano"
-                }
-              ]
-            }
+                  instrument: "piano",
+                },
+              ],
+            },
           },
-          privacy: "public"
-        }
-      });
+          privacy: "public",
+        },
+      })
 
-      const newScoreId = response.data.id;
-      setScoreId(newScoreId);
+      const newScoreId = response.data.id
+      setScoreId(newScoreId)
 
-      const scoresRef = collection(db, 'scores');
-      const q = query(scoresRef, where('name', '==', title));
-      const querySnapshot = await getDocs(q);
-      
+      const scoresRef = collection(db, "scores")
+      const q = query(scoresRef, where("name", "==", title))
+      const querySnapshot = await getDocs(q)
+
       if (!querySnapshot.empty) {
-        const scoreDoc = querySnapshot.docs[0];
-        await updateDoc(doc(db, 'scores', scoreDoc.id), {
-          flatid: newScoreId
-        });
+        const scoreDoc = querySnapshot.docs[0]
+        await updateDoc(doc(db, "scores", scoreDoc.id), {
+          flatid: newScoreId,
+        })
       }
 
-      return newScoreId;
+      return newScoreId
     } catch (error) {
-      console.error('Error creating score:', error);
-      return null;
+      console.error("Error creating score:", error)
+      return null
     }
-  };
+  }
 
   const handleSave = async (isAutoSave = false) => {
-    if (!embedRef.current || !scoreId) return;
+    if (!embedRef.current || !scoreId) return
 
     try {
-      const buffer = await embedRef.current.getMusicXML({ compressed: true });
-      const base64String = btoa(
-        new Uint8Array(buffer)
-          .reduce((data, byte) => data + String.fromCharCode(byte), '')
-      );
+      const buffer = await embedRef.current.getMusicXML({ compressed: true })
+      const base64String = btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ""))
 
       const saveData = {
         title,
         timestamp: new Date().toISOString(),
-        content: base64String
-      };
+        content: base64String,
+      }
 
-      const storageKey = isAutoSave 
+      const storageKey = isAutoSave
         ? `score_${title}_autosave_${exportCount + 1}`
-        : `score_${title}_manual_${Date.now()}`;
-      
-      localStorage.setItem(storageKey, JSON.stringify(saveData));
+        : `score_${title}_manual_${Date.now()}`
 
-      const versionsList = JSON.parse(localStorage.getItem(`score_${title}_versions`) || '[]');
+      localStorage.setItem(storageKey, JSON.stringify(saveData))
+
+      const versionsList = JSON.parse(localStorage.getItem(`score_${title}_versions`) || "[]")
       versionsList.push({
         version: isAutoSave ? `Auto Save ${exportCount + 1}` : `Manual Save ${versionsList.length + 1}`,
         timestamp: saveData.timestamp,
-        storageKey
-      });
-      localStorage.setItem(`score_${title}_versions`, JSON.stringify(versionsList));
+        storageKey,
+      })
+      localStorage.setItem(`score_${title}_versions`, JSON.stringify(versionsList))
 
       try {
         await axios({
-          method: 'post',
+          method: "post",
           url: `https://api.flat.io/v2/scores/${scoreId}/revisions`,
           headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': '069432b451ffceb35e2407e24093bd43a99e6a560963f9e92254da031a2e04e1527f86dfade9eb5cdb222720566f7a8dd8ac3beeed9a2d9d15a6d398123d125c'
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization:
+              "069432b451ffceb35e2407e24093bd43a99e6a560963f9e92254da031a2e04e1527f86dfade9eb5cdb222720566f7a8dd8ac3beeed9a2d9d15a6d398123d125c",
           },
           data: {
             data: base64String,
             dataEncoding: "base64",
-            autosave: isAutoSave
-          }
-        });
+            autosave: isAutoSave,
+          },
+        })
 
         if (isAutoSave) {
-          setExportCount(prev => prev + 1);
+          setExportCount((prev) => prev + 1)
         }
       } catch (apiError) {
-        console.error('Error saving to Flat.io:', apiError);
+        console.error("Error saving to Flat.io:", apiError)
       }
     } catch (error) {
-      console.error('Error in save:', error);
+      console.error("Error in save:", error)
     }
-  };
+  }
 
   const getSavedVersions = () => {
     try {
-      return JSON.parse(localStorage.getItem(`score_${title}_versions`) || '[]');
+      return JSON.parse(localStorage.getItem(`score_${title}_versions`) || "[]")
     } catch (error) {
-      console.error('Error retrieving saved versions:', error);
-      return [];
+      console.error("Error retrieving saved versions:", error)
+      return []
     }
-  };
+  }
 
   const loadVersion = (storageKey: string) => {
     try {
-      const savedData = JSON.parse(localStorage.getItem(storageKey) || '');
+      const savedData = JSON.parse(localStorage.getItem(storageKey) || "")
       if (savedData) {
-        const content = savedData.content;
-        return content;
+        const content = savedData.content
+        return content
       }
     } catch (error) {
-      console.error('Error loading version:', error);
+      console.error("Error loading version:", error)
     }
-    return null;
-  };
+    return null
+  }
 
   useEffect(() => {
-    let mounted = true;
+    let mounted = true
 
     const initialize = async () => {
-      const newScoreId = await createScore();
-      if (!mounted || !newScoreId) return;
+      const newScoreId = await createScore()
+      if (!mounted || !newScoreId) return
 
-      if (typeof window !== 'undefined') {
-        const script = document.createElement('script');
-        script.src = 'https://prod.flat-cdn.com/embed-js/v1.5.1/embed.min.js';
-        script.async = true;
+      if (typeof window !== "undefined") {
+        const script = document.createElement("script")
+        script.src = "https://prod.flat-cdn.com/embed-js/v1.5.1/embed.min.js"
+        script.async = true
         script.onload = () => {
-          if (!mounted || !containerRef.current || !window.Flat) return;
+          if (!mounted || !containerRef.current || !window.Flat) return
 
           embedRef.current = new window.Flat.Embed(containerRef.current, {
             score: newScoreId,
             embedParams: {
-              mode: 'edit',
-              appId: '6755790be2eebcce112acde7',
+              mode: "edit",
+              appId: "6755790be2eebcce112acde7",
               branding: false,
-              controlsPosition: 'top',
-              themePrimary: '#800000'
-            }
-          });
+              controlsPosition: "top",
+              themePrimary: "#800000",
+            },
+          })
 
           if (!embedRef.current) {
-            console.error('Failed to initialize Flat.Embed');
+            console.error("Failed to initialize Flat.Embed")
           }
-        };
-        document.body.appendChild(script);
+        }
+        document.body.appendChild(script)
       }
-    };
+    }
 
-    initialize();
+    initialize()
 
     return () => {
-      mounted = false;
-    };
-  }, []);
+      mounted = false
+    }
+  }, [])
 
   useEffect(() => {
-    if (!scoreId || exportCount >= maxExports) return;
+    if (!scoreId || exportCount >= maxExports) return
 
     const intervalId = setInterval(() => {
-      handleSave(true);
-    }, exportInterval);
+      handleSave(true)
+    }, exportInterval)
 
-    return () => clearInterval(intervalId);
-  }, [scoreId, exportCount]);
+    return () => clearInterval(intervalId)
+  }, [scoreId, exportCount])
 
   return (
     <main className="max-w-7xl mx-auto px-4 py-6 mt-16">
@@ -206,20 +206,17 @@ const Editor = ({ title, user }: EditorProps) => {
           Back to Score Details
         </Link>
       </div>
-      
+
       <h1 className="text-2xl font-bold text-[#333333] mb-2">{title}</h1>
-      <p className="text-gray-600 mb-6">By {user?.displayName || 'Anonymous'}</p>
+      <p className="text-gray-600 mb-6">By {user?.displayName || "Anonymous"}</p>
 
       <div className="bg-white rounded-lg shadow-md">
-        <div ref={containerRef} style={{ height: '450px', width: '100%' }} />
+        <div ref={containerRef} style={{ height: "450px", width: "100%" }} />
         <div className="p-6 border-t">
           <div className="flex items-center justify-between">
-            <button 
-              onClick={() => handleSave(false)}
-              className="px-4 py-2 bg-[#800000] text-white rounded hover:bg-[#600000]"
-            >
+            <Button onClick={() => handleSave(false)} variant="secondary">
               Save Version
-            </button>
+            </Button>
             <span className="text-sm text-gray-600">
               Auto-save: {exportCount}/{maxExports}
             </span>
@@ -229,13 +226,12 @@ const Editor = ({ title, user }: EditorProps) => {
             <div className="space-y-2">
               {getSavedVersions().map((version: any) => (
                 <div key={version.storageKey} className="flex items-center justify-between text-sm">
-                  <span>Version {version.version} - {new Date(version.timestamp).toLocaleString()}</span>
-                  <button 
-                    onClick={() => loadVersion(version.storageKey)}
-                    className="text-[#800000] hover:text-[#600000]"
-                  >
+                  <span>
+                    Version {version.version} - {new Date(version.timestamp).toLocaleString()}
+                  </span>
+                  <Button onClick={() => loadVersion(version.storageKey)} variant="link">
                     Load
-                  </button>
+                  </Button>
                 </div>
               ))}
             </div>
@@ -243,7 +239,7 @@ const Editor = ({ title, user }: EditorProps) => {
         </div>
       </div>
     </main>
-  );
-};
+  )
+}
 
-export default Editor; 
+export default Editor

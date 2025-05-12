@@ -1,11 +1,11 @@
-'use client'
+"use client"
 
 import Link from "next/link"
-import { useTranslation } from 'react-i18next'
+import { useTranslation } from "react-i18next"
 import { Button } from "@/app/components/ui/button"
 
 export default function Main() {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation("common")
 
   return (
     <main className="flex-1 pt-16">
@@ -14,18 +14,12 @@ export default function Main() {
           <div className="grid gap-12 lg:grid-cols-2">
             <div className="flex flex-col justify-center space-y-8">
               <div className="space-y-6">
-                <h1 className="text-5xl font-bold tracking-tight text-gray-900 lg:text-6xl/none">
-                  {t('learnTitle')}
-                </h1>
-                <p className="text-xl text-gray-500 max-w-[600px]">
-                  {t('description')}
-                </p>
+                <h1 className="text-5xl font-bold tracking-tight text-gray-900 lg:text-6xl/none">{t("learnTitle")}</h1>
+                <p className="text-xl text-gray-500 max-w-[600px]">{t("description")}</p>
               </div>
               <div>
                 <Link href="/signup">
-                  <Button className="text-base px-6 py-3">
-                    {t('getStarted')}
-                  </Button>
+                  <Button className="text-base px-6 py-3">{t("getStarted")}</Button>
                 </Link>
               </div>
             </div>
@@ -44,19 +38,15 @@ export default function Main() {
         <div className="container px-4 md:px-6 max-w-7xl mx-auto">
           <div className="space-y-12">
             <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-                {t('widenRepertoire')}
-              </h2>
-              <p className="mt-4 text-xl text-gray-500">
-                {t('uploadDescription')}
-              </p>
+              <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">{t("widenRepertoire")}</h2>
+              <p className="mt-4 text-xl text-gray-500">{t("uploadDescription")}</p>
             </div>
             <div className="relative rounded-xl overflow-hidden shadow-2xl bg-gray-100 aspect-[2/1] flex items-center justify-center">
-              <span className="text-gray-400">{t('editorInterface')}</span>
+              <span className="text-gray-400">{t("editorInterface")}</span>
             </div>
           </div>
         </div>
       </section>
     </main>
   )
-} 
+}
