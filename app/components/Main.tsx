@@ -5,7 +5,23 @@ import { useTranslation } from "react-i18next"
 import { Button } from "@/app/components/ui/button"
 
 export default function Main() {
-  const { t } = useTranslation("common")
+  const { t, ready } = useTranslation("common")
+
+  if (!ready) {
+    return (
+      <main className="flex-1 pt-16">
+        <div className="container px-4 md:px-6 max-w-7xl mx-auto">
+          <div className="h-[600px] flex items-center justify-center">
+            <div className="animate-pulse">
+              <div className="h-12 w-96 bg-gray-200 rounded mb-4"></div>
+              <div className="h-6 w-72 bg-gray-200 rounded mb-8"></div>
+              <div className="h-10 w-32 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+    )
+  }
 
   return (
     <main className="flex-1 pt-16">
