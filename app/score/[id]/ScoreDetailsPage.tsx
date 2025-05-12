@@ -1,29 +1,29 @@
 "use client"
 
 import * as React from "react"
-import { useRouter } from 'next/navigation'
-import { Bell, ChevronDown, User, ArrowLeft, MessageCircle, X } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import { useRouter } from "next/navigation"
+import { ArrowLeft, MessageCircle, X } from "lucide-react"
+import { useTranslation } from "react-i18next"
 
 import { Card, CardContent } from "@/app/components/ui/card"
-import { auth, db } from '@/lib/firebase'
-import { signOut, onAuthStateChanged } from 'firebase/auth'
-import { doc, getDoc } from 'firebase/firestore'
+import { auth, db } from "@/lib/firebase"
+import { signOut, onAuthStateChanged } from "firebase/auth"
+import { doc, getDoc } from "firebase/firestore"
 import { TopMenu } from "@/app/components/TopMenu"
 import OpenAI from "openai"
 
 interface Score {
-  id: string;
-  name: string;
-  author: string;
-  modified: Date;
-  flatid: string;
-  userId: string;
-  sharing: string;
+  id: string
+  name: string
+  author: string
+  modified: Date
+  flatid: string
+  userId: string
+  sharing: string
 }
 
 interface ScoreDetailsPageProps {
-  id: string;
+  id: string
 }
 
 export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
@@ -33,17 +33,19 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
   const [error, setError] = React.useState<string | null>(null)
   const [authChecked, setAuthChecked] = React.useState(false)
   const router = useRouter()
-  const containerRef = React.useRef<HTMLDivElement>(null);
-  const embedRef = React.useRef<any>(null);
-  const [isChatOpen, setIsChatOpen] = React.useState(false);
-  const [chatMessages, setChatMessages] = React.useState<string[]>([]);
-  const chatEndRef = React.useRef<HTMLDivElement | null>(null);
-  const { t } = useTranslation(['common', 'dashboard']);
+  const containerRef = React.useRef<HTMLDivElement>(null)
+  const embedRef = React.useRef<any>(null)
+  const [isChatOpen, setIsChatOpen] = React.useState(false)
+  const [chatMessages, setChatMessages] = React.useState<string[]>([])
+  const chatEndRef = React.useRef<HTMLDivElement | null>(null)
+  const { t } = useTranslation(["common", "dashboard"])
 
   const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY || 'sk-svcacct-U1ZLkSvtRFwAzPLrR-XseW0sNZ-rHNf1Mtw5k2s_DNhjj5HxrU_SnVsxlikcjKaT3BlbkFJKFNz4Cza_cDEewCihVQ22wduNQ_JVG6qI-cDZJqgEuWMp0cuAmTn5lY8vdeFYUAA',
-    dangerouslyAllowBrowser: true 
-  });
+    apiKey:
+      process.env.OPENAI_API_KEY ||
+      "sk-svcacct-U1ZLkSvtRFwAzPLrR-XseW0sNZ-rHNf1Mtw5k2s_DNhjj5HxrU_SnVsxlikcjKaT3BlbkFJKFNz4Cza_cDEewCihVQ22wduNQ_JVG6qI-cDZJqgEuWMp0cuAmTn5lY8vdeFYUAA",
+    dangerouslyAllowBrowser: true,
+  })
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -61,16 +63,16 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
       setLoading(true)
       setError(null)
       try {
-        const scoreDoc = await getDoc(doc(db, 'scores', id))
+        const scoreDoc = await getDoc(doc(db, "scores", id))
         if (scoreDoc.exists()) {
           const scoreData = scoreDoc.data()
-          
-          console.log('Score sharing:', scoreData.sharing)
-          console.log('Current user:', user?.uid)
-          console.log('Score user:', scoreData.userId)
-          
-          if (scoreData.sharing === 'private' && (!user || user.uid !== scoreData.userId)) {
-            setError('This score is private')
+
+          console.log("Score sharing:", scoreData.sharing)
+          console.log("Current user:", user?.uid)
+          console.log("Score user:", scoreData.userId)
+
+          if (scoreData.sharing === "private" && (!user || user.uid !== scoreData.userId)) {
+            setError("This score is private")
             setLoading(false)
             return
           }
@@ -82,14 +84,14 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
             modified: scoreData.modified.toDate(),
             flatid: scoreData.flatid,
             userId: scoreData.userId,
-            sharing: scoreData.sharing
+            sharing: scoreData.sharing,
           })
         } else {
-          setError('Score not found')
+          setError("Score not found")
         }
       } catch (err) {
-        console.error('Error fetching score:', err)
-        setError('An error occurred while fetching the score')
+        console.error("Error fetching score:", err)
+        setError("An error occurred while fetching the score")
       } finally {
         setLoading(false)
       }
@@ -99,85 +101,87 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
   }, [id, user, authChecked])
 
   React.useEffect(() => {
-    console.log('script')
+    console.log("script")
     console.log(score)
     console.log(score?.flatid)
-    if (!score || !score.flatid) return;
+    if (!score || !score.flatid) return
 
-    const script = document.createElement('script');
-    script.src = 'https://prod.flat-cdn.com/embed-js/v1.5.1/embed.min.js';
-    script.async = true;
-    console.log('script')
+    const script = document.createElement("script")
+    script.src = "https://prod.flat-cdn.com/embed-js/v1.5.1/embed.min.js"
+    script.async = true
+    console.log("script")
     script.onload = () => {
-      if (!containerRef.current || !window.Flat) return;
+      if (!containerRef.current || !window.Flat) return
 
       embedRef.current = new window.Flat.Embed(containerRef.current, {
         score: score.flatid,
         embedParams: {
-          mode: 'view',
-          appId: '6755790be2eebcce112acde7',
+          mode: "view",
+          appId: "6755790be2eebcce112acde7",
           branding: false,
-          themePrimary: '#800000'
-        }
-      });
-      embedRef.current.ready().then(function () {
+          themePrimary: "#800000",
+        },
+      })
+      embedRef.current.ready().then(() => {
         // You can use the embed
-        console.log('after ready')
-        embedRef.current.getPNG({
-          result: 'dataURL',
-          layout: 'track',
-          dpi: 300,
-        }).then(function (png: string) {
-          console.log('PNG generated on load:', png);
-        })
-      });
-    };
-    document.body.appendChild(script);
+        console.log("after ready")
+        embedRef.current
+          .getPNG({
+            result: "dataURL",
+            layout: "track",
+            dpi: 300,
+          })
+          .then((png: string) => {
+            console.log("PNG generated on load:", png)
+          })
+      })
+    }
+    document.body.appendChild(script)
 
     return () => {
       if (embedRef.current) {
         // Clean up by setting to null, no need to call destroy
-        embedRef.current = null;
+        embedRef.current = null
       }
-    };
-  }, [score]);
+    }
+  }, [score])
 
   React.useEffect(() => {
     if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" })
     }
-  }, [chatMessages]);
+  }, [chatMessages])
 
   const handleLogout = async () => {
     try {
       await signOut(auth)
-      router.push('/login')
+      router.push("/login")
     } catch (error) {
-      console.error('Error signing out:', error)
+      console.error("Error signing out:", error)
     }
   }
 
   const handleEdit = () => {
-    router.push(`/score/${id}/edit`);
+    router.push(`/score/${id}/edit`)
   }
 
   const toggleChat = () => {
-    setIsChatOpen(!isChatOpen);
-  };
+    setIsChatOpen(!isChatOpen)
+  }
 
   const sendMessageToChatGPT = async (message: string) => {
     try {
       // First get the PNG data
-      let pngData = null;
+      let pngData = null
       if (embedRef.current) {
         try {
           pngData = await embedRef.current.getPNG({
-            result: 'dataURL',
-            layout: 'track',
+            result: "dataURL",
+            layout: "track",
             dpi: 300,
-          });
+          })
         } catch (error) {
-          console.error('Error getting PNG:', error);
+          console.error("Error getting PNG:", error)
         }
       }
 
@@ -186,52 +190,57 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
         messages: [
           {
             role: "system",
-            content: "You are a music assistant analyzing sheet music. Please provide detailed analysis of the score."
+            content: "You are a music assistant analyzing sheet music. Please provide detailed analysis of the score.",
           },
           {
             role: "user",
             content: [
-              { type: "text", text: `Score: ${score?.name} ${t('by', { ns: 'dashboard' })} ${score?.author}\nUser question: ${message}` },
+              {
+                type: "text",
+                text: `Score: ${score?.name} ${t("by", { ns: "dashboard" })} ${score?.author}\nUser question: ${message}`,
+              },
               {
                 type: "image_url",
                 image_url: {
                   url: pngData,
-                  detail: "high"
-                }
-              }
-            ]
-          }
+                  detail: "high",
+                },
+              },
+            ],
+          },
         ],
         max_tokens: 500,
-      });
+      })
 
-      const chatGPTResponse = response.choices[0].message.content?.trim();
-      console.log("ChatGPT Response:", chatGPTResponse);
+      const chatGPTResponse = response.choices[0].message.content?.trim()
+      console.log("ChatGPT Response:", chatGPTResponse)
 
       setChatMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages, `MusicAI: ${chatGPTResponse}`];
-        return updatedMessages;
-      });
+        const updatedMessages = [...prevMessages, `MusicAI: ${chatGPTResponse}`]
+        return updatedMessages
+      })
     } catch (error) {
-      console.error("Error communicating with ChatGPT:", error);
-      setChatMessages((prevMessages) => [...prevMessages, `MusicAI: Sorry, I encountered an error.`]);
+      console.error("Error communicating with ChatGPT:", error)
+      setChatMessages((prevMessages) => [...prevMessages, `MusicAI: Sorry, I encountered an error.`])
     }
-  };
+  }
 
   const handleChatInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      const input = event.target as HTMLInputElement;
-      const newMessage = input.value.trim();
+    if (event.key === "Enter") {
+      const input = event.target as HTMLInputElement
+      const newMessage = input.value.trim()
       if (newMessage) {
-        setChatMessages((prevMessages) => [...prevMessages, `You: ${newMessage}`]);
-        sendMessageToChatGPT(newMessage);
-        input.value = '';
+        setChatMessages((prevMessages) => [...prevMessages, `You: ${newMessage}`])
+        sendMessageToChatGPT(newMessage)
+        input.value = ""
       }
     }
-  };
+  }
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center font-sans">{t('loading', { ns: 'dashboard' })}</div>
+    return (
+      <div className="min-h-screen flex items-center justify-center font-sans">{t("loading", { ns: "dashboard" })}</div>
+    )
   }
 
   if (error) {
@@ -239,37 +248,42 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
   }
 
   if (!score) {
-    return <div className="min-h-screen flex items-center justify-center font-sans">{t('noScores', { ns: 'dashboard' })}</div>
+    return (
+      <div className="min-h-screen flex items-center justify-center font-sans">
+        {t("noScores", { ns: "dashboard" })}
+      </div>
+    )
   }
 
-  const isOwner = user?.uid === score.userId;
+  const isOwner = user?.uid === score.userId
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] font-sans">
       <TopMenu user={user} />
       <main className="max-w-7xl mx-auto px-4 py-6 mt-16">
         <div className="mb-6">
-          <button 
-            onClick={() => router.back()} 
-            className="flex items-center text-[#800000] hover:underline"
-          >
+          <button onClick={() => router.back()} className="flex items-center text-[#800000] hover:underline">
             <ArrowLeft className="mr-2" />
-            {t('backToScores', { ns: 'dashboard' })}
+            {t("backToScores", { ns: "dashboard" })}
           </button>
         </div>
         <h1 className="text-2xl font-bold text-[#333333] mb-4">{score.name}</h1>
-        <p className="text-lg text-[#666666] mb-6">{t('by', { ns: 'dashboard' })} {score.author}</p>
+        <p className="text-lg text-[#666666] mb-6">
+          {t("by", { ns: "dashboard" })} {score.author}
+        </p>
         <Card className="bg-white shadow-md">
           <CardContent className="p-4">
-            <div ref={containerRef} style={{ height: '450px', width: '100%' }} />
+            <div ref={containerRef} style={{ height: "450px", width: "100%" }} />
           </CardContent>
         </Card>
         <div className="mt-6 flex justify-between items-center">
-          <p className="text-sm text-[#666666]">{t('modified', { ns: 'dashboard' })}: {score.modified.toLocaleString()}</p>
+          <p className="text-sm text-[#666666]">
+            {t("modified", { ns: "dashboard" })}: {score.modified.toLocaleString()}
+          </p>
           {isOwner && (
             <>
               <button onClick={handleEdit} className="text-[#333333] hover:text-[#800000] font-medium">
-                {t('edit', { ns: 'dashboard' })}
+                {t("edit", { ns: "dashboard" })}
               </button>
             </>
           )}
@@ -278,7 +292,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
 
       <button
         onClick={toggleChat}
-        className="fixed bottom-4 right-4 bg-[#800000] text-white p-3 rounded-full shadow-lg hover:bg-[#600000] focus:outline-none"
+        className="fixed bottom-4 right-4 bg-secondary text-white p-3 rounded-full shadow-lg hover:bg-secondary-hover focus:outline-none"
       >
         <MessageCircle className="h-6 w-6" />
       </button>
@@ -286,18 +300,14 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
       {isChatOpen && (
         <div className="fixed bottom-16 right-4 bg-white shadow-lg rounded-lg w-80 h-96 flex flex-col">
           <div className="flex justify-between items-center p-4 border-b">
-            <h2 className="text-lg font-bold">{t('chat', { ns: 'dashboard' })}</h2>
+            <h2 className="text-lg font-bold">{t("chat", { ns: "dashboard" })}</h2>
             <button onClick={toggleChat} className="text-gray-500 hover:text-gray-700">
               <X className="h-5 w-5" />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-4">
             {chatMessages.map((message, index) => (
-              <div
-                key={index}
-                className="mb-2 p-2 bg-gray-200 rounded-lg max-w-xs"
-                style={{ alignSelf: 'flex-start' }}
-              >
+              <div key={index} className="mb-2 p-2 bg-gray-200 rounded-lg max-w-xs" style={{ alignSelf: "flex-start" }}>
                 {message}
               </div>
             ))}
@@ -306,7 +316,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
           <div className="p-4 border-t">
             <input
               type="text"
-              placeholder={t('typeAMessage', { ns: 'dashboard' })}
+              placeholder={t("typeAMessage", { ns: "dashboard" })}
               className="w-full border rounded p-2"
               onKeyDown={handleChatInputKeyDown}
             />

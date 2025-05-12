@@ -1,96 +1,58 @@
 "use client"
 
 import * as React from "react"
-import { useRouter } from 'next/navigation'
-import { Bell, ChevronDown, User, MoreVertical, ChevronUp, X as CloseIcon } from 'lucide-react'
-import { MessageCircle as ChatIcon } from 'lucide-react'
+import { useRouter } from "next/navigation"
+import { MoreVertical, DoorClosedIcon as CloseIcon } from "lucide-react"
+import { WebcamIcon as ChatIcon } from "lucide-react"
 import { Button } from "@/app/components/ui/button"
 import { Card, CardContent } from "@/app/components/ui/card"
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover"
 import Link from "next/link"
-import { auth, db } from '@/lib/firebase'
-import { signOut, onAuthStateChanged } from 'firebase/auth'
-import { ProtectedRoute } from '@/app/components/protectedroute'
-import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore'
-import { TopMenu } from '@/app/components/TopMenu'
-import OpenAI from "openai";
-import { useTranslation } from 'react-i18next';
+import { auth, db } from "@/lib/firebase"
+import { onAuthStateChanged } from "firebase/auth"
+import { ProtectedRoute } from "@/app/components/protectedroute"
+import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore"
+import { TopMenu } from "@/app/components/TopMenu"
+import { SortableTable } from "@/app/components/SortableTable"
+import OpenAI from "openai"
+import { useTranslation } from "react-i18next"
 
 interface Score {
-  name: string;
-  modified: string;
-  sharing: string;
-  score_id: string;
+  name: string
+  modified: string
+  sharing: string
+  score_id: string
 }
 
 const loadChatMessages = () => {
-  if (typeof window === 'undefined') {
-    // Return an empty array if localStorage is not available (e.g., during SSR)
-    return [];
-  }
+  if (typeof window === "undefined") return []
 
-  const savedMessages = localStorage.getItem('chatMessages');
   try {
-    return savedMessages ? JSON.parse(savedMessages) : [];
+    return JSON.parse(localStorage.getItem("chatMessages") || "[]")
   } catch (error) {
-    console.error("Error parsing chat messages from localStorage:", error);
-    return [];
+    console.error("Error parsing chat messages from localStorage:", error)
+    return []
   }
-};
+}
 
 const saveChatMessages = (messages: string[]) => {
-  localStorage.setItem('chatMessages', JSON.stringify(messages));
-};
+  localStorage.setItem("chatMessages", JSON.stringify(messages))
+}
 
 export default function Dashboard() {
-  const [scores, setScores] = React.useState<Score[]>([]);
-
-  const [sortColumn, setSortColumn] = React.useState<keyof Score | null>("name")
-  const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc')
+  const [scores, setScores] = React.useState<Score[]>([])
   const [user, setUser] = React.useState<any>(null)
+  const [isChatOpen, setIsChatOpen] = React.useState(false)
+  const [chatMessages, setChatMessages] = React.useState<string[]>(loadChatMessages())
+  const [isLoading, setIsLoading] = React.useState(true)
+  const chatEndRef = React.useRef<HTMLDivElement | null>(null)
   const router = useRouter()
-
-  const [isChatOpen, setIsChatOpen] = React.useState(false);
-  const [chatMessages, setChatMessages] = React.useState<string[]>(loadChatMessages());
-
-  const chatEndRef = React.useRef<HTMLDivElement | null>(null);
-
-  console.log("OPENAI_API_KEY:")
-  console.log(process.env.OPENAI_API_KEY)
+  const { t } = useTranslation("dashboard")
 
   const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY || 'sk-svcacct-U1ZLkSvtRFwAzPLrR-XseW0sNZ-rHNf1Mtw5k2s_DNhjj5HxrU_SnVsxlikcjKaT3BlbkFJKFNz4Cza_cDEewCihVQ22wduNQ_JVG6qI-cDZJqgEuWMp0cuAmTn5lY8vdeFYUAA', dangerouslyAllowBrowser: true 
-  });
-
-  const sendMessageToChatGPT = async (message: string) => {
-    try {
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o", // or any other model you prefer
-        messages: [{
-          role: "user",
-          content: message
-        }],
-        max_tokens: 150,
-      });
-
-      const chatGPTResponse = response.choices[0].message.content?.trim();
-
-      console.log("ChatGPT Response:")
-      console.log(chatGPTResponse)
-
-      setChatMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages, `MusicAI: ${chatGPTResponse}`];
-        saveChatMessages(updatedMessages);
-        return updatedMessages;
-      });
-    } catch (error) {
-      console.error("Error communicating with ChatGPT:", error);
-    }
-  };
-
-  const { t } = useTranslation('dashboard');
-
-  console.log(t('myScores')); // This should log "My Scores" if everything is set up correctly
+    apiKey: process.env.OPENAI_API_KEY || "",
+    dangerouslyAllowBrowser: true,
+  })
 
   React.useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -102,106 +64,128 @@ export default function Dashboard() {
 
   React.useEffect(() => {
     const fetchUserScores = async () => {
-      if (user?.uid) {
-        const q = query(
-          collection(db, "scores"),
-          where("userId", "==", user.uid)
-        );
-        
-        const querySnapshot = await getDocs(q);
-        const userScores = querySnapshot.docs.map(doc => ({
+      if (!user?.uid) return
+
+      try {
+        setIsLoading(true)
+        const q = query(collection(db, "scores"), where("userId", "==", user.uid))
+        const querySnapshot = await getDocs(q)
+
+        const userScores = querySnapshot.docs.map((doc) => ({
           name: doc.data().name,
           modified: new Date(doc.data().modified.toDate()).toLocaleDateString(),
-          sharing: doc.data().sharing ? doc.data().sharing.charAt(0).toUpperCase() + doc.data().sharing.slice(1) : "Only me",
-          score_id: doc.id
-        }));
-        console.log("User Score:")
-        console.log(userScores);
-        
-        // Sort scores by name before setting them
-        const sortedScores = [...userScores].sort((a, b) => {
-          if (a.name < b.name) return sortDirection === 'asc' ? -1 : 1;
-          if (a.name > b.name) return sortDirection === 'asc' ? 1 : -1;
-          return 0;
-        });
-        
-        setScores(sortedScores);
+          sharing: doc.data().sharing
+            ? doc.data().sharing.charAt(0).toUpperCase() + doc.data().sharing.slice(1)
+            : "Only me",
+          score_id: doc.id,
+        }))
+
+        setScores(userScores)
+      } catch (error) {
+        console.error("Error fetching scores:", error)
+      } finally {
+        setIsLoading(false)
       }
-    };
-
-    fetchUserScores();
-  }, [user, sortDirection]);
-
-  const handleSort = (column: keyof Score) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortColumn(column)
-      setSortDirection('asc')
     }
 
-    const sortedScores = [...scores].sort((a, b) => {
-      if (a[column] < b[column]) return sortDirection === 'asc' ? -1 : 1
-      if (a[column] > b[column]) return sortDirection === 'asc' ? 1 : -1
-      return 0
-    })
+    fetchUserScores()
+  }, [user])
 
-    setScores(sortedScores)
-  }
-
-  const SortIcon = ({ column }: { column: keyof Score }) => {
-    if (sortColumn !== column) return <ChevronDown className="ml-1 h-4 w-4 text-gray-400" />
-    return sortDirection === 'asc' ? 
-      <ChevronUp className="ml-1 h-4 w-4 text-[#800000]" /> : 
-      <ChevronDown className="ml-1 h-4 w-4 text-[#800000]" />
-  }
-
-  const handleLogout = async () => {
+  const sendMessageToChatGPT = async (message: string) => {
     try {
-      await signOut(auth)
-      router.push('/login')
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: message }],
+        max_tokens: 150,
+      })
+
+      const chatGPTResponse = response.choices[0].message.content?.trim()
+
+      setChatMessages((prevMessages) => {
+        const updatedMessages = [...prevMessages, `MusicAI: ${chatGPTResponse}`]
+        saveChatMessages(updatedMessages)
+        return updatedMessages
+      })
     } catch (error) {
-      console.error('Error signing out:', error)
+      console.error("Error communicating with ChatGPT:", error)
+      setChatMessages((prevMessages) => {
+        const updatedMessages = [...prevMessages, `MusicAI: Sorry, I encountered an error.`]
+        saveChatMessages(updatedMessages)
+        return updatedMessages
+      })
     }
   }
 
-  const toggleChat = () => {
-    setIsChatOpen(!isChatOpen);
-  };
+  const toggleChat = () => setIsChatOpen(!isChatOpen)
 
   const handleChatInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      const input = event.target as HTMLInputElement;
-      const newMessage = input.value.trim();
+    if (event.key === "Enter") {
+      const input = event.target as HTMLInputElement
+      const newMessage = input.value.trim()
       if (newMessage) {
         setChatMessages((prevMessages) => {
-          const updatedMessages = [...prevMessages, `You: ${newMessage}`];
-          saveChatMessages(updatedMessages);
-          return updatedMessages;
-        });
-        sendMessageToChatGPT(newMessage); // Send the message to ChatGPT
-        input.value = ''; // Clear the input field
+          const updatedMessages = [...prevMessages, `You: ${newMessage}`]
+          saveChatMessages(updatedMessages)
+          return updatedMessages
+        })
+        sendMessageToChatGPT(newMessage)
+        input.value = ""
       }
     }
-  };
+  }
 
   React.useEffect(() => {
     if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" })
     }
-  }, [chatMessages]);
+  }, [chatMessages])
 
   const handleDeleteScore = async (scoreId: string) => {
     try {
-      // Delete the score from Firestore
-      await deleteDoc(doc(db, "scores", scoreId));
-      
-      // Update the local state to remove the deleted score
-      setScores(scores.filter(score => score.score_id !== scoreId));
+      await deleteDoc(doc(db, "scores", scoreId))
+      setScores(scores.filter((score) => score.score_id !== scoreId))
     } catch (error) {
-      console.error("Error deleting score:", error);
+      console.error("Error deleting score:", error)
     }
-  };
+  }
+
+  const columns = [
+    {
+      key: "name" as keyof Score,
+      label: t("scoreName"),
+      render: (score: Score) => (
+        <Link href={`/score/${score.score_id}`} className="hover:text-[#800000]">
+          {score.name}
+        </Link>
+      ),
+    },
+    { key: "modified" as keyof Score, label: t("modified") },
+    { key: "sharing" as keyof Score, label: t("sharing") },
+  ]
+
+  const renderActions = (score: Score) => (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" className="p-1">
+          <MoreVertical className="h-5 w-5 text-[#666666]" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-48 p-2">
+        <div className="flex flex-col space-y-2">
+          <Button
+            variant="ghost"
+            className="justify-start text-sm text-red-600"
+            onClick={(e) => {
+              e.stopPropagation()
+              handleDeleteScore(score.score_id)
+            }}
+          >
+            {t("delete")}
+          </Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
 
   return (
     <ProtectedRoute>
@@ -209,74 +193,29 @@ export default function Dashboard() {
         <TopMenu user={user} />
         <main className="max-w-7xl mx-auto px-4 pt-20 pb-6">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-[#333333]">{t('myScores')}</h1>
-   
+            <h1 className="text-2xl font-bold text-[#333333]">{t("myScores")}</h1>
+
             <Link href="/new-score" className="inline-block">
-              <Button className="bg-[#800000] text-white hover:bg-[#600000]">
-                {t('newScore')}
-              </Button>
+              <Button variant="secondary">{t("newScore")}</Button>
             </Link>
           </div>
           <Card className="bg-white shadow-md">
-            <CardContent>
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b">
-                    <th className="py-2 font-medium text-[#333333]">
-                      <button className="flex items-center focus:outline-none" onClick={() => handleSort('name')}>
-                        {t('scoreName')}
-                        <SortIcon column="name" />
-                      </button>
-                    </th>
-                    <th className="py-2 font-medium text-[#333333]">
-                      <button className="flex items-center focus:outline-none" onClick={() => handleSort('modified')}>
-                        {t('modified')}
-                        <SortIcon column="modified" />
-                      </button>
-                    </th>
-                    <th className="py-2 font-medium text-[#333333]">
-                      <button className="flex items-center focus:outline-none" onClick={() => handleSort('sharing')}>
-                        {t('sharing')}
-                        <SortIcon column="sharing" />
-                      </button>
-                    </th>
-                    <th className="py-2"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {scores.map((score) => (
-                    <tr key={score.score_id} className="border-b last:border-b-0">
-                      <td className="py-3 text-[#333333]">
-                        <Link href={`/score/${score.score_id}`}>
-                          {score.name}
-                        </Link>
-                      </td>
-                      <td className="py-3 text-[#666666]">{score.modified}</td>
-                      <td className="py-3 text-[#666666]">{score.sharing}</td>
-                      <td className="py-3">
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button variant="ghost" className="p-1">
-                              <MoreVertical className="h-5 w-5 text-[#666666]" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-48 p-2">
-                            <div className="flex flex-col space-y-2">
-                              <Button 
-                                variant="ghost" 
-                                className="justify-start text-sm text-red-600"
-                                onClick={() => handleDeleteScore(score.score_id)}
-                              >
-                                {t('delete')}
-                              </Button>
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <CardContent className="p-4">
+              {isLoading ? (
+                <div className="py-8 text-center">
+                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#800000] border-r-transparent"></div>
+                  <p className="mt-2 text-gray-500">{t("loading")}</p>
+                </div>
+              ) : (
+                <SortableTable
+                  data={scores}
+                  columns={columns}
+                  initialSortColumn="name"
+                  emptyMessage={t("noScores")}
+                  actions={renderActions}
+                  onRowClick={(score) => router.push(`/score/${score.score_id}`)}
+                />
+              )}
             </CardContent>
           </Card>
         </main>
@@ -284,7 +223,8 @@ export default function Dashboard() {
         {/* Chat Bubble */}
         <button
           onClick={toggleChat}
-          className="fixed bottom-4 right-4 bg-[#800000] text-white p-3 rounded-full shadow-lg hover:bg-[#600000] focus:outline-none"
+          className="fixed bottom-4 right-4 bg-secondary text-white p-3 rounded-full shadow-lg hover:bg-secondary-hover focus:outline-none"
+          aria-label="Open chat"
         >
           <ChatIcon className="h-6 w-6" />
         </button>
@@ -293,8 +233,8 @@ export default function Dashboard() {
         {isChatOpen && (
           <div className="fixed bottom-16 right-4 bg-white shadow-lg rounded-lg w-80 h-96 flex flex-col">
             <div className="flex justify-between items-center p-4 border-b">
-              <h2 className="text-lg font-bold">{t('chat')}</h2>
-              <button onClick={toggleChat} className="text-gray-500 hover:text-gray-700">
+              <h2 className="text-lg font-bold">{t("chat")}</h2>
+              <button onClick={toggleChat} className="text-gray-500 hover:text-gray-700" aria-label="Close chat">
                 <CloseIcon className="h-5 w-5" />
               </button>
             </div>
@@ -303,7 +243,7 @@ export default function Dashboard() {
                 <div
                   key={index}
                   className="mb-2 p-2 bg-gray-200 rounded-lg max-w-xs"
-                  style={{ alignSelf: 'flex-start' }}
+                  style={{ alignSelf: "flex-start" }}
                 >
                   {message}
                 </div>
@@ -313,9 +253,10 @@ export default function Dashboard() {
             <div className="p-4 border-t">
               <input
                 type="text"
-                placeholder={t('typeAMessage')}
+                placeholder={t("typeAMessage")}
                 className="w-full border rounded p-2"
                 onKeyDown={handleChatInputKeyDown}
+                aria-label="Type a message"
               />
             </div>
           </div>

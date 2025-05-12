@@ -1,4 +1,4 @@
-import React from 'react'
+import type React from "react"
 
 export const Card: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ children, className, ...props }) => {
   return (
@@ -24,7 +24,11 @@ export const CardTitle: React.FC<React.HTMLAttributes<HTMLHeadingElement>> = ({ 
   )
 }
 
-export const CardDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement>> = ({ children, className, ...props }) => {
+export const CardDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement>> = ({
+  children,
+  className,
+  ...props
+}) => {
   return (
     <p className={`text-sm text-muted-foreground ${className}`} {...props}>
       {children}
