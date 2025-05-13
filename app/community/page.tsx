@@ -1,13 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { MoreVertical, ChevronUp, ChevronDown, Search } from 'lucide-react'
+import { MoreVertical, ChevronUp, ChevronDown } from 'lucide-react'
 import { Button } from "@/app/components/ui/button"
 import { Card, CardContent } from "@/app/components/ui/card"
-import { Input } from "@/app/components/ui/input"
 import Link from "next/link"
 import { auth } from '@/lib/firebase'
-import { onAuthStateChanged } from 'firebase/auth'
 import { db } from '@/lib/firebase'
 import { collection, getDocs } from 'firebase/firestore'
 import { Timestamp } from 'firebase/firestore'
@@ -15,6 +13,8 @@ import { TopMenu } from "@/app/components/layout/TopMenu"
 import { useCallback, useMemo } from 'react'
 import debounce from 'lodash.debounce'
 import { useTranslation } from 'react-i18next'
+import { useTheme } from "next-themes"
+import { SearchBar } from "@/app/components/common/SearchBar"
 
 interface CommunityScore {
   id: string;
@@ -29,25 +29,33 @@ export default function CommunityPage() {
   const [scores, setScores] = React.useState<CommunityScore[]>([]);
   const [sortColumn, setSortColumn] = React.useState<keyof CommunityScore | null>(null)
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc')
-  const [user, setUser] = React.useState<any>(null)
   const [searchQuery, setSearchQuery] = React.useState("")
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Theme-aware colors
+  const maroonColor = "#800000"
+  const maroonDark = "#e5a3b4"
+  const accentColor = mounted && resolvedTheme === "dark" ? maroonDark : maroonColor
+  
+  // Background colors matching the landing page
+  const pageBg = mounted && resolvedTheme === "dark" ? "#1a1f2c" : "#f3f4f6" 
+  const cardBg = mounted && resolvedTheme === "dark" ? "#242A38" : "white"
+  const inputBg = mounted && resolvedTheme === "dark" ? "#212838" : "#f9fafb"
+  const inputBorder = mounted && resolvedTheme === "dark" ? "#323A4B" : "#e5e7eb"
 
   const debouncedSetSearchQuery = useCallback(
     debounce((query: string) => setSearchQuery(query), 300),
     []
   );
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    debouncedSetSearchQuery(e.target.value);
+  const handleSearchChange = (value: string) => {
+    debouncedSetSearchQuery(value);
   };
-
-  React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user)
-    })
-
-    return () => unsubscribe()
-  }, [])
 
   React.useEffect(() => {
     const fetchScores = async () => {
@@ -96,8 +104,8 @@ export default function CommunityPage() {
   const SortIcon = ({ column }: { column: keyof CommunityScore }) => {
     if (sortColumn !== column) return <ChevronDown className="ml-1 h-4 w-4 text-gray-400" />
     return sortDirection === 'asc' ? 
-      <ChevronUp className="ml-1 h-4 w-4 text-[rgb(128,0,0)]" /> : 
-      <ChevronDown className="ml-1 h-4 w-4 text-[#800000]" />
+      <ChevronUp className="ml-1 h-4 w-4" style={{ color: accentColor }} /> : 
+      <ChevronDown className="ml-1 h-4 w-4" style={{ color: accentColor }} />
   }
 
   const filteredScores = useMemo(() => {
@@ -108,69 +116,65 @@ export default function CommunityPage() {
   }, [scores, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <TopMenu user={user} />
+    <div className="min-h-screen bg-gray-50 dark:bg-[#1a1f2c] transition-colors duration-300" style={{ background: pageBg }}>
+      <TopMenu />
       <main className="max-w-7xl mx-auto px-4 pt-20 pb-6">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-[#333333]">{t('communityScores')}</h1>
+          <h1 className="text-2xl font-bold text-[#333333] dark:text-white">{t('communityScores')}</h1>
           <div className="flex items-center space-x-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input
-                type="text"
-                placeholder={t('searchPlaceholder')}
-                onChange={handleSearchChange}
-                className="pl-10 pr-4 py-2 w-64"
-              />
-            </div>
+            <SearchBar 
+              placeholder={t('searchPlaceholder')}
+              onChange={handleSearchChange}
+              className="w-64"
+            />
           </div>
         </div>
-        <Card className="bg-white shadow-md">
+        <Card className="bg-white shadow-md transition-colors duration-300" style={{ background: cardBg }}>
           <CardContent>
             <table className="w-full text-left">
               <thead>
-                <tr className="border-b">
-                  <th className="py-2 font-medium text-[#333333]">
+                <tr className="border-b dark:border-gray-700">
+                  <th className="py-2 font-medium text-[#333333] dark:text-white">
                     <button className="flex items-center focus:outline-none" onClick={() => handleSort('name')}>
                       {t('scoreName')}
                       <SortIcon column="name" />
                     </button>
                   </th>
-                  <th className="py-2 font-medium text-[#333333]">
+                  <th className="py-2 font-medium text-[#333333] dark:text-white">
                     <button className="flex items-center focus:outline-none" onClick={() => handleSort('author')}>
                       {t('author')}
                       <SortIcon column="author" />
                     </button>
                   </th>
-                  <th className="py-2 font-medium text-[#333333]">
+                  <th className="py-2 font-medium text-[#333333] dark:text-white">
                     <button className="flex items-center focus:outline-none" onClick={() => handleSort('modified')}>
                       {t('modified')}
                       <SortIcon column="modified" />
                     </button>
                   </th>
-                  <th className="py-2">{t('actions')}</th>
+                  <th className="py-2 dark:text-white">{t('actions')}</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredScores.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="py-4 text-center text-gray-500">
+                    <td colSpan={4} className="py-4 text-center text-gray-500 dark:text-gray-400">
                       {t('noScores')}
                     </td>
                   </tr>
                 ) : (
                   filteredScores.map((score) => (
-                    <tr key={score.id} className="border-b last:border-b-0">
-                      <td className="py-3 text-[#333333]">
-                        <Link href={`/score/${score.id}`} className="hover:text-[#800000]">
+                    <tr key={score.id} className="border-b last:border-b-0 dark:border-gray-700">
+                      <td className="py-3 text-[#333333] dark:text-white">
+                        <Link href={`/score/${score.id}`} className="hover:text-[#800000] dark:hover:text-[#e5a3b4]">
                           {score.name}
                         </Link>
                       </td>
-                      <td className="py-3 text-[#666666]">{score.author}</td>
-                      <td className="py-3 text-[#666666]">{score.modified}</td>
+                      <td className="py-3 text-[#666666] dark:text-gray-300">{score.author}</td>
+                      <td className="py-3 text-[#666666] dark:text-gray-300">{score.modified}</td>
                       <td className="py-3">
                         <Button variant="ghost" className="p-1">
-                          <MoreVertical className="h-5 w-5 text-[#666666]" />
+                          <MoreVertical className="h-5 w-5 text-[#666666] dark:text-gray-400" />
                         </Button>
                       </td>
                     </tr>

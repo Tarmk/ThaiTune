@@ -4,6 +4,9 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import I18nProvider from "./providers/i18n-provider"
 import { ErrorBoundary } from "./components/common/ErrorBoundary"
+import { ThemeProvider } from "./providers/theme-provider"
+import AuthProvider from "./providers/auth-provider"
+import PageTransitionProvider from "./components/common/PageTransitionProvider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -22,10 +25,16 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} transition-colors duration-300`}>
         <ErrorBoundary>
-          <I18nProvider>{children}</I18nProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <AuthProvider>
+              <PageTransitionProvider>
+                <I18nProvider>{children}</I18nProvider>
+              </PageTransitionProvider>
+            </AuthProvider>
+          </ThemeProvider>
         </ErrorBoundary>
       </body>
     </html>

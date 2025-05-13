@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { ChevronUp, ChevronDown } from "lucide-react"
+import { useTheme } from "next-themes"
 
 interface SortableTableProps<T> {
   data: T[]
@@ -30,6 +31,17 @@ export function SortableTable<T extends Record<string, any>>({
   const [sortColumn, setSortColumn] = React.useState<keyof T | null>(initialSortColumn || null)
   const [sortDirection, setSortDirection] = React.useState<"asc" | "desc">(initialSortDirection)
   const [sortedData, setSortedData] = React.useState<T[]>(data)
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Theme-aware colors
+  const maroonColor = "#800000"
+  const maroonDark = "#e5a3b4"
+  const accentColor = mounted && resolvedTheme === "dark" ? maroonDark : maroonColor
 
   React.useEffect(() => {
     if (sortColumn) {
@@ -56,18 +68,18 @@ export function SortableTable<T extends Record<string, any>>({
   const SortIcon = ({ column }: { column: keyof T }) => {
     if (sortColumn !== column) return <ChevronDown className="ml-1 h-4 w-4 text-gray-400" />
     return sortDirection === "asc" ? (
-      <ChevronUp className="ml-1 h-4 w-4 text-[#800000]" />
+      <ChevronUp className="ml-1 h-4 w-4" style={{ color: accentColor }} />
     ) : (
-      <ChevronDown className="ml-1 h-4 w-4 text-[#800000]" />
+      <ChevronDown className="ml-1 h-4 w-4" style={{ color: accentColor }} />
     )
   }
 
   return (
     <table className="w-full text-left">
       <thead>
-        <tr className="border-b">
+        <tr className="border-b dark:border-gray-700">
           {columns.map((column) => (
-            <th key={String(column.key)} className="py-2 font-medium text-[#333333]">
+            <th key={String(column.key)} className="py-2 font-medium text-[#333333] dark:text-white">
               {column.sortable !== false ? (
                 <button className="flex items-center focus:outline-none" onClick={() => handleSort(column.key)}>
                   {column.label}
@@ -84,7 +96,7 @@ export function SortableTable<T extends Record<string, any>>({
       <tbody>
         {sortedData.length === 0 ? (
           <tr>
-            <td colSpan={columns.length + (actions ? 1 : 0)} className="py-4 text-center text-gray-500">
+            <td colSpan={columns.length + (actions ? 1 : 0)} className="py-4 text-center text-gray-500 dark:text-gray-400">
               {emptyMessage}
             </td>
           </tr>
@@ -92,11 +104,11 @@ export function SortableTable<T extends Record<string, any>>({
           sortedData.map((item, index) => (
             <tr
               key={index}
-              className={`border-b last:border-b-0 ${onRowClick ? "cursor-pointer hover:bg-gray-50" : ""}`}
+              className={`border-b last:border-b-0 dark:border-gray-700 ${onRowClick ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700" : ""}`}
               onClick={onRowClick ? () => onRowClick(item) : undefined}
             >
               {columns.map((column) => (
-                <td key={String(column.key)} className="py-3 text-[#333333]">
+                <td key={String(column.key)} className="py-3 text-[#333333] dark:text-white">
                   {column.render ? column.render(item) : item[column.key]}
                 </td>
               ))}

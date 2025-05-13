@@ -15,7 +15,7 @@ import {
 import { auth } from '@/lib/firebase'
 import { signOut } from 'firebase/auth'
 import { useRouter } from "next/navigation"
-import { Logo } from "./Logo"
+import { Logo } from "./common/Logo"
 
 interface TopMenuProps {
   user: any;

@@ -4,6 +4,7 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, MessageCircle, X } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { useTheme } from "next-themes"
 
 import { Card, CardContent } from "@/app/components/ui/card"
 import { auth, db } from "@/lib/firebase"
@@ -35,10 +36,24 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
   const router = useRouter()
   const containerRef = React.useRef<HTMLDivElement>(null)
   const embedRef = React.useRef<any>(null)
+  const scriptRef = React.useRef<HTMLScriptElement | null>(null)
   const [isChatOpen, setIsChatOpen] = React.useState(false)
   const [chatMessages, setChatMessages] = React.useState<string[]>([])
   const chatEndRef = React.useRef<HTMLDivElement | null>(null)
   const { t } = useTranslation(["common", "dashboard"])
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+  const [themeKey, setThemeKey] = React.useState(0)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Theme-aware colors
+  const maroonColor = "#800000"
+  const maroonDark = "#e5a3b4"
+  const buttonColor = mounted && resolvedTheme === "dark" ? "#8A3D4C" : "#4A1D2C"
+  const linkColor = mounted && resolvedTheme === "dark" ? maroonDark : maroonColor
 
   const openai = new OpenAI({
     apiKey:
@@ -101,17 +116,41 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
   }, [id, user, authChecked])
 
   React.useEffect(() => {
-    console.log("script")
-    console.log(score)
-    console.log(score?.flatid)
-    if (!score || !score.flatid) return
+    if (mounted) {
+      setThemeKey(prevKey => prevKey + 1)
+    }
+  }, [resolvedTheme, mounted])
+
+  const cleanupEmbed = React.useCallback(() => {
+    if (embedRef.current) {
+      embedRef.current = null
+    }
+    
+    if (scriptRef.current && document.body.contains(scriptRef.current)) {
+      document.body.removeChild(scriptRef.current)
+      scriptRef.current = null
+    }
+  }, [])
+
+  React.useEffect(() => {
+    console.log("Creating embed with theme:", resolvedTheme)
+    console.log("Score:", score)
+    
+    if (!score || !score.flatid || !mounted) return
+    
+    cleanupEmbed()
 
     const script = document.createElement("script")
     script.src = "https://prod.flat-cdn.com/embed-js/v1.5.1/embed.min.js"
     script.async = true
-    console.log("script")
+    scriptRef.current = script
+    
     script.onload = () => {
       if (!containerRef.current || !window.Flat) return
+
+      const embedThemeColor = resolvedTheme === "dark" ? "#8A3D4C" : "#4A1D2C"
+      const embedControlsBackground = resolvedTheme === "dark" ? "#8A3D4C" : "#4A1D2C"
+      const embedScoreBackground = resolvedTheme === "dark" ? "transparent" : "transparent"
 
       embedRef.current = new window.Flat.Embed(containerRef.current, {
         score: score.flatid,
@@ -119,12 +158,16 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
           mode: "view",
           appId: "6755790be2eebcce112acde7",
           branding: false,
-          themePrimary: "#800000",
+          themePrimary: embedThemeColor,
+          themePrimaryDark: embedThemeColor, 
+          themeControlsBackground: embedControlsBackground,
+          themeScoreBackground: embedScoreBackground,
+          themeCursorV0: embedThemeColor,
         },
       })
+      
       embedRef.current.ready().then(() => {
-        // You can use the embed
-        console.log("after ready")
+        console.log("Embed ready with theme:", resolvedTheme)
         embedRef.current
           .getPNG({
             result: "dataURL",
@@ -136,15 +179,13 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
           })
       })
     }
+    
     document.body.appendChild(script)
 
     return () => {
-      if (embedRef.current) {
-        // Clean up by setting to null, no need to call destroy
-        embedRef.current = null
-      }
+      cleanupEmbed()
     }
-  }, [score])
+  }, [score, mounted, resolvedTheme, themeKey, cleanupEmbed])
 
   React.useEffect(() => {
     if (chatEndRef.current) {
@@ -171,7 +212,6 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
 
   const sendMessageToChatGPT = async (message: string) => {
     try {
-      // First get the PNG data
       let pngData = null
       if (embedRef.current) {
         try {
@@ -239,17 +279,23 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-sans">{t("loading", { ns: "dashboard" })}</div>
+      <div className="min-h-screen flex items-center justify-center font-sans dark:bg-gray-900 dark:text-white">
+        {t("loading", { ns: "dashboard" })}
+      </div>
     )
   }
 
   if (error) {
-    return <div className="min-h-screen flex items-center justify-center text-red-500 font-sans">{error}</div>
+    return (
+      <div className="min-h-screen flex items-center justify-center text-red-500 font-sans dark:bg-gray-900">
+        {error}
+      </div>
+    )
   }
 
   if (!score) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-sans">
+      <div className="min-h-screen flex items-center justify-center font-sans dark:bg-gray-900 dark:text-white">
         {t("noScores", { ns: "dashboard" })}
       </div>
     )
@@ -258,31 +304,40 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
   const isOwner = user?.uid === score.userId
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] font-sans">
+    <div className="min-h-screen bg-[#F5F5F5] dark:bg-gray-900 font-sans">
       <TopMenu user={user} />
       <main className="max-w-7xl mx-auto px-4 py-6 mt-16">
         <div className="mb-6">
-          <button onClick={() => router.back()} className="flex items-center text-[#800000] hover:underline">
+          <button 
+            onClick={() => router.back()} 
+            className="flex items-center hover:underline"
+            style={{ color: linkColor }}
+          >
             <ArrowLeft className="mr-2" />
             {t("backToScores", { ns: "dashboard" })}
           </button>
         </div>
-        <h1 className="text-2xl font-bold text-[#333333] mb-4">{score.name}</h1>
-        <p className="text-lg text-[#666666] mb-6">
+        <h1 className="text-2xl font-bold text-[#333333] dark:text-white mb-4">{score.name}</h1>
+        <p className="text-lg text-[#666666] dark:text-gray-300 mb-6">
           {t("by", { ns: "dashboard" })} {score.author}
         </p>
-        <Card className="bg-white shadow-md">
-          <CardContent className="p-4">
-            <div ref={containerRef} style={{ height: "450px", width: "100%" }} />
-          </CardContent>
-        </Card>
-        <div className="mt-6 flex justify-between items-center">
-          <p className="text-sm text-[#666666]">
+        <div className="rounded-lg overflow-hidden mb-6">
+          <Card className="bg-white dark:bg-gray-800 shadow-md flex-1 flex items-stretch rounded-lg">
+            <CardContent className="p-4 flex justify-center items-center w-full">
+              <div key={themeKey} ref={containerRef} style={{ height: "450px", width: "100%" }} className="flex-1 flex items-center justify-center" />
+            </CardContent>
+          </Card>
+        </div>
+        <div className="mt-6 flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+          <p className="text-sm text-[#666666] dark:text-gray-400">
             {t("modified", { ns: "dashboard" })}: {score.modified.toLocaleString()}
           </p>
           {isOwner && (
             <>
-              <button onClick={handleEdit} className="text-[#333333] hover:text-[#800000] font-medium">
+              <button 
+                onClick={handleEdit} 
+                className="font-medium hover:text-[#800000] dark:hover:text-[#e5a3b4] dark:text-white"
+              >
                 {t("edit", { ns: "dashboard" })}
               </button>
             </>
@@ -292,32 +347,33 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
 
       <button
         onClick={toggleChat}
-        className="fixed bottom-4 right-4 bg-secondary text-white p-3 rounded-full shadow-lg hover:bg-secondary-hover focus:outline-none"
+        className="fixed bottom-4 right-4 text-white p-3 rounded-full shadow-lg hover:bg-opacity-90 focus:outline-none"
+        style={{ backgroundColor: buttonColor }}
       >
         <MessageCircle className="h-6 w-6" />
       </button>
 
       {isChatOpen && (
-        <div className="fixed bottom-16 right-4 bg-white shadow-lg rounded-lg w-80 h-96 flex flex-col">
-          <div className="flex justify-between items-center p-4 border-b">
-            <h2 className="text-lg font-bold">{t("chat", { ns: "dashboard" })}</h2>
-            <button onClick={toggleChat} className="text-gray-500 hover:text-gray-700">
+        <div className="fixed bottom-16 right-4 bg-white dark:bg-gray-800 shadow-lg rounded-lg w-80 h-96 flex flex-col">
+          <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
+            <h2 className="text-lg font-bold dark:text-white">{t("chat", { ns: "dashboard" })}</h2>
+            <button onClick={toggleChat} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
               <X className="h-5 w-5" />
             </button>
           </div>
           <div className="flex-1 overflow-y-auto p-4">
             {chatMessages.map((message, index) => (
-              <div key={index} className="mb-2 p-2 bg-gray-200 rounded-lg max-w-xs" style={{ alignSelf: "flex-start" }}>
-                {message}
+              <div key={index} className="mb-2 p-2 bg-gray-200 dark:bg-gray-700 rounded-lg max-w-xs" style={{ alignSelf: "flex-start" }}>
+                <span className="dark:text-white">{message}</span>
               </div>
             ))}
             <div ref={chatEndRef} />
           </div>
-          <div className="p-4 border-t">
+          <div className="p-4 border-t dark:border-gray-700">
             <input
               type="text"
               placeholder={t("typeAMessage", { ns: "dashboard" })}
-              className="w-full border rounded p-2"
+              className="w-full border rounded p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
               onKeyDown={handleChatInputKeyDown}
             />
           </div>

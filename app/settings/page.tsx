@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next"
 import { httpsCallable } from "firebase/functions"
 import { doc, getDoc, setDoc } from "firebase/firestore"
 import { VerificationCodeInput } from "@/app/components/auth/VerificationCodeInput"
+import { useTheme } from "next-themes"
 
 export default function SettingsPage() {
   const [user, setUser] = React.useState<any>(null)
@@ -27,6 +28,17 @@ export default function SettingsPage() {
   const [success, setSuccess] = React.useState<string | null>(null)
   const router = useRouter()
   const { t } = useTranslation()
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+  
+  // Theme-aware colors
+  const maroonColor = "#4A1D2C"
+  const maroonDark = "#8A3D4C"
+  const textColor = mounted && resolvedTheme === "dark" ? "#e5a3b4" : maroonColor
 
   // Fetch user and 2FA settings
   React.useEffect(() => {
@@ -126,7 +138,7 @@ export default function SettingsPage() {
 
   if (showVerification) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
         <VerificationCodeInput
           email={user?.email || ""}
           onVerify={handleVerify}
@@ -139,51 +151,55 @@ export default function SettingsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <TopMenu user={user} />
         <main className="max-w-3xl mx-auto px-4 pt-20 pb-6">
           <div className="mb-6">
-            <button onClick={() => router.back()} className="flex items-center text-[#800000] hover:underline">
+            <button 
+              onClick={() => router.back()} 
+              className="flex items-center hover:underline"
+              style={{ color: textColor }}
+            >
               <ArrowLeft className="mr-2" />
               Back
             </button>
           </div>
 
-          <Card>
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader>
-              <CardTitle className="text-2xl font-bold text-[#333333]">Account Settings</CardTitle>
-              <CardDescription>Manage your account settings and preferences</CardDescription>
+              <CardTitle className="text-2xl font-bold text-[#333333] dark:text-white">Account Settings</CardTitle>
+              <CardDescription className="dark:text-gray-400">Manage your account settings and preferences</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {success && (
-                <Alert className="bg-green-50 border-green-200 text-green-800">
+                <Alert className="bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400">
                   <AlertTitle>Success</AlertTitle>
                   <AlertDescription>{success}</AlertDescription>
                 </Alert>
               )}
 
               <div>
-                <h3 className="text-lg font-medium mb-2">Profile Information</h3>
+                <h3 className="text-lg font-medium mb-2 dark:text-white">Profile Information</h3>
                 <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="text-gray-500">Name</div>
-                  <div>{user?.displayName || "Not set"}</div>
+                  <div className="text-gray-500 dark:text-gray-400">Name</div>
+                  <div className="dark:text-gray-300">{user?.displayName || "Not set"}</div>
                   
-                  <div className="text-gray-500">Email</div>
-                  <div>{user?.email || "Not set"}</div>
+                  <div className="text-gray-500 dark:text-gray-400">Email</div>
+                  <div className="dark:text-gray-300">{user?.email || "Not set"}</div>
                 </div>
               </div>
 
-              <Separator />
+              <Separator className="dark:bg-gray-700" />
               
               <div>
-                <h3 className="text-lg font-medium mb-4">Security</h3>
+                <h3 className="text-lg font-medium mb-4 dark:text-white">Security</h3>
                 
                 <div className="flex items-center justify-between py-2">
                   <div className="flex items-center space-x-2">
-                    <ShieldCheck className="h-5 w-5 text-[#800000]" />
+                    <ShieldCheck className="h-5 w-5" style={{ color: textColor }} />
                     <div>
-                      <p className="font-medium">Two-Factor Authentication</p>
-                      <p className="text-sm text-gray-500">Add an extra layer of security when signing in</p>
+                      <p className="font-medium dark:text-white">Two-Factor Authentication</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Add an extra layer of security when signing in</p>
                     </div>
                   </div>
                   <Switch

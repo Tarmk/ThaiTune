@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation"
 import { collection, query, where, getDocs, updateDoc, doc } from "firebase/firestore"
 import { db } from "@/lib/firebase"
 import { Button } from "@/app/components/ui/button"
+import { useTheme } from "next-themes"
 
 interface EditorProps {
   title: string
@@ -22,6 +23,18 @@ const Editor = ({ title, user }: EditorProps) => {
   const [scoreId, setScoreId] = useState<string | null>(null)
   const maxExports = 5
   const exportInterval = 30000
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Theme-aware colors
+  const maroonColor = "#4A1D2C"
+  const maroonDark = "#8A3D4C"
+  const buttonColor = mounted && resolvedTheme === "dark" ? maroonDark : maroonColor
+  const linkColor = mounted && resolvedTheme === "dark" ? "#e5a3b4" : "#800000"
 
   const createScore = async () => {
     try {
@@ -162,6 +175,11 @@ const Editor = ({ title, user }: EditorProps) => {
         script.onload = () => {
           if (!mounted || !containerRef.current || !window.Flat) return
 
+          // Use theme-aware color for the embed
+          const embedThemeColor = resolvedTheme === "dark" ? "#8A3D4C" : "#4A1D2C"
+          const embedControlsBackground = resolvedTheme === "dark" ? "#1F2937" : "#FFFFFF"
+          const embedScoreBackground = resolvedTheme === "dark" ? "transparent" : "white"
+
           embedRef.current = new window.Flat.Embed(containerRef.current, {
             score: newScoreId,
             embedParams: {
@@ -169,7 +187,11 @@ const Editor = ({ title, user }: EditorProps) => {
               appId: "6755790be2eebcce112acde7",
               branding: false,
               controlsPosition: "top",
-              themePrimary: "#800000",
+              themePrimary: embedThemeColor,
+              themePrimaryDark: embedThemeColor,
+              themeControlsBackground: embedControlsBackground,
+              themeScoreBackground: embedScoreBackground,
+              themeCursorV0: embedThemeColor,
             },
           })
 
@@ -186,7 +208,7 @@ const Editor = ({ title, user }: EditorProps) => {
     return () => {
       mounted = false
     }
-  }, [])
+  }, [resolvedTheme])
 
   useEffect(() => {
     if (!scoreId || exportCount >= maxExports) return
@@ -201,39 +223,43 @@ const Editor = ({ title, user }: EditorProps) => {
   return (
     <main className="max-w-7xl mx-auto px-4 py-6 mt-16">
       <div className="mb-6">
-        <Link href="/dashboard" className="flex items-center text-[#800000] hover:text-[#600000]">
+        <Link 
+          href="/dashboard" 
+          className="flex items-center hover:underline"
+          style={{ color: linkColor }}
+        >
           <ArrowLeft className="mr-2" />
           Back to Score Details
         </Link>
       </div>
 
-      <h1 className="text-2xl font-bold text-[#333333] mb-2">{title}</h1>
-      <p className="text-gray-600 mb-6">By {user?.displayName || "Anonymous"}</p>
+      <h1 className="text-2xl font-bold text-[#333333] dark:text-white mb-2">{title}</h1>
+      <p className="text-gray-600 dark:text-gray-400 mb-6">By {user?.displayName || "Anonymous"}</p>
 
-      <div className="bg-white rounded-lg shadow-md">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <div ref={containerRef} style={{ height: "450px", width: "100%" }} />
-        <div className="p-6 border-t">
+        <div className="p-6 border-t dark:border-gray-700">
           <div className="flex items-center justify-between">
             <Button 
               onClick={() => handleSave(false)}
               className="shadow-sm font-medium transition-transform hover:scale-105"
-              style={{ backgroundColor: "#4A1D2C", color: "white" }}
+              style={{ backgroundColor: buttonColor, color: "white" }}
             >
               Save Version
             </Button>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
               Auto-save: {exportCount}/{maxExports}
             </span>
           </div>
           <div className="mt-4">
-            <h3 className="text-lg font-semibold mb-2">Saved Versions</h3>
+            <h3 className="text-lg font-semibold mb-2 dark:text-white">Saved Versions</h3>
             <div className="space-y-2">
               {getSavedVersions().map((version: any) => (
-                <div key={version.storageKey} className="flex items-center justify-between text-sm">
+                <div key={version.storageKey} className="flex items-center justify-between text-sm dark:text-gray-300">
                   <span>
                     Version {version.version} - {new Date(version.timestamp).toLocaleString()}
                   </span>
-                  <Button onClick={() => loadVersion(version.storageKey)} variant="link">
+                  <Button onClick={() => loadVersion(version.storageKey)} variant="link" style={{ color: linkColor }}>
                     Load
                   </Button>
                 </div>

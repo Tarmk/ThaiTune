@@ -2,10 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft } from "lucide-react"
-import { Card, CardContent } from "@/app/components/ui/card"
-import { Input } from "@/app/components/ui/input"
-import { Label } from "@/app/components/ui/label"
+import { ChevronLeft, ChevronRight, Globe, Lock, Users, Music, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { auth, db } from "@/lib/firebase"
 import { signOut, onAuthStateChanged } from "firebase/auth"
@@ -14,25 +11,71 @@ import { ProtectedRoute } from "@/app/components/auth/protectedroute"
 import CreateNewScorePage2 from "./createNewScore"
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import { useTranslation } from "react-i18next"
-import { Button } from "@/app/components/ui/button"
+import { useTheme } from "next-themes"
+import { useAuth } from "@/app/providers/auth-provider"
 
 export default function NewScoreForm() {
-  const { t } = useTranslation("editor")
-  const [user, setUser] = React.useState<any>(null)
+  const { t, i18n } = useTranslation("editor")
   const [name, setName] = React.useState("")
   const [isLoading, setIsLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [showCreateScore, setShowCreateScore] = React.useState(false)
   const [sharing, setSharing] = React.useState("public")
   const router = useRouter()
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+  const { user } = useAuth()
+  
+  // Debug i18n
+  const [debug, setDebug] = React.useState("")
+  
+  // Make sure translations are loaded
+  React.useEffect(() => {
+    if (i18n.isInitialized) {
+      i18n.reloadResources(i18n.language, ["editor"]).then(() => {
+        console.log("Reloaded editor translations")
+      })
+    }
+  }, [i18n.isInitialized, i18n.language])
 
   React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user)
-    })
-
-    return () => unsubscribe()
+    setMounted(true)
   }, [])
+
+  React.useEffect(() => {
+    // Check if formDescription exists in translations
+    const hasFormDesc = i18n.exists("editor:formDescription")
+    const editorResource = i18n.getResourceBundle(i18n.language, "editor")
+    setDebug(`Has formDescription: ${hasFormDesc}, Current language: ${i18n.language}, Editor resources: ${JSON.stringify(editorResource)}`)
+  }, [i18n.language])
+
+  // The specific maroon color
+  const maroonColor = "#4A1D2C"
+  const maroonDark = "#8A3D4C" 
+  const maroonLighter = "#6A2D3C"
+  const maroonLightest = "#F8F1F3"
+
+  // Use theme-aware colors
+  const buttonColor = mounted && resolvedTheme === "dark" ? maroonDark : maroonColor
+  const bgGradient = mounted && resolvedTheme === "dark" 
+    ? `linear-gradient(to right, ${maroonDark}, #9A4D5C)` 
+    : `linear-gradient(to right, ${maroonColor}, ${maroonLighter})`
+  const iconBgColor = mounted && resolvedTheme === "dark" ? "#3A2D35" : maroonLightest
+  const linkColor = mounted && resolvedTheme === "dark" ? "#e5a3b4" : maroonColor
+
+  // Theme-aware background and text colors
+  const cardBg = mounted && resolvedTheme === "dark" ? "#242A38" : "white"
+  const inputBg = mounted && resolvedTheme === "dark" ? "#212838" : "#f9fafb"
+  const inputBorder = mounted && resolvedTheme === "dark" ? "#323A4B" : "#e5e7eb"
+  const textColor = mounted && resolvedTheme === "dark" ? "white" : "#111827"
+  const labelColor = mounted && resolvedTheme === "dark" ? "#D1D5DB" : "#374151"
+  const subtitleColor = mounted && resolvedTheme === "dark" ? "#9CA3AF" : "#6b7280"
+  const pageBg = mounted && resolvedTheme === "dark" ? "#1a1f2c" : "#f3f4f6"
+  
+  // Option colors
+  const optionBorderInactive = mounted && resolvedTheme === "dark" ? "#323A4B" : "#e5e7eb"
+  const optionBgActive = mounted && resolvedTheme === "dark" ? "rgba(154, 53, 72, 0.1)" : "rgba(74, 29, 44, 0.05)"
+  const optionBorderActive = mounted && resolvedTheme === "dark" ? "#9A3548" : maroonColor
 
   const handleLogout = async () => {
     try {
@@ -76,55 +119,175 @@ export default function NewScoreForm() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-[#F5F5F5]">
-        <TopMenu user={user} />
+      <div className="min-h-screen bg-gray-50 dark:bg-[#1a1f2c] transition-colors duration-300" style={{ background: pageBg }}>
+        <TopMenu />
 
-        <main className="max-w-7xl mx-auto px-4 py-6 mt-16">
-          <div className="mb-6">
-            <Link href="/dashboard" className="flex items-center text-[#800000] hover:underline">
-              <ArrowLeft className="mr-2" />
-              {t("backToMyScores")}
-            </Link>
-          </div>
-          <h1 className="text-2xl font-bold text-[#333333] mb-6 text-center">{t("createNewScore")}</h1>
-          <Card className="w-full max-w-md mx-auto px-4 py-8">
-            <CardContent className="p-6">
-              <form onSubmit={handleSubmit} className="space-y-6 max-w-md mx-auto">
-                {error && <div className="bg-red-50 text-red-500 p-4 rounded-md">{error}</div>}
+        <div className="flex min-h-[calc(100vh-64px)] items-center justify-center p-4 mt-16">
+          <div className="w-full max-w-md rounded-lg shadow-lg overflow-hidden border-0 dark:bg-gray-800 dark:border-gray-700 transition-colors duration-300" style={{ background: cardBg }}>
+            <div className="h-2" style={{ background: bgGradient }}></div>
+            
+            <div className="p-6">
+              <div className="flex flex-col items-center mb-6">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: iconBgColor }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                      d="M9 17.5V5.5L19 4V16"
+                      stroke={buttonColor}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <circle
+                      cx="6"
+                      cy="17.5"
+                      r="3"
+                      stroke={buttonColor}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <circle
+                      cx="16"
+                      cy="16"
+                      r="3"
+                      stroke={buttonColor}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </div>
+                <h1 className="text-2xl font-bold text-center" style={{ color: textColor }}>{t("createNewScore")}</h1>
+                <p className="text-center mt-1 text-sm" style={{ color: subtitleColor }}>
+                  {t("scoreDescription")}
+                </p>
+              </div>
+
+              {error && (
+                <div className="mb-5 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-[#9a3548]/40 p-3">
+                  <p className="flex items-center text-sm font-medium text-red-800 dark:text-red-400">
+                    <AlertCircle className="mr-2 h-4 w-4" />
+                    {error}
+                  </p>
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="name">{t("scoreName")}</Label>
-                  <Input
+                  <label htmlFor="name" className="block text-sm font-medium" style={{ color: labelColor }}>
+                    {t("scoreName")}
+                  </label>
+                  <input
                     id="name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder={t("enterScoreName")}
+                    className="w-full px-4 py-2.5 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#9a3548] focus:border-[#9a3548] border-gray-200 dark:border-gray-700"
+                    style={{ 
+                      background: inputBg, 
+                      borderColor: inputBorder, 
+                      borderWidth: '1px',
+                      borderStyle: 'solid',
+                      color: textColor
+                    }}
                     required
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="sharing">{t("sharingOption")}</Label>
-                  <select
-                    id="sharing"
-                    value={sharing}
-                    onChange={(e) => setSharing(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md p-2"
-                  >
-                    <option value="public">{t("public")}</option>
-                    <option value="private">{t("private")}</option>
-                  </select>
+                  <label className="block text-sm font-medium" style={{ color: labelColor }}>{t("sharingOption")}</label>
+                  <div className="space-y-2">
+                    <div
+                      className={`flex items-center space-x-3 rounded-lg border p-3 cursor-pointer`}
+                      style={{ 
+                        borderColor: sharing === "public" ? optionBorderActive : optionBorderInactive,
+                        background: sharing === "public" ? optionBgActive : 'transparent'
+                      }}
+                      onClick={() => setSharing("public")}
+                    >
+                      <div className="flex items-center justify-center h-5 w-5">
+                        <div
+                          className={`h-3 w-3 rounded-full ${sharing === "public" ? "" : "bg-transparent border border-gray-500"}`}
+                          style={{ background: sharing === "public" ? buttonColor : 'transparent' }}
+                        ></div>
+                      </div>
+                      <Globe className="w-5 h-5" style={{ color: buttonColor }} />
+                      <div className="flex-1">
+                        <div className="font-medium" style={{ color: textColor }}>{t("public")}</div>
+                        <div className="text-xs" style={{ color: subtitleColor }}>{t("publicDescription", "Anyone can view this score")}</div>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`flex items-center space-x-3 rounded-lg border p-3 cursor-pointer`}
+                      style={{ 
+                        borderColor: sharing === "private" ? optionBorderActive : optionBorderInactive,
+                        background: sharing === "private" ? optionBgActive : 'transparent'
+                      }}
+                      onClick={() => setSharing("private")}
+                    >
+                      <div className="flex items-center justify-center h-5 w-5">
+                        <div
+                          className={`h-3 w-3 rounded-full ${sharing === "private" ? "" : "bg-transparent border border-gray-500"}`}
+                          style={{ background: sharing === "private" ? buttonColor : 'transparent' }}
+                        ></div>
+                      </div>
+                      <Lock className="w-5 h-5" style={{ color: buttonColor }} />
+                      <div className="flex-1">
+                        <div className="font-medium" style={{ color: textColor }}>{t("private")}</div>
+                        <div className="text-xs" style={{ color: subtitleColor }}>{t("privateDescription", "Only you can view this score")}</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <Button 
-                  type="submit" 
-                  className="w-full shadow-sm font-medium transition-transform hover:scale-105" 
-                  style={{ backgroundColor: "#4A1D2C", color: "white" }}
+
+                <button
+                  type="submit"
+                  className="w-full text-white py-2.5 rounded-lg transition-colors mt-6 flex items-center justify-center"
+                  style={{ backgroundColor: buttonColor }}
                   disabled={isLoading}
                 >
-                  {isLoading ? t("creating") : t("next")}
-                </Button>
+                  {isLoading ? (
+                    <span className="flex items-center justify-center">
+                      <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      {t("creating")}
+                    </span>
+                  ) : (
+                    <span className="flex items-center">
+                      {t("next")} <ChevronRight className="ml-2 h-4 w-4" />
+                    </span>
+                  )}
+                </button>
               </form>
-            </CardContent>
-          </Card>
-        </main>
+
+              <div className="mt-4 text-center">
+                <Link 
+                  href="/dashboard" 
+                  className="text-sm flex items-center justify-center mx-auto transition-colors"
+                  style={{ color: linkColor }}
+                >
+                  <ChevronLeft className="mr-1 h-4 w-4" />
+                  {t("backToMyScores")}
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </ProtectedRoute>
   )

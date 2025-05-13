@@ -13,7 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
+    --primary: 343 45% 20%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -22,47 +22,47 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 343 15% 95%;
+    --accent-foreground: 343 45% 20%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 343 45% 20%;
 
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 222 47% 10%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 222 47% 12%;
     --card-foreground: 210 40% 98%;
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 222 47% 12%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 343 35% 35%;
+    --primary-foreground: 210 40% 98%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 217.2 32.6% 20%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 217.2 32.6% 20%;
+    --muted-foreground: 215 20.2% 75%;
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 343 35% 15%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.8% 40%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --ring: 343 35% 45%;
   }
 }
 
@@ -73,4 +73,47 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Fix for dark mode */
+html.dark {
+  color-scheme: dark;
+  background-color: #1a1f2c !important; /* Same as dark:bg-[#1a1f2c] */
+}
+
+html.dark body {
+  background-color: #1a1f2c !important;
+}
+
+/* Prevent flash when navigating in dark mode */
+html.dark * {
+  transition: none !important;
+}
+
+/* Apply transitions only after initial load to prevent flashing */
+@media (prefers-reduced-motion: no-preference) {
+  .has-loaded .bg-white,
+  .has-loaded .bg-gray-50,
+  .has-loaded .bg-gray-100,
+  .has-loaded .bg-gray-200,
+  .has-loaded .dark\:bg-\[\#1a1f2c\],
+  .has-loaded .dark\:bg-gray-800,
+  .has-loaded .dark\:bg-gray-900,
+  .has-loaded .dark\:bg-\[\#242A38\],
+  .has-loaded div[style*="background"] {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
+  }
+}
+
+/* Preload backgrounds to prevent flashing */
+body:after {
+  content: "";
+  position: fixed; 
+  left: -9999px;
+  background-color: #1a1f2c;
+  background-color: #242A38;
+  background-color: white;
+  background-color: #f3f4f6;
 }

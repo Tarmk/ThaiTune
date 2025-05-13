@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -9,18 +9,35 @@ import { KeyRound, ArrowRight, AlertCircle, CheckCircle, ArrowLeft } from "lucid
 import Link from "next/link"
 import { sendPasswordResetEmail } from "firebase/auth"
 import { auth } from "@/lib/firebase"
-import { Logo } from "@/app/components/common/Logo"
+import { useTheme } from "next-themes"
+import { usePageTransition } from "../components/common/PageTransitionProvider"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  const { isNavigating } = usePageTransition()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // The specific maroon color
   const maroonColor = "#4A1D2C"
+  const maroonDark = "#8A3D4C" 
   const maroonLighter = "#6A2D3C"
   const maroonLightest = "#F8F1F3"
+
+  // Use theme-aware colors
+  const buttonColor = mounted && resolvedTheme === "dark" ? maroonDark : maroonColor
+  const bgGradient = mounted && resolvedTheme === "dark" 
+    ? `linear-gradient(to right, ${maroonDark}, #9A4D5C)` 
+    : `linear-gradient(to right, ${maroonColor}, ${maroonLighter})`
+  const iconBgColor = mounted && resolvedTheme === "dark" ? "#3A2D35" : maroonLightest
+  const linkColor = mounted && resolvedTheme === "dark" ? "#e5a3b4" : maroonColor
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -55,26 +72,26 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
-      <Card className="w-full max-w-md overflow-hidden border-0 shadow-lg">
-        <div className="h-2" style={{ background: `linear-gradient(to right, ${maroonColor}, ${maroonLighter})` }} />
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+      <Card className="w-full max-w-md overflow-hidden border-0 shadow-lg dark:bg-gray-800 dark:border-gray-700">
+        <div className="h-2" style={{ background: bgGradient }} />
 
         <CardHeader className="space-y-1 pt-6 pb-4">
           <div className="flex justify-center mb-2">
-            <div className="p-3 rounded-full" style={{ backgroundColor: maroonLightest }}>
-              <KeyRound size={40} className="text-primary" style={{ color: maroonColor }} />
+            <div className="p-3 rounded-full" style={{ backgroundColor: iconBgColor }}>
+              <KeyRound size={40} style={{ color: buttonColor }} />
             </div>
           </div>
-          <h2 className="text-center text-2xl font-bold tracking-tight">Reset Password</h2>
-          <p className="text-center text-sm text-gray-500">
+          <h2 className="text-center text-2xl font-bold tracking-tight dark:text-white">Reset Password</h2>
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
             Enter your email to receive a password reset link
           </p>
         </CardHeader>
 
         <CardContent>
           {error && (
-            <div className="rounded-md bg-red-50 p-3 mb-4">
-              <p className="flex items-center text-sm font-medium text-red-800">
+            <div className="rounded-md bg-red-50 dark:bg-red-900/20 p-3 mb-4">
+              <p className="flex items-center text-sm font-medium text-red-800 dark:text-red-400">
                 <AlertCircle className="mr-2 h-4 w-4" />
                 {error}
               </p>
@@ -82,17 +99,17 @@ export default function ForgotPasswordPage() {
           )}
 
           {success ? (
-            <div className="rounded-md bg-green-50 p-4 text-center">
-              <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
-              <h3 className="text-lg font-medium text-green-800 mb-1">Check your email</h3>
-              <p className="text-sm text-green-700">
+            <div className="rounded-md bg-green-50 dark:bg-green-900/20 p-4 text-center">
+              <CheckCircle className="h-8 w-8 text-green-500 dark:text-green-400 mx-auto mb-2" />
+              <h3 className="text-lg font-medium text-green-800 dark:text-green-300 mb-1">Check your email</h3>
+              <p className="text-sm text-green-700 dark:text-green-400">
                 We've sent a password reset link to <strong>{email}</strong>
               </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium">
+                <Label htmlFor="email" className="text-sm font-medium dark:text-gray-300">
                   Email
                 </Label>
                 <div className="relative group">
@@ -103,7 +120,13 @@ export default function ForgotPasswordPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="m@example.com"
                     required
-                    className="h-10 border-gray-200"
+                    className="h-10 border-gray-200 dark:border-gray-700 dark:bg-gray-800"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        document.querySelector("form")?.requestSubmit();
+                      }
+                    }}
                   />
                 </div>
               </div>
@@ -115,8 +138,9 @@ export default function ForgotPasswordPage() {
           {success ? (
             <Link href="/login" className="w-full">
               <Button
-                className="w-full"
-                style={{ backgroundColor: maroonColor }}
+                className={`w-full text-white ${isNavigating ? 'navigation-active' : ''}`}
+                style={{ backgroundColor: buttonColor }}
+                disabled={isNavigating}
               >
                 <span className="flex items-center">
                   <ArrowLeft className="mr-2 h-4 w-4" /> Back to Login
@@ -127,12 +151,12 @@ export default function ForgotPasswordPage() {
             <>
               <Button
                 type="submit"
-                className="w-full text-white"
-                style={{ backgroundColor: maroonColor }}
-                disabled={isLoading || !email}
+                className={`w-full text-white ${isNavigating ? 'navigation-active' : ''}`}
+                style={{ backgroundColor: buttonColor }}
+                disabled={isLoading || !email || isNavigating}
                 onClick={() => document.querySelector("form")?.requestSubmit()}
               >
-                {isLoading ? (
+                {isLoading || isNavigating ? (
                   <span className="flex items-center">
                     <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
                       <circle
@@ -160,8 +184,8 @@ export default function ForgotPasswordPage() {
               </Button>
 
               <div className="text-center text-sm">
-                <span className="text-gray-500">Remember your password?</span>{" "}
-                <Link href="/login" className="font-medium transition-colors" style={{ color: maroonColor }}>
+                <span className="text-gray-500 dark:text-gray-400">Remember your password?</span>{" "}
+                <Link href="/login" className="font-medium transition-colors" style={{ color: linkColor }}>
                   Back to login
                 </Link>
               </div>

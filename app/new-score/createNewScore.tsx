@@ -5,6 +5,7 @@ import { auth } from "@/lib/firebase"
 import { onAuthStateChanged } from "firebase/auth"
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import dynamic from "next/dynamic"
+import { useTheme } from "next-themes"
 
 interface FlatEmbed {
   getMusicXML: (options: { compressed: boolean }) => Promise<ArrayBuffer>
@@ -24,6 +25,12 @@ const Editor = dynamic(() => import("./editor"), { ssr: false })
 // Main component
 const CreateNewScorePage2 = ({ title }: { title: string }) => {
   const [user, setUser] = useState<any>(null)
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -33,7 +40,7 @@ const CreateNewScorePage2 = ({ title }: { title: string }) => {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5]">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <TopMenu user={user} />
       <Editor title={title} user={user} />
     </div>

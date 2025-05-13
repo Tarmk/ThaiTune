@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { useTheme } from "next-themes"
 
 interface ClientProps {
   id: string
@@ -30,12 +31,47 @@ export default function EditScoreClient({ id }: ClientProps) {
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement | null>(null)
   const embedRef = useRef<any>(null)
+  const scriptRef = useRef<HTMLScriptElement | null>(null)
   const initializeRef = useRef(false)
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+  const [themeKey, setThemeKey] = useState(0)
 
   const [exportCount, setExportCount] = useState(0)
   const exportInterval = 30000
   const [sharingSetting, setSharingSetting] = useState<string>("private")
   const [lastSavedTime, setLastSavedTime] = useState<string | null>(null)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Theme-aware colors
+  const maroonColor = "#4A1D2C"
+  const maroonDark = "#8A3D4C"
+  const buttonColor = mounted && resolvedTheme === "dark" ? maroonDark : maroonColor
+  const linkColor = mounted && resolvedTheme === "dark" ? "#e5a3b4" : "#800000"
+
+  // Effect to update themeKey when resolvedTheme changes
+  useEffect(() => {
+    if (mounted) {
+      setThemeKey(prevKey => prevKey + 1)
+    }
+  }, [resolvedTheme, mounted])
+
+  // Clean up function to remove script and reset embed
+  const cleanupEmbed = React.useCallback(() => {
+    // Reset the embed reference
+    if (embedRef.current) {
+      embedRef.current = null
+    }
+    
+    // Remove the script if it exists
+    if (scriptRef.current && document.body.contains(scriptRef.current)) {
+      document.body.removeChild(scriptRef.current)
+      scriptRef.current = null
+    }
+  }, [])
 
   useEffect(() => {
     if (!id) return
@@ -75,11 +111,25 @@ export default function EditScoreClient({ id }: ClientProps) {
   }, [id])
 
   useEffect(() => {
-    if (initializeRef.current || !flatId) return
-    initializeRef.current = true
+    if (!flatId || !mounted) return
+    
+    // Clean up previous embed and script
+    cleanupEmbed()
+    
+    console.log("Creating embed with theme:", resolvedTheme)
 
-    const initializeEmbed = () => {
+    const script = document.createElement("script")
+    script.src = "https://prod.flat-cdn.com/embed-js/v1.5.1/embed.min.js"
+    script.async = true
+    scriptRef.current = script
+    
+    script.onload = () => {
       if (containerRef.current && window.Flat && flatId) {
+        // Use theme-aware color for the embed
+        const embedThemeColor = resolvedTheme === "dark" ? "#8A3D4C" : "#4A1D2C"
+        const embedControlsBackground = resolvedTheme === "dark" ? "#1F2937" : "#FFFFFF"
+        const embedScoreBackground = resolvedTheme === "dark" ? "transparent" : "white"
+        
         embedRef.current = new window.Flat.Embed(containerRef.current, {
           score: flatId,
           embedParams: {
@@ -87,19 +137,29 @@ export default function EditScoreClient({ id }: ClientProps) {
             appId: "6755790be2eebcce112acde7",
             branding: false,
             controlsPosition: "top",
-            themePrimary: "#800000",
+            themePrimary: embedThemeColor,
+            themePrimaryDark: embedThemeColor,
+            themeControlsBackground: embedControlsBackground,
+            themeScoreBackground: embedScoreBackground,
+            themeCursorV0: embedThemeColor,
+            themePageBackgroundV0: resolvedTheme === "dark" ? "#272727" : "white",
+            themePageMarginBackgroundV0: resolvedTheme === "dark" ? "#272727" : "white",
+            themePageColor: resolvedTheme === "dark" ? "#FFFFFF" : "#000000",
+            themeTimeSignatureV0: resolvedTheme === "dark" ? "#FFFFFF" : "#000000",
+            themeColorWe: resolvedTheme === "dark" ? "#FFFFFF" : "#000000",
+            forceBackgroundMode: resolvedTheme === "dark" ? "dark" : "light",
           },
         })
-        console.log("Embed ref set")
+        console.log("Embed ready with theme:", resolvedTheme)
       }
     }
-
-    const script = document.createElement("script")
-    script.src = "https://prod.flat-cdn.com/embed-js/v1.5.1/embed.min.js"
-    script.async = true
-    script.onload = initializeEmbed
+    
     document.body.appendChild(script)
-  }, [flatId])
+
+    return () => {
+      cleanupEmbed()
+    }
+  }, [flatId, mounted, resolvedTheme, themeKey, cleanupEmbed])
 
   const handleManualSave = async () => {
     if (embedRef.current && flatId) {
@@ -254,36 +314,40 @@ export default function EditScoreClient({ id }: ClientProps) {
   }
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>
+    return <div className="min-h-screen flex items-center justify-center dark:bg-gray-900 dark:text-white">Loading...</div>
   }
 
   if (error) {
-    return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>
+    return <div className="min-h-screen flex items-center justify-center text-red-500 dark:bg-gray-900">{error}</div>
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5]">
+    <div className="min-h-screen bg-[#F5F5F5] dark:bg-gray-900">
       <TopMenu user={user} />
       <main className="max-w-7xl mx-auto px-4 py-6 mt-16">
         <div className="mb-6">
-          <button onClick={() => router.back()} className="flex items-center text-[#800000] hover:underline">
+          <button 
+            onClick={() => router.back()} 
+            className="flex items-center hover:underline"
+            style={{ color: linkColor }}
+          >
             <ArrowLeft className="mr-2" />
             {t("back")}
           </button>
         </div>
 
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-[#333333]">{title}</h1>
+          <h1 className="text-2xl font-bold text-[#333333] dark:text-white">{title}</h1>
           <div className="flex items-center space-x-4">
             <div className="flex items-center">
-              <label htmlFor="sharing" className="mr-2 text-[#666666]">
+              <label htmlFor="sharing" className="mr-2 text-[#666666] dark:text-gray-300">
                 {t("sharing")}:
               </label>
               <select
                 id="sharing"
                 value={sharingSetting}
                 onChange={handleSharingChange}
-                className="border border-gray-300 rounded px-2 py-1"
+                className="border border-gray-300 rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               >
                 <option value="private">{t("private")}</option>
                 <option value="public">{t("public")}</option>
@@ -293,7 +357,7 @@ export default function EditScoreClient({ id }: ClientProps) {
             <Button 
               onClick={handleManualSave} 
               className="shadow-sm font-medium transition-transform hover:scale-105"
-              style={{ backgroundColor: "#4A1D2C", color: "white" }}
+              style={{ backgroundColor: buttonColor, color: "white" }}
             >
               {t("save")}
             </Button>
@@ -301,16 +365,31 @@ export default function EditScoreClient({ id }: ClientProps) {
         </div>
 
         {lastSavedTime && (
-          <p className="text-sm text-[#666666] mb-4">
+          <p className="text-sm text-[#666666] dark:text-gray-400 mb-4">
             {t("lastSaved")}: {lastSavedTime}
           </p>
         )}
 
-        <Card className="bg-white shadow-md mb-6">
-          <CardContent className="p-4">
-            <div ref={containerRef} style={{ height: "600px", width: "100%" }} />
-          </CardContent>
-        </Card>
+        <div className="rounded-lg overflow-hidden mb-6">
+          <Card className="bg-white dark:bg-gray-800 shadow-md flex-1 flex items-stretch rounded-lg">
+            <CardContent className="p-4 flex justify-center items-center w-full">
+              <div key={themeKey} ref={containerRef} style={{ height: "600px", width: "100%" }} className="flex-1 flex items-center justify-center" />
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mt-4">
+          <h3 className="text-lg font-semibold mb-2 dark:text-white">{t("savedVersions")}</h3>
+          <div className="space-y-2">
+            {JSON.parse(localStorage.getItem(`score_${title}_versions`) || "[]").map((version: any) => (
+              <div key={version.storageKey} className="flex items-center justify-between text-sm dark:text-gray-300">
+                <span>
+                  {version.version} - {new Date(version.timestamp).toLocaleString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
       </main>
     </div>
   )

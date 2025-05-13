@@ -6,24 +6,36 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { MusicIcon, Code, Headphones, ArrowRight } from "lucide-react"
 import Image from "next/image"
+import { useEffect, useState } from "react"
+import { useTheme } from "next-themes"
 
 export default function Main() {
   const { t, ready } = useTranslation("common")
+  const [isClient, setIsClient] = useState(false)
+  const { theme } = useTheme()
+
+  // Set isClient to true on component mount
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // Theme colors
   const maroonColor = "#4A1D2C"
   const maroonLighter = "#6A2D3C"
   const maroonLightest = "#F8F1F3"
+  const maroonDark = "#8A3D4C"
 
-  if (!ready) {
+  // Show loading placeholder when translations aren't ready
+  // or when not yet mounted on the client
+  if (!ready || !isClient) {
     return (
-      <main className="flex-1 pt-16">
+      <main className="flex-1 pt-16 dark:bg-[#1a1f2c]">
         <div className="container px-4 md:px-6 max-w-7xl mx-auto">
           <div className="h-[600px] flex items-center justify-center">
             <div className="animate-pulse">
-              <div className="h-12 w-96 bg-gray-200 rounded mb-4"></div>
-              <div className="h-6 w-72 bg-gray-200 rounded mb-8"></div>
-              <div className="h-10 w-32 bg-gray-200 rounded"></div>
+              <div className="h-12 w-96 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
+              <div className="h-6 w-72 bg-gray-200 dark:bg-gray-700 rounded mb-8"></div>
+              <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
             </div>
           </div>
         </div>
@@ -32,7 +44,7 @@ export default function Main() {
   }
 
   return (
-    <main className="flex-1 min-h-screen bg-gray-50 pt-16">
+    <main className="flex-1 min-h-screen bg-gray-50 dark:bg-[#1a1f2c] pt-16">
       {/* Hero Section */}
       <div className="w-full py-24">
         <div className="container px-4 md:px-6 max-w-7xl mx-auto">
@@ -40,19 +52,21 @@ export default function Main() {
             <div className="flex flex-col justify-center space-y-8">
               <div className="space-y-6">
                 <div className="inline-block rounded-full px-3 py-1 text-sm font-medium" 
-                  style={{ backgroundColor: maroonLightest, color: maroonColor }}>
+                  style={{ 
+                    backgroundColor: theme === 'dark' ? 'rgba(138, 61, 76, 0.2)' : maroonLightest, 
+                    color: theme === 'dark' ? '#e5a3b4' : maroonColor
+                  }}>
                   {t("newFeature")}
                 </div>
-                <h1 className="text-5xl font-bold tracking-tight text-gray-900 lg:text-6xl/none leading-tight">
+                <h1 className="text-5xl font-bold tracking-tight text-gray-900 dark:text-white lg:text-6xl/none leading-tight">
                   {t("learnTitle")}
                 </h1>
-                <p className="text-xl text-gray-500 max-w-[600px]">{t("description")}</p>
+                <p className="text-xl text-gray-500 dark:text-gray-300 max-w-[600px]">{t("description")}</p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link href="/signup">
                   <Button 
-                    className="text-base px-6 py-3 shadow-md transition-transform hover:scale-105"
-                    style={{ backgroundColor: maroonColor }}
+                    className="text-base px-6 py-3 shadow-md transition-transform hover:scale-105 bg-[#4A1D2C] hover:bg-[#3A1520] dark:bg-[#8A3D4C] dark:hover:bg-[#6A2D3C] text-white"
                   >
                     {t("getStarted")}
                     <ArrowRight className="ml-2 h-4 w-4" />
@@ -60,9 +74,8 @@ export default function Main() {
                 </Link>
                 <Link href="/community">
                   <Button 
-                    variant="ghost" 
-                    className="text-base px-6 py-3 border"
-                    style={{ borderColor: maroonColor, color: maroonColor }}
+                    variant="outline" 
+                    className="text-base px-6 py-3 border-[#4A1D2C] text-[#4A1D2C] dark:border-[#8A3D4C] dark:text-gray-200 hover:bg-[#F8F1F3] dark:hover:bg-[#232838]"
                   >
                     {t("exploreCommunity")}
                   </Button>
@@ -83,11 +96,11 @@ export default function Main() {
       </div>
 
       {/* Features Section */}
-      <div className="w-full py-24 bg-white">
+      <div className="w-full py-24 bg-white dark:bg-[#232838]">
         <div className="container px-4 md:px-6 max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">{t("widenRepertoire")}</h2>
-            <p className="text-xl text-gray-500 max-w-3xl mx-auto">{t("uploadDescription")}</p>
+            <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 dark:text-white">{t("widenRepertoire")}</h2>
+            <p className="text-xl text-gray-500 dark:text-gray-300 max-w-3xl mx-auto">{t("uploadDescription")}</p>
           </div>
           
           <div className="grid gap-8 md:grid-cols-3">
@@ -96,14 +109,19 @@ export default function Main() {
               { icon: <Code className="h-8 w-8" />, title: t("feature2Title"), description: t("feature2Desc") },
               { icon: <Headphones className="h-8 w-8" />, title: t("feature3Title"), description: t("feature3Desc") }
             ].map((feature, index) => (
-              <Card key={index} className="border-0 shadow-lg overflow-hidden">
-                <div className="h-1" style={{ background: `linear-gradient(to right, ${maroonColor}, ${maroonLighter})` }} />
+              <Card key={index} className="border-0 shadow-lg overflow-hidden dark:bg-[#2a3349] dark:border-none">
+                <div className="h-1" style={{ background: `linear-gradient(to right, ${theme === 'dark' ? '#8A3D4C' : maroonColor}, ${theme === 'dark' ? '#af5169' : maroonLighter})` }} />
                 <CardContent className="p-6">
-                  <div className="rounded-full p-2 mb-5 inline-block" style={{ backgroundColor: maroonLightest }}>
-                    <div style={{ color: maroonColor }}>{feature.icon}</div>
+                  <div 
+                    className="rounded-full p-2 mb-5 inline-block" 
+                    style={{ 
+                      backgroundColor: theme === 'dark' ? 'rgba(138, 61, 76, 0.2)' : maroonLightest,
+                    }}
+                  >
+                    <div style={{ color: theme === 'dark' ? '#e5a3b4' : maroonColor }}>{feature.icon}</div>
                   </div>
-                  <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
-                  <p className="text-gray-500">{feature.description}</p>
+                  <h3 className="text-xl font-bold mb-2 dark:text-white">{feature.title}</h3>
+                  <p className="text-gray-500 dark:text-gray-300">{feature.description}</p>
                 </CardContent>
               </Card>
             ))}
@@ -112,17 +130,17 @@ export default function Main() {
       </div>
       
       {/* Editor Preview Section */}
-      <div className="w-full py-24 bg-gray-50">
+      <div className="w-full py-24 bg-gray-50 dark:bg-[#1a1f2c]">
         <div className="container px-4 md:px-6 max-w-7xl mx-auto">
           <div className="space-y-12">
             <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">{t("advancedEditor")}</h2>
-              <p className="text-xl text-gray-500">{t("editorDescription")}</p>
+              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4 dark:text-white">{t("advancedEditor")}</h2>
+              <p className="text-xl text-gray-500 dark:text-gray-300">{t("editorDescription")}</p>
             </div>
-            <div className="relative rounded-xl overflow-hidden shadow-2xl bg-white aspect-[2/1]">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#4A1D2C]/5 to-[#8A3D4C]/5"></div>
+            <div className="relative rounded-xl overflow-hidden shadow-2xl bg-white dark:bg-[#2a3349] aspect-[2/1]">
+              <div className="absolute inset-0 bg-gradient-to-br from-[#4A1D2C]/5 to-[#8A3D4C]/5 dark:from-[#8A3D4C]/10 dark:to-[#af5169]/10"></div>
               <div className="w-full h-full flex items-center justify-center">
-                <span className="text-gray-400">{t("editorInterface")}</span>
+                <span className="text-gray-400 dark:text-gray-300">{t("editorInterface")}</span>
               </div>
             </div>
           </div>

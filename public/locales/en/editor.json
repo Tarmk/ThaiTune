@@ -21,6 +21,10 @@
   "sharingOption": "Sharing Option",
   "next": "Next",
   "creating": "Creating...",
+  "scoreDescription": "Fill in the details below to create a new music score",
+  "formDescription": "Fill in the details below to create a new music score",
+  "publicDescription": "Anyone can view this score",
+  "privateDescription": "Only you can view this score",
   "errors": {
     "loginRequired": "You must be logged in to create a score",
     "nameRequired": "Score name is required",
