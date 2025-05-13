@@ -130,27 +130,37 @@ export function TopMenu({ user }: TopMenuProps) {
           )}
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
-              <Button variant="ghost" className="w-10 px-0" aria-label="Change language">
-                {language === 'en' ? '🇺🇸' : '🇹🇭'}
+              <Button 
+                variant="ghost" 
+                className="flex items-center justify-center rounded-full w-8 h-8 p-0 border border-[#4A1D2C] hover:bg-[#F8F1F3] hover:text-[#4A1D2C]" 
+                aria-label="Change language"
+              >
+                <span className="text-sm">{language === 'en' ? '🇺🇸' : '🇹🇭'}</span>
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-48 p-2">
-              <div className="space-y-2">
+            <PopoverContent className="w-52 p-2 rounded-lg border-[#4A1D2C] shadow-md">
+              <div className="space-y-1">
                 <button
-                  className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 ${
-                    language === 'en' ? 'text-[#800000]' : 'text-gray-600'
+                  className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-2 transition-colors ${
+                    language === 'en' 
+                      ? 'bg-[#F8F1F3] text-[#4A1D2C] font-medium' 
+                      : 'text-gray-600 hover:bg-gray-100'
                   }`}
                   onClick={() => handleLanguageChange('en')}
                 >
-                  🇺🇸 English
+                  <span className="text-base">🇺🇸</span>
+                  <span>English</span>
                 </button>
                 <button
-                  className={`w-full text-left px-2 py-1 rounded hover:bg-gray-100 ${
-                    language === 'th' ? 'text-[#800000]' : 'text-gray-600'
+                  className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-2 transition-colors ${
+                    language === 'th' 
+                      ? 'bg-[#F8F1F3] text-[#4A1D2C] font-medium' 
+                      : 'text-gray-600 hover:bg-gray-100'
                   }`}
                   onClick={() => handleLanguageChange('th')}
                 >
-                  🇹🇭 ไทย
+                  <span className="text-base">🇹🇭</span>
+                  <span>ไทย</span>
                 </button>
               </div>
             </PopoverContent>
