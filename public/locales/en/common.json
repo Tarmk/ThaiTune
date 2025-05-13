@@ -9,5 +9,15 @@
   "widenRepertoire": "Widen your Thai Music Repertoire",
   "uploadDescription": "ThaiTune allows you to upload your favorite Thai Traditional Songs, whilst accessing other songs uploaded by users.",
   "editorInterface": "Music Score Editor Interface",
-  "myScore": "My Score"
+  "myScore": "My Score",
+  "newFeature": "New Features",
+  "exploreCommunity": "Explore Community",
+  "feature1Title": "Create Music Scores",
+  "feature1Desc": "Create and edit Thai traditional music scores with our intuitive editor",
+  "feature2Title": "Share Your Knowledge",
+  "feature2Desc": "Contribute to the community by sharing your musical expertise",
+  "feature3Title": "Learn New Melodies",
+  "feature3Desc": "Discover and learn new traditional Thai melodies from our growing collection",
+  "advancedEditor": "Advanced Music Score Editor",
+  "editorDescription": "A powerful yet easy-to-use editor designed specifically for Thai traditional music"
 }
