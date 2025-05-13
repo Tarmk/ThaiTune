@@ -2,8 +2,8 @@
 
 import Link from "next/link"
 import { useTranslation } from 'react-i18next'
-import { Button } from './Button'
-import { ChevronDown, LogOut, User, Settings, HelpCircle } from 'lucide-react'
+import { Button } from '../Button'
+import { ChevronDown, LogOut, User, Settings, HelpCircle, Lock } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/popover"
 import { useState } from 'react'
 import {
@@ -11,10 +11,11 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu"
+} from "../ui/dropdown-menu"
 import { auth } from '@/lib/firebase'
 import { signOut } from 'firebase/auth'
 import { useRouter } from "next/navigation"
+import { Logo } from "../common/Logo"
 
 interface TopMenuProps {
   user: any;
@@ -50,13 +51,13 @@ export function TopMenu({ user }: TopMenuProps) {
       <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center px-6 border-b border-gray-100 bg-white">
       
         <nav className="flex flex-1 items-center gap-12">
-          <Link className="flex items-center gap-3" href={user ? "/dashboard" : "/"}>
-            <div className="flex items-center gap-3">
-              <div className="rounded-lg bg-[#4A1D2C] p-1.5 w-9 h-9 flex items-center justify-center">
-              </div>
-              <span className="text-lg font-bold text-gray-900">ThaiTune</span>
-            </div>
-          </Link>
+          <Logo 
+            size="md" 
+            withText={true} 
+            variant="primary" 
+            borderRadius="rounded-lg" 
+            href={user ? "/dashboard" : "/"} 
+          />
           {user ? (
             <div className="hidden md:flex items-center gap-8">
               <Link href="/dashboard">
@@ -157,4 +158,4 @@ export function TopMenu({ user }: TopMenuProps) {
       </header>
     </div>
   )
-} 
+}

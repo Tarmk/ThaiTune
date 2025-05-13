@@ -9,7 +9,7 @@ import { KeyRound, ArrowRight, AlertCircle, CheckCircle, ArrowLeft } from "lucid
 import Link from "next/link"
 import { sendPasswordResetEmail } from "firebase/auth"
 import { auth } from "@/lib/firebase"
-import { Logo } from "@/app/components/Logo"
+import { Logo } from "@/app/components/common/Logo"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
@@ -61,7 +61,9 @@ export default function ForgotPasswordPage() {
 
         <CardHeader className="space-y-1 pt-6 pb-4">
           <div className="flex justify-center mb-2">
-            <Logo size="lg" variant="primary" withText={false} />
+            <div className="p-3 rounded-full" style={{ backgroundColor: maroonLightest }}>
+              <KeyRound size={40} className="text-primary" style={{ color: maroonColor }} />
+            </div>
           </div>
           <h2 className="text-center text-2xl font-bold tracking-tight">Reset Password</h2>
           <p className="text-center text-sm text-gray-500">

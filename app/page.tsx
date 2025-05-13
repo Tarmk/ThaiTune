@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import Footer from "@/app/components/Footer"
-import Main from "@/app/components/Main"
-import { TopMenu } from "@/app/components/TopMenu"
+import Footer from "@/app/components/layout/Footer"
+import Main from "@/app/components/layout/Main"
+import { TopMenu } from "@/app/components/layout/TopMenu"
 import { useTranslation } from "react-i18next"
 
 export default function HomePage() {

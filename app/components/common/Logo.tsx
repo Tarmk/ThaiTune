@@ -7,6 +7,7 @@ interface LogoProps {
   href?: string
   variant?: "primary" | "secondary"
   borderRadius?: string
+  transparent?: boolean
 }
 
 export function Logo({
@@ -15,6 +16,7 @@ export function Logo({
   href = "/",
   variant = "primary",
   borderRadius = "rounded-lg", // Default rounded corners
+  transparent = false,
 }: LogoProps) {
   const sizeClasses = {
     sm: "w-8 h-8",
@@ -27,11 +29,13 @@ export function Logo({
     secondary: "text-[#800000]",
   }
 
+  const logoPath = transparent ? "/images/thaitune-logo-transparent.png" : "/images/thaitune-logo.png"
+
   const logoContent = (
     <div className="flex items-center gap-2">
       <div className={`relative ${sizeClasses[size]} overflow-hidden ${borderRadius}`}>
         <Image
-          src="/images/thaitune-logo.png"
+          src={logoPath}
           alt="ThaiTune Logo"
           width={512}
           height={512}

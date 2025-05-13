@@ -25,7 +25,7 @@ export default function Main() {
 
   return (
     <main className="flex-1 pt-16">
-      <section className="w-full py-20">
+      <div className="w-full py-20">
         <div className="container px-4 md:px-6 max-w-7xl mx-auto">
           <div className="grid gap-12 lg:grid-cols-2">
             <div className="flex flex-col justify-center space-y-8">
@@ -48,9 +48,9 @@ export default function Main() {
             </div>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section className="w-full py-20 bg-gray-50">
+      <div className="w-full py-20 bg-gray-50">
         <div className="container px-4 md:px-6 max-w-7xl mx-auto">
           <div className="space-y-12">
             <div className="max-w-3xl mx-auto text-center">
@@ -62,7 +62,7 @@ export default function Main() {
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </main>
   )
 }

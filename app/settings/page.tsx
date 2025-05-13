@@ -10,11 +10,12 @@ import { Separator } from "@/app/components/ui/separator"
 import { Alert, AlertDescription, AlertTitle } from "@/app/components/ui/alert"
 import { auth, db, functions } from "@/lib/firebase"
 import { onAuthStateChanged } from "firebase/auth"
-import { ProtectedRoute } from "@/app/components/protectedroute"
+import { ProtectedRoute } from "@/app/components/auth/protectedroute"
 import { TopMenu } from "@/app/components/TopMenu"
 import { useTranslation } from "react-i18next"
 import { httpsCallable } from "firebase/functions"
-import { VerificationCodeInput } from "@/app/components/VerificationCodeInput"
+import { doc, getDoc, setDoc } from "firebase/firestore"
+import { VerificationCodeInput } from "@/app/components/auth/VerificationCodeInput"
 
 export default function SettingsPage() {
   const [user, setUser] = React.useState<any>(null)

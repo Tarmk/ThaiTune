@@ -2,8 +2,8 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import I18nProvider from "./components/I18nProvider"
-import { ErrorBoundary } from "./components/ErrorBoundary"
+import I18nProvider from "./providers/i18n-provider"
+import { ErrorBoundary } from "./components/common/ErrorBoundary"
 
 const inter = Inter({ subsets: ["latin"] })
 

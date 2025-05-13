@@ -10,7 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/app/components/ui/pop
 import Link from "next/link"
 import { auth, db } from "@/lib/firebase"
 import { onAuthStateChanged } from "firebase/auth"
-import { ProtectedRoute } from "@/app/components/protectedroute"
+import { ProtectedRoute } from "@/app/components/auth/protectedroute"
 import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore"
 import { TopMenu } from "@/app/components/TopMenu"
 import { SortableTable } from "@/app/components/SortableTable"

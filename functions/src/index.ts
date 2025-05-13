@@ -114,7 +114,7 @@ export const sendVerificationCode = functions.https.onCall(
             <div class="container">
               <div class="email-wrapper">
                 <div class="header">
-                  <img src="https://thaitune.com/images/thaitune-logo.png" alt="ThaiTune Logo" class="logo">
+                  <img src="https://melodify-d762b.web.app/images/thaitune-logo-transparent.png" alt="ThaiTune Logo" class="logo">
                   <h1>Verify Your Email</h1>
                 </div>
                 <div class="content">
@@ -276,7 +276,7 @@ export const send2faCode = functions.https.onCall(
             <div class="container">
               <div class="email-wrapper">
                 <div class="header">
-                  <img src="https://thaitune.com/images/thaitune-logo.png" alt="ThaiTune Logo" class="logo">
+                  <img src="https://melodify-d762b.web.app/images/thaitune-logo-transparent.png" alt="ThaiTune Logo" class="logo">
                   <h1>Two-Factor Authentication</h1>
                 </div>
                 <div class="content">

@@ -1,51 +1,131 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ThaiTune - Traditional Thai Music Platform
+
+ThaiTune is a web platform dedicated to preserving, sharing, and exploring traditional Thai music. This application allows users to create, edit, and share musical scores, while connecting with a community of enthusiasts.
+
+![ThaiTune Preview](public/images/thaitune-logo.png)
+
+## Features
+
+- **User Authentication**: Secure login with email/password and two-factor authentication
+- **Personal Dashboard**: Create and manage your music scores
+- **Score Editor**: Intuitive interface for composing traditional Thai music
+- **Community**: Share your compositions and discover others' work
+- **Multi-language Support**: Available in English and Thai
+- **AI Assistant**: Get help with music theory and composition through the integrated chat
+
+## Tech Stack
+
+- **Frontend**: Next.js, React, TypeScript, Tailwind CSS
+- **Backend**: Firebase (Authentication, Firestore, Cloud Functions)
+- **State Management**: React Context API, useState/useEffect
+- **Internationalization**: i18next
+- **UI Components**: Radix UI, shadcn/ui
+- **AI Integration**: OpenAI API
 
 ## Getting Started
-test from remote
-First, run the development server:
 
-\`\`\`bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-\`\`\`
+### Prerequisites
 
+- Node.js (v18 or later)
+- npm or pnpm
+- Firebase account
 
+### Installation
 
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/thaitune.git
+   cd thaitune
+   ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   pnpm install
+   ```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Set up environment variables:
+   Create a `.env.local` file with the following variables:
+   ```
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+   NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
+   OPENAI_API_KEY=your_openai_api_key
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Start the development server:
+   ```bash
+   npm run dev
+   # or
+   pnpm dev
+   ```
 
-## Learn More
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-To learn more about Next.js, take a look at the following resources:
+### Firebase Configuration
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Create a Firebase project at [firebase.google.com](https://firebase.google.com)
+2. Enable Authentication (Email/Password)
+3. Create a Firestore database
+4. Deploy Cloud Functions (located in the `functions` directory):
+   ```bash
+   firebase deploy --only functions
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+The project follows a modular architecture for better maintainability. See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for detailed information about the codebase organization.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+├── app/                    # Next.js App Router
+│   ├── components/         # React components
+│   │   ├── auth/           # Authentication components
+│   │   ├── common/         # Common/shared components
+│   │   ├── layout/         # Layout components
+│   │   └── ui/             # UI components (buttons, inputs, etc.)
+│   ├── providers/          # React context providers
+│   └── [route folders]/    # Page routes
+├── functions/              # Firebase Cloud Functions
+├── lib/                    # Utility libraries and functions
+├── public/                 # Static assets
+└── styles/                 # Global styles
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Development
 
+### Scripts
 
-npm run build --verbose
+- `npm run dev`: Start development server
+- `npm run build`: Build for production
+- `npm run start`: Start production server
+- `npm run lint`: Run linting
 
+### Firebase Deployment
+
+Deploy the entire application to Firebase:
+
+```bash
+npm run build
+firebase deploy
+```
+
+## Troubleshooting
+
+If you encounter build timeout issues, try increasing the timeout limit:
+
+```bash
 NEXT_DEBUG=true npm run build
+```
 
+## License
 
-Failed to build /community/page: /community (attempt 1 of 3) because it took more than 60 seconds. Retrying again shortly.
-Failed to build /new-score/page: /new-score (attempt 1 of 3) because it took more than 60 seconds. Retrying again shortly.
-Failed to build /login/page: /login (attempt 1 of 3) because it took more than 60 seconds. Retrying again shortly.
-Failed to build /signup/page: /signup (attempt 1 of 3) because it took more than 60 seconds. Retrying again shortly.
-Failed to build /page: / (attempt 1 of 3) because it took more than 60 seconds. Retrying again shortly.
+This project is licensed under the MIT License.
+
+## Acknowledgments
+
+- Thai traditional music community
+- All open-source libraries and frameworks used in this project 
