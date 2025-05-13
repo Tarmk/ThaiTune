@@ -52,7 +52,7 @@ export function TopMenu({ user }: TopMenuProps) {
       
         <nav className="flex flex-1 items-center gap-12">
           <Logo 
-            size="md" 
+            size="lg" 
             withText={true} 
             variant="primary" 
             borderRadius="rounded-lg" 
