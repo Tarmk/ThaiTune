@@ -74,7 +74,7 @@ export const sendVerificationCode = functions.https.onCall(
                 overflow: hidden;
               }
               .header {
-                background-color: #800000;
+                background-color: #4A1D2C;
                 color: white;
                 padding: 20px;
                 text-align: center;
