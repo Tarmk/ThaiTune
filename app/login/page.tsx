@@ -2,16 +2,50 @@
 
 import { useRouter } from "next/navigation"
 import { signInWithEmailAndPassword } from "firebase/auth"
-import { auth } from "@/lib/firebase"
+import { auth, functions, db } from "@/lib/firebase"
 import { AuthForm } from "@/app/components/AuthForm"
+import { VerificationCodeInput } from "@/app/components/VerificationCodeInput"
+import { useState } from "react"
+import { httpsCallable } from "firebase/functions"
+import { doc, getDoc } from "firebase/firestore"
 
 export default function LoginPage() {
   const router = useRouter()
+  const [showVerification, setShowVerification] = useState(false)
+  const [pendingUser, setPendingUser] = useState<any>(null)
+  const [verificationError, setVerificationError] = useState<string | null>(null)
 
   const handleLogin = async ({ email, password }: { email: string; password: string }) => {
     try {
-      await signInWithEmailAndPassword(auth, email, password)
-      router.push("/dashboard")
+      // First attempt regular sign in
+      const userCredential = await signInWithEmailAndPassword(auth, email, password)
+      const user = userCredential.user
+      
+      // Check if user has 2FA enabled
+      const userSettingsDoc = await getDoc(doc(db, "userSettings", user.uid))
+      const has2faEnabled = userSettingsDoc.exists() && userSettingsDoc.data()?.twoFactorEnabled === true
+      
+      if (has2faEnabled) {
+        // Store reference to user and credentials for 2FA
+        setPendingUser({
+          ...user,
+          email,
+          password
+        })
+        
+        // Sign out temporarily until 2FA is verified
+        await auth.signOut()
+        
+        // Send 2FA code to user's email
+        const send2faCode = httpsCallable(functions, 'send2faCode')
+        await send2faCode({ email })
+        
+        // Show verification input
+        setShowVerification(true)
+      } else {
+        // No 2FA, proceed to dashboard
+        router.push("/dashboard")
+      }
     } catch (err) {
       if (err instanceof Error) {
         switch (err.message) {
@@ -27,6 +61,53 @@ export default function LoginPage() {
         throw new Error("Unexpected error")
       }
     }
+  }
+
+  const handleVerify = async (code: string) => {
+    try {
+      // First sign in again
+      await signInWithEmailAndPassword(auth, pendingUser.email, pendingUser.password)
+      
+      // Then verify the 2FA code
+      const verify2faCode = httpsCallable(functions, 'verify2faCode')
+      await verify2faCode({ code })
+      
+      // If successful, redirect to dashboard
+      router.push("/dashboard")
+    } catch (err) {
+      if (err instanceof Error) {
+        setVerificationError(err.message)
+      } else {
+        setVerificationError("An unexpected error occurred")
+      }
+    }
+  }
+
+  const handleResendCode = async () => {
+    try {
+      const send2faCode = httpsCallable(functions, 'send2faCode')
+      await send2faCode({ email: pendingUser.email })
+      setVerificationError(null)
+    } catch (err) {
+      if (err instanceof Error) {
+        setVerificationError(err.message)
+      } else {
+        setVerificationError("An unexpected error occurred")
+      }
+    }
+  }
+
+  if (showVerification) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <VerificationCodeInput
+          email={pendingUser?.email || ""}
+          onVerify={handleVerify}
+          onResend={handleResendCode}
+          error={verificationError || undefined}
+        />
+      </div>
+    )
   }
 
   return (

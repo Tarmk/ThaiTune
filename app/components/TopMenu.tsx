@@ -99,7 +99,7 @@ export function TopMenu({ user }: TopMenuProps) {
                   <div className="font-medium">{user?.displayName || 'User'}</div>
                   <div className="text-sm text-gray-500">View profile</div>
                 </div>
-                <DropdownMenuItem className="flex items-center gap-2 cursor-pointer">
+                <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/settings')}>
                   <Settings className="h-4 w-4" />
                   <span>Account settings</span>
                 </DropdownMenuItem>

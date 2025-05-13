@@ -45,6 +45,7 @@
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
     "firebase": "latest",
+    "framer-motion": "^12.11.0",
     "i18next": "latest",
     "i18next-browser-languagedetector": "latest",
     "i18next-http-backend": "latest",
