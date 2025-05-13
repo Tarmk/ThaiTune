@@ -72,14 +72,15 @@ export default function LoginPage() {
       const verify2faCode = httpsCallable(functions, 'verify2faCode')
       await verify2faCode({ code })
       
-      // If successful, redirect to dashboard
-      router.push("/dashboard")
+      // No need for explicit navigation - the verification component handles this
+      return Promise.resolve()
     } catch (err) {
       if (err instanceof Error) {
         setVerificationError(err.message)
       } else {
         setVerificationError("An unexpected error occurred")
       }
+      return Promise.reject(err)
     }
   }
 
@@ -88,18 +89,20 @@ export default function LoginPage() {
       const send2faCode = httpsCallable(functions, 'send2faCode')
       await send2faCode({ email: pendingUser.email })
       setVerificationError(null)
+      return Promise.resolve()
     } catch (err) {
       if (err instanceof Error) {
         setVerificationError(err.message)
       } else {
         setVerificationError("An unexpected error occurred")
       }
+      return Promise.reject(err)
     }
   }
 
   if (showVerification) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
         <VerificationCodeInput
           email={pendingUser?.email || ""}
           onVerify={handleVerify}

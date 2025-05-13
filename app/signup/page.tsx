@@ -62,13 +62,15 @@ export default function SignupPage() {
         await updateProfile(userCredential.user, { displayName: pendingName })
       }
       
-      router.push("/dashboard")
+      // No need for explicit navigation - the verification component handles this
+      return Promise.resolve()
     } catch (err) {
       if (err instanceof Error) {
         setVerificationError(err.message)
       } else {
         setVerificationError("An unexpected error occurred")
       }
+      return Promise.reject(err)
     }
   }
 
@@ -77,18 +79,20 @@ export default function SignupPage() {
       const sendVerificationCode = httpsCallable(functions, 'sendVerificationCode')
       await sendVerificationCode({ email: pendingEmail })
       setVerificationError(null)
+      return Promise.resolve()
     } catch (err) {
       if (err instanceof Error) {
         setVerificationError(err.message)
       } else {
         setVerificationError("An unexpected error occurred")
       }
+      return Promise.reject(err)
     }
   }
 
   if (showVerification) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4">
         <VerificationCodeInput
           email={pendingEmail}
           onVerify={handleVerify}
