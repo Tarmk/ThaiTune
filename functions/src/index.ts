@@ -68,12 +68,16 @@ export const sendVerificationCode = functions.https.onCall(
                 margin: 0 auto;
                 padding: 20px;
               }
+              .email-wrapper {
+                border: 4px solid #4A1D2C;
+                border-radius: 8px;
+                overflow: hidden;
+              }
               .header {
                 background-color: #800000;
                 color: white;
                 padding: 20px;
                 text-align: center;
-                border-radius: 8px 8px 0 0;
               }
               .logo {
                 width: 120px;
@@ -83,8 +87,6 @@ export const sendVerificationCode = functions.https.onCall(
               .content {
                 background-color: white;
                 padding: 30px;
-                border-radius: 0 0 8px 8px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
               }
               .code {
                 font-size: 32px;
@@ -102,37 +104,32 @@ export const sendVerificationCode = functions.https.onCall(
                 margin-top: 20px;
                 color: #666666;
                 font-size: 14px;
-              }
-              .button {
-                background-color: #800000;
-                color: white;
-                padding: 12px 24px;
-                text-decoration: none;
-                border-radius: 4px;
-                font-weight: 500;
-                display: inline-block;
-                margin: 20px 0;
+                padding: 15px;
+                background-color: #f9f9f9;
+                border-top: 1px solid #E5E5E5;
               }
             </style>
           </head>
           <body>
             <div class="container">
-              <div class="header">
-                <img src="https://thaitune.com/images/thaitune-logo.png" alt="ThaiTune Logo" class="logo">
-                <h1>Verify Your Email</h1>
-              </div>
-              <div class="content">
-                <p>Hello,</p>
-                <p>Thank you for using ThaiTune. Please enter the verification code below:</p>
-                
-                <div class="code">${code}</div>
-                
-                <p>This code will expire in 5 minutes.</p>
-                
-                <p>If you didn't request this code, you can safely ignore this email.</p>
-              </div>
-              <div class="footer">
-                <p>&copy; ${new Date().getFullYear()} ThaiTune. All rights reserved.</p>
+              <div class="email-wrapper">
+                <div class="header">
+                  <img src="https://thaitune.com/images/thaitune-logo.png" alt="ThaiTune Logo" class="logo">
+                  <h1>Verify Your Email</h1>
+                </div>
+                <div class="content">
+                  <p>Hello,</p>
+                  <p>Thank you for using ThaiTune. Please enter the verification code below:</p>
+                  
+                  <div class="code">${code}</div>
+                  
+                  <p>This code will expire in 5 minutes.</p>
+                  
+                  <p>If you didn't request this code, you can safely ignore this email.</p>
+                </div>
+                <div class="footer">
+                  <p>&copy; ${new Date().getFullYear()} ThaiTune. All rights reserved.</p>
+                </div>
               </div>
             </div>
           </body>
@@ -233,12 +230,16 @@ export const send2faCode = functions.https.onCall(
                 margin: 0 auto;
                 padding: 20px;
               }
+              .email-wrapper {
+                border: 4px solid #4A1D2C;
+                border-radius: 8px;
+                overflow: hidden;
+              }
               .header {
                 background-color: #800000;
                 color: white;
                 padding: 20px;
                 text-align: center;
-                border-radius: 8px 8px 0 0;
               }
               .logo {
                 width: 120px;
@@ -248,8 +249,6 @@ export const send2faCode = functions.https.onCall(
               .content {
                 background-color: white;
                 padding: 30px;
-                border-radius: 0 0 8px 8px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
               }
               .code {
                 font-size: 32px;
@@ -267,37 +266,32 @@ export const send2faCode = functions.https.onCall(
                 margin-top: 20px;
                 color: #666666;
                 font-size: 14px;
-              }
-              .button {
-                background-color: #800000;
-                color: white;
-                padding: 12px 24px;
-                text-decoration: none;
-                border-radius: 4px;
-                font-weight: 500;
-                display: inline-block;
-                margin: 20px 0;
+                padding: 15px;
+                background-color: #f9f9f9;
+                border-top: 1px solid #E5E5E5;
               }
             </style>
           </head>
           <body>
             <div class="container">
-              <div class="header">
-                <img src="https://your-domain.com/images/thaitune-logo-smooth.png" alt="ThaiTune Logo" class="logo">
-                <h1>Two-Factor Authentication</h1>
-              </div>
-              <div class="content">
-                <p>Hello,</p>
-                <p>Please enter the verification code below to complete the authentication process:</p>
-                
-                <div class="code">${code}</div>
-                
-                <p>This code will expire in 5 minutes.</p>
-                
-                <p>If you didn't request this code, please secure your account immediately.</p>
-              </div>
-              <div class="footer">
-                <p>&copy; ${new Date().getFullYear()} ThaiTune. All rights reserved.</p>
+              <div class="email-wrapper">
+                <div class="header">
+                  <img src="https://thaitune.com/images/thaitune-logo.png" alt="ThaiTune Logo" class="logo">
+                  <h1>Two-Factor Authentication</h1>
+                </div>
+                <div class="content">
+                  <p>Hello,</p>
+                  <p>Please enter the verification code below to complete the authentication process:</p>
+                  
+                  <div class="code">${code}</div>
+                  
+                  <p>This code will expire in 5 minutes.</p>
+                  
+                  <p>If you didn't request this code, please secure your account immediately.</p>
+                </div>
+                <div class="footer">
+                  <p>&copy; ${new Date().getFullYear()} ThaiTune. All rights reserved.</p>
+                </div>
               </div>
             </div>
           </body>
