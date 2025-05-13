@@ -214,7 +214,11 @@ const Editor = ({ title, user }: EditorProps) => {
         <div ref={containerRef} style={{ height: "450px", width: "100%" }} />
         <div className="p-6 border-t">
           <div className="flex items-center justify-between">
-            <Button onClick={() => handleSave(false)} variant="secondary">
+            <Button 
+              onClick={() => handleSave(false)}
+              className="shadow-sm font-medium transition-transform hover:scale-105"
+              style={{ backgroundColor: "#4A1D2C", color: "white" }}
+            >
               Save Version
             </Button>
             <span className="text-sm text-gray-600">

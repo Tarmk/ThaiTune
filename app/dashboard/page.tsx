@@ -196,7 +196,12 @@ export default function Dashboard() {
             <h1 className="text-2xl font-bold text-[#333333]">{t("myScores")}</h1>
 
             <Link href="/new-score" className="inline-block">
-              <Button variant="secondary">{t("newScore")}</Button>
+              <Button 
+                className="shadow-sm font-medium transition-transform hover:scale-105"
+                style={{ backgroundColor: "#4A1D2C", color: "white" }}
+              >
+                {t("newScore")}
+              </Button>
             </Link>
           </div>
           <Card className="bg-white shadow-md">

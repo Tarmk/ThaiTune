@@ -290,7 +290,11 @@ export default function EditScoreClient({ id }: ClientProps) {
               </select>
             </div>
             {/* Update the save button */}
-            <Button onClick={handleManualSave} variant="secondary">
+            <Button 
+              onClick={handleManualSave} 
+              className="shadow-sm font-medium transition-transform hover:scale-105"
+              style={{ backgroundColor: "#4A1D2C", color: "white" }}
+            >
               {t("save")}
             </Button>
           </div>

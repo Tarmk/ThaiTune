@@ -113,7 +113,12 @@ export default function NewScoreForm() {
                     <option value="private">{t("private")}</option>
                   </select>
                 </div>
-                <Button type="submit" variant="secondary" className="w-full" disabled={isLoading}>
+                <Button 
+                  type="submit" 
+                  className="w-full shadow-sm font-medium transition-transform hover:scale-105" 
+                  style={{ backgroundColor: "#4A1D2C", color: "white" }}
+                  disabled={isLoading}
+                >
                   {isLoading ? t("creating") : t("next")}
                 </Button>
               </form>
