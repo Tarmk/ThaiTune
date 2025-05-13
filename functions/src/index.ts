@@ -118,7 +118,7 @@ export const sendVerificationCode = functions.https.onCall(
           <body>
             <div class="container">
               <div class="header">
-                <img src="https://thaitune.com/images/thaitune-logo-smooth.png" alt="ThaiTune Logo" class="logo">
+                <img src="https://thaitune.com/images/thaitune-logo.png" alt="ThaiTune Logo" class="logo">
                 <h1>Verify Your Email</h1>
               </div>
               <div class="content">
