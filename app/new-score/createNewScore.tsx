@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { auth } from "@/lib/firebase"
 import { onAuthStateChanged } from "firebase/auth"
-import { TopMenu } from "@/app/components/TopMenu"
+import { TopMenu } from "@/app/components/layout/TopMenu"
 import dynamic from "next/dynamic"
 
 interface FlatEmbed {

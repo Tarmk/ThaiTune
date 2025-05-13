@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation"
 import { signInWithEmailAndPassword } from "firebase/auth"
 import { auth, functions, db } from "@/lib/firebase"
-import { VerificationCodeInput } from "@/app/components/VerificationCodeInput"
+import { VerificationCodeInput } from "@/app/components/auth/VerificationCodeInput"
 import { useState } from "react"
 import { httpsCallable } from "firebase/functions"
 import { doc, getDoc } from "firebase/firestore"

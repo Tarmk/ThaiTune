@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/app/components/ui/card"
 import { auth, db } from "@/lib/firebase"
 import { signOut, onAuthStateChanged } from "firebase/auth"
 import { doc, getDoc } from "firebase/firestore"
-import { TopMenu } from "@/app/components/TopMenu"
+import { TopMenu } from "@/app/components/layout/TopMenu"
 import OpenAI from "openai"
 
 interface Score {

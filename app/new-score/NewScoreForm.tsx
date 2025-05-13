@@ -12,7 +12,7 @@ import { signOut, onAuthStateChanged } from "firebase/auth"
 import { addDoc, collection, serverTimestamp } from "firebase/firestore"
 import { ProtectedRoute } from "@/app/components/auth/protectedroute"
 import CreateNewScorePage2 from "./createNewScore"
-import { TopMenu } from "@/app/components/TopMenu"
+import { TopMenu } from "@/app/components/layout/TopMenu"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/app/components/ui/button"
 

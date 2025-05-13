@@ -11,7 +11,7 @@ import { onAuthStateChanged } from 'firebase/auth'
 import { db } from '@/lib/firebase'
 import { collection, getDocs } from 'firebase/firestore'
 import { Timestamp } from 'firebase/firestore'
-import { TopMenu } from "@/app/components/TopMenu"
+import { TopMenu } from "@/app/components/layout/TopMenu"
 import { useCallback, useMemo } from 'react'
 import debounce from 'lodash.debounce'
 import { useTranslation } from 'react-i18next'
