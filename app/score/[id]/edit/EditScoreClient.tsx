@@ -6,10 +6,10 @@ import { usePathname, useSearchParams, useRouter } from "next/navigation"
 import { auth, db } from "@/lib/firebase"
 import { onAuthStateChanged } from "firebase/auth"
 import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore"
-import { TopMenu } from "@/app/components/TopMenu"
-import { Card, CardContent } from "@/app/components/ui/card"
+import { TopMenu } from "@/app/components/layout/TopMenu"
+import { Card, CardContent } from "@/components/ui/card"
 // Update the Button import to use our custom Button component
-import { Button } from "@/app/components/Button"
+import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { useTranslation } from "react-i18next"
 
