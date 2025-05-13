@@ -8,6 +8,7 @@ interface LogoProps {
   variant?: "primary" | "secondary"
   borderRadius?: string
   transparent?: boolean
+  scale?: number
 }
 
 export function Logo({
@@ -17,6 +18,7 @@ export function Logo({
   variant = "primary",
   borderRadius = "rounded-lg", // Default rounded corners
   transparent = false,
+  scale = 1.1, // Default scaling factor to make logo slightly larger
 }: LogoProps) {
   const sizeClasses = {
     sm: "w-8 h-8",
@@ -39,7 +41,8 @@ export function Logo({
           alt="ThaiTune Logo"
           width={512}
           height={512}
-          className="object-contain"
+          className="object-cover"
+          style={{ transform: `scale(${scale})` }}
           priority
         />
       </div>

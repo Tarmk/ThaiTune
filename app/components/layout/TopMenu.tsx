@@ -56,6 +56,7 @@ export function TopMenu({ user }: TopMenuProps) {
             withText={true} 
             variant="primary" 
             borderRadius="rounded-lg" 
+            scale={1.3}
             href={user ? "/dashboard" : "/"} 
           />
           {user ? (
