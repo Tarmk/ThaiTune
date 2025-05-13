@@ -1,7 +1,7 @@
 "use client"
 
-import { ReactNode, createContext, useContext, useEffect, useState } from "react"
-import { usePathname, useSearchParams } from "next/navigation"
+import { ReactNode, createContext, useContext, useEffect, useState, Suspense } from "react"
+import { usePathname } from "next/navigation"
 
 interface PageTransitionContextType {
   isNavigating: boolean
@@ -13,17 +13,21 @@ const PageTransitionContext = createContext<PageTransitionContextType>({
 
 export const usePageTransition = () => useContext(PageTransitionContext)
 
-export default function PageTransitionProvider({ children }: { children: ReactNode }) {
+// Component that uses useSearchParams inside Suspense
+function PageTransitionContent({ 
+  children, 
+  setIsNavigating, 
+  mounted 
+}: { 
+  children: ReactNode;
+  setIsNavigating: (value: boolean) => void;
+  mounted: boolean;
+}) {
   const pathname = usePathname()
+  // We'll import useSearchParams here to ensure it's used only inside Suspense
+  const { useSearchParams } = require("next/navigation")
   const searchParams = useSearchParams()
-  const [isNavigating, setIsNavigating] = useState(false)
-  const [mounted, setMounted] = useState(false)
-
-  // Set mounted after initial load
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
+  
   // Handle route changes
   useEffect(() => {
     if (!mounted) return;
@@ -36,7 +40,19 @@ export default function PageTransitionProvider({ children }: { children: ReactNo
     }, 300)
     
     return () => clearTimeout(timeout)
-  }, [pathname, searchParams, mounted])
+  }, [pathname, searchParams, mounted, setIsNavigating])
+  
+  return <>{children}</>
+}
+
+export default function PageTransitionProvider({ children }: { children: ReactNode }) {
+  const [isNavigating, setIsNavigating] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // Set mounted after initial load
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   return (
     <PageTransitionContext.Provider value={{ isNavigating }}>
@@ -58,7 +74,14 @@ export default function PageTransitionProvider({ children }: { children: ReactNo
           isNavigating ? "opacity-95 blur-[0.5px]" : "opacity-100"
         }`}
       >
-        {children}
+        <Suspense fallback={<div>{children}</div>}>
+          <PageTransitionContent 
+            setIsNavigating={setIsNavigating} 
+            mounted={mounted}
+          >
+            {children}
+          </PageTransitionContent>
+        </Suspense>
       </div>
     </PageTransitionContext.Provider>
   )

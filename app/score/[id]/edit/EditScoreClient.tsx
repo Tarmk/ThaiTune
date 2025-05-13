@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect, Suspense } from "react"
 import axios from "axios"
-import { usePathname, useSearchParams, useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { auth, db } from "@/lib/firebase"
 import { onAuthStateChanged } from "firebase/auth"
 import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore"
@@ -18,6 +18,20 @@ interface ClientProps {
   id: string
 }
 
+// Component that uses useSearchParams inside Suspense
+function SearchParamsHandler({ onParamsReady }: { onParamsReady: (params: URLSearchParams) => void }) {
+  const { useSearchParams } = require("next/navigation")
+  const searchParams = useSearchParams()
+  
+  useEffect(() => {
+    if (searchParams) {
+      onParamsReady(searchParams)
+    }
+  }, [searchParams, onParamsReady])
+  
+  return null
+}
+
 export default function EditScoreClient({ id }: ClientProps) {
   const { t } = useTranslation("editor")
   const [user, setUser] = useState<any>(null)
@@ -27,7 +41,7 @@ export default function EditScoreClient({ id }: ClientProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const pathname = usePathname()
-  const searchParams = useSearchParams()
+  const [searchParamsObj, setSearchParamsObj] = useState<URLSearchParams | null>(null)
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement | null>(null)
   const embedRef = useRef<any>(null)
@@ -41,6 +55,11 @@ export default function EditScoreClient({ id }: ClientProps) {
   const exportInterval = 30000
   const [sharingSetting, setSharingSetting] = useState<string>("private")
   const [lastSavedTime, setLastSavedTime] = useState<string | null>(null)
+
+  // Function to handle search params
+  const handleSearchParams = React.useCallback((params: URLSearchParams) => {
+    setSearchParamsObj(params)
+  }, [])
 
   useEffect(() => {
     setMounted(true)
@@ -322,75 +341,79 @@ export default function EditScoreClient({ id }: ClientProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] dark:bg-gray-900">
+    <div className="flex flex-col min-h-screen bg-background">
+      <Suspense fallback={null}>
+        <SearchParamsHandler onParamsReady={handleSearchParams} />
+      </Suspense>
       <TopMenu user={user} />
-      <main className="max-w-7xl mx-auto px-4 py-6 mt-16">
-        <div className="mb-6">
-          <button 
-            onClick={() => router.back()} 
-            className="flex items-center hover:underline"
+      <div className="p-4 md:p-6 flex-grow flex flex-col">
+        <div className="flex items-center space-x-2 mb-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.back()}
             style={{ color: linkColor }}
           >
-            <ArrowLeft className="mr-2" />
+            <ArrowLeft className="mr-1 h-4 w-4" />
             {t("back")}
-          </button>
-        </div>
-
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-[#333333] dark:text-white">{title}</h1>
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center">
-              <label htmlFor="sharing" className="mr-2 text-[#666666] dark:text-gray-300">
-                {t("sharing")}:
-              </label>
-              <select
-                id="sharing"
-                value={sharingSetting}
-                onChange={handleSharingChange}
-                className="border border-gray-300 rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-              >
-                <option value="private">{t("private")}</option>
-                <option value="public">{t("public")}</option>
-              </select>
-            </div>
-            {/* Update the save button */}
-            <Button 
-              onClick={handleManualSave} 
-              className="shadow-sm font-medium transition-transform hover:scale-105"
-              style={{ backgroundColor: buttonColor, color: "white" }}
+          </Button>
+          
+          {/* Save button */}
+          <Button 
+            variant="default"
+            size="sm"
+            onClick={handleManualSave}
+            style={{ 
+              backgroundColor: buttonColor,
+              color: "white",
+              marginLeft: "8px"
+            }}
+          >
+            {t("save")}
+          </Button>
+          
+          {/* Last saved indicator */}
+          {lastSavedTime && (
+            <span className="text-xs text-muted-foreground">
+              {t("last_saved")}: {lastSavedTime}
+            </span>
+          )}
+          
+          {/* Sharing dropdown */}
+          <div className="ml-auto flex items-center space-x-2">
+            <label htmlFor="sharing" className="text-sm font-medium">
+              {t("sharing")}:
+            </label>
+            <select
+              id="sharing"
+              className="text-sm border rounded p-1 bg-background"
+              value={sharingSetting}
+              onChange={handleSharingChange}
+              style={{ color: resolvedTheme === "dark" ? "#ffffff" : "#000000" }}
             >
-              {t("save")}
-            </Button>
+              <option value="private">{t("private")}</option>
+              <option value="unlisted">{t("unlisted")}</option>
+              <option value="public">{t("public")}</option>
+            </select>
           </div>
         </div>
-
-        {lastSavedTime && (
-          <p className="text-sm text-[#666666] dark:text-gray-400 mb-4">
-            {t("lastSaved")}: {lastSavedTime}
-          </p>
-        )}
-
-        <div className="rounded-lg overflow-hidden mb-6">
-          <Card className="bg-white dark:bg-gray-800 shadow-md flex-1 flex items-stretch rounded-lg">
-            <CardContent className="p-4 flex justify-center items-center w-full">
-              <div key={themeKey} ref={containerRef} style={{ height: "600px", width: "100%" }} className="flex-1 flex items-center justify-center" />
+        
+        {loading ? (
+          <div className="flex-grow flex items-center justify-center">
+            <p>{t("loading")}</p>
+          </div>
+        ) : error ? (
+          <div className="flex-grow flex items-center justify-center">
+            <p className="text-red-500">{error}</p>
+          </div>
+        ) : (
+          <Card className="flex-grow overflow-hidden">
+            <CardContent className="p-0 h-full">
+              <div ref={containerRef} className="w-full h-full" />
             </CardContent>
           </Card>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mt-4">
-          <h3 className="text-lg font-semibold mb-2 dark:text-white">{t("savedVersions")}</h3>
-          <div className="space-y-2">
-            {JSON.parse(localStorage.getItem(`score_${title}_versions`) || "[]").map((version: any) => (
-              <div key={version.storageKey} className="flex items-center justify-between text-sm dark:text-gray-300">
-                <span>
-                  {version.version} - {new Date(version.timestamp).toLocaleString()}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </main>
+        )}
+      </div>
     </div>
   )
 }

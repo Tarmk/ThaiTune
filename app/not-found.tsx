@@ -2,9 +2,8 @@ import { Suspense } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
-// Component that uses useSearchParams, wrapped in Suspense
-function NotFoundContent() {
-  // The useSearchParams hook will be used here, safely wrapped in Suspense
+function NotFoundClientContent() {
+  // We are NOT using useSearchParams here intentionally
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-4">
       <h1 className="text-6xl font-bold mb-4">404</h1>
@@ -24,7 +23,7 @@ function NotFoundContent() {
 export default function NotFound() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <NotFoundContent />
+      <NotFoundClientContent />
     </Suspense>
   )
 } 
