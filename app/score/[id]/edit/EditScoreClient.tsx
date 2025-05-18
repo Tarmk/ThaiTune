@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useTheme } from "next-themes"
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
 
 interface ClientProps {
   id: string
@@ -332,6 +333,29 @@ export default function EditScoreClient({ id }: ClientProps) {
     updateSharingSetting(newSetting)
   }
 
+  const getSavedVersions = () => {
+    try {
+      return JSON.parse(localStorage.getItem(`score_${title}_versions`) || "[]")
+    } catch (error) {
+      console.error("Error retrieving saved versions:", error)
+      return []
+    }
+  }
+
+  const loadVersion = (storageKey: string) => {
+    try {
+      const savedData = JSON.parse(localStorage.getItem(storageKey) || "")
+      if (savedData && savedData.content && embedRef.current) {
+        // Load the content into the editor
+        embedRef.current.loadMusicXML(savedData.content)
+        return true
+      }
+    } catch (error) {
+      console.error("Error loading version:", error)
+    }
+    return false
+  }
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center dark:bg-gray-900 dark:text-white">Loading...</div>
   }
@@ -341,78 +365,100 @@ export default function EditScoreClient({ id }: ClientProps) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-[#111827]">
       <Suspense fallback={null}>
         <SearchParamsHandler onParamsReady={handleSearchParams} />
       </Suspense>
       <TopMenu user={user} />
-      <div className="p-4 md:p-6 flex-grow flex flex-col">
-        <div className="flex items-center space-x-2 mb-4">
+      <div className="p-4 md:p-6 flex-grow">
+        <div className="flex mb-2">
           <Button
             variant="outline"
-            size="sm"
+            className="text-rose-300 flex items-center"
             onClick={() => router.back()}
-            style={{ color: linkColor }}
           >
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            {t("back")}
+            <ArrowLeft className="h-4 w-4 mr-1" />
+            Back to My Scores
           </Button>
-          
-          {/* Save button */}
-          <Button 
-            variant="default"
-            size="sm"
-            onClick={handleManualSave}
-            style={{ 
-              backgroundColor: buttonColor,
-              color: "white",
-              marginLeft: "8px"
-            }}
-          >
-            {t("save")}
-          </Button>
-          
-          {/* Last saved indicator */}
-          {lastSavedTime && (
-            <span className="text-xs text-muted-foreground">
-              {t("last_saved")}: {lastSavedTime}
-            </span>
-          )}
-          
-          {/* Sharing dropdown */}
-          <div className="ml-auto flex items-center space-x-2">
-            <label htmlFor="sharing" className="text-sm font-medium">
-              {t("sharing")}:
-            </label>
-            <select
-              id="sharing"
-              className="text-sm border rounded p-1 bg-background"
-              value={sharingSetting}
-              onChange={handleSharingChange}
-              style={{ color: resolvedTheme === "dark" ? "#ffffff" : "#000000" }}
-            >
-              <option value="private">{t("private")}</option>
-              <option value="unlisted">{t("unlisted")}</option>
-              <option value="public">{t("public")}</option>
-            </select>
-          </div>
         </div>
         
-        {loading ? (
-          <div className="flex-grow flex items-center justify-center">
-            <p>{t("loading")}</p>
+        <h1 className="text-2xl font-bold text-white mb-1">{title}</h1>
+        <p className="text-gray-400 mb-4">By {user?.displayName || "Anonymous"}</p>
+
+        {/* Score Editor */}
+        <div className="max-w-6xl mx-auto">
+          <div className="score-editor-container rounded-md overflow-hidden shadow-lg border border-gray-700 mb-4 bg-white dark:bg-gray-800">
+            <div ref={containerRef} className="w-full" style={{ height: "470px" }} />
           </div>
-        ) : error ? (
-          <div className="flex-grow flex items-center justify-center">
-            <p className="text-red-500">{error}</p>
+
+          {/* Footer */}
+          <div className="py-3 px-4 bg-gray-800 rounded-md border border-gray-700 flex justify-between items-center">
+            <div className="text-sm text-gray-400">
+              Modified: {lastSavedTime ? lastSavedTime : new Date().toLocaleString()}
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <select
+                id="sharing"
+                className="text-sm border border-gray-600 rounded py-1 px-2 bg-gray-800 text-white"
+                value={sharingSetting}
+                onChange={handleSharingChange}
+              >
+                <option value="private">Private</option>
+                <option value="unlisted">Unlisted</option>
+                <option value="public">Public</option>
+              </select>
+              
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button 
+                    className="text-sm border border-gray-600 rounded px-3 py-1 bg-gray-800 text-white hover:bg-gray-700"
+                    variant="outline"
+                    size="sm"
+                  >
+                    Saved Versions
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-3 bg-gray-800 border-gray-700 text-white">
+                  <h3 className="text-md font-semibold mb-2">Saved Versions</h3>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {getSavedVersions().map((version: any) => (
+                      <div key={version.storageKey} className="flex items-center justify-between text-sm text-gray-300">
+                        <span>
+                          {version.version} - {new Date(version.timestamp).toLocaleString()}
+                        </span>
+                        <Button 
+                          onClick={() => loadVersion(version.storageKey)} 
+                          variant="link" 
+                          className="text-blue-400 hover:text-blue-300"
+                          size="sm"
+                        >
+                          Load
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              
+              <Button 
+                onClick={handleManualSave}
+                className="text-sm bg-red-800 text-white hover:bg-red-700 px-4 py-1"
+                size="sm"
+              >
+                Save
+              </Button>
+              
+              <Button
+                className="text-sm border border-gray-600 rounded px-3 py-1 bg-gray-800 text-white hover:bg-gray-700"
+                variant="outline"
+                size="sm"
+              >
+                Edit
+              </Button>
+            </div>
           </div>
-        ) : (
-          <Card className="flex-grow overflow-hidden">
-            <CardContent className="p-0 h-full">
-              <div ref={containerRef} className="w-full h-full" />
-            </CardContent>
-          </Card>
-        )}
+        </div>
       </div>
     </div>
   )

@@ -247,9 +247,6 @@ const Editor = ({ title, user }: EditorProps) => {
             >
               Save Version
             </Button>
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              Auto-save: {exportCount}/{maxExports}
-            </span>
           </div>
           <div className="mt-4">
             <h3 className="text-lg font-semibold mb-2 dark:text-white">Saved Versions</h3>
