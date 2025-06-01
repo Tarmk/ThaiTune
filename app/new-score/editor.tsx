@@ -9,18 +9,22 @@ import { collection, query, where, getDocs, updateDoc, doc } from "firebase/fire
 import { db } from "@/lib/firebase"
 import { Button } from "@/app/components/ui/button"
 import { useTheme } from "next-themes"
+import { Sparkles } from "lucide-react"
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
 
 interface EditorProps {
   title: string
   user: any
+  description?: string
 }
 
-const Editor = ({ title, user }: EditorProps) => {
+const Editor = ({ title, user, description }: EditorProps) => {
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   const embedRef = useRef<any>(null)
   const [exportCount, setExportCount] = useState(0)
   const [scoreId, setScoreId] = useState<string | null>(null)
+  const [scoreDescription, setScoreDescription] = useState(description || "")
   const maxExports = 5
   const exportInterval = 30000
   const { resolvedTheme } = useTheme()
@@ -49,6 +53,7 @@ const Editor = ({ title, user }: EditorProps) => {
         },
         data: {
           title: title,
+          description: scoreDescription,
           builderData: {
             scoreData: {
               instruments: [
@@ -101,6 +106,7 @@ const Editor = ({ title, user }: EditorProps) => {
 
       const saveData = {
         title,
+        description: scoreDescription,
         timestamp: new Date().toISOString(),
         content: base64String,
       }
@@ -273,6 +279,37 @@ const Editor = ({ title, user }: EditorProps) => {
           </div>
         </div>
       </div>
+
+      <TooltipProvider>
+        <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
+          <div className="flex items-center gap-2 mb-2">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Description
+            </label>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-400 cursor-pointer">
+                  <Sparkles className="w-4 h-4 text-white" />
+                </span>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                The AI can help you generate description of music based on your music sheet
+              </TooltipContent>
+            </Tooltip>
+            <Button className="ml-2" type="button">
+              Generate Description
+            </Button>
+          </div>
+          <textarea
+            id="description"
+            value={scoreDescription}
+            onChange={(e) => setScoreDescription(e.target.value)}
+            placeholder="Enter a description for your score..."
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#4A1D2C] dark:focus:ring-[#8A3D4C] focus:border-transparent dark:bg-gray-700 dark:text-white"
+            rows={3}
+          />
+        </div>
+      </TooltipProvider>
     </main>
   )
 }
