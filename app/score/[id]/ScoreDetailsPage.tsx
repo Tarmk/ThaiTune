@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, MessageCircle, X } from "lucide-react"
+import { ArrowLeft, MessageCircle, X, ZoomIn, ZoomOut, Maximize2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useTheme } from "next-themes"
 
@@ -44,6 +44,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
   const [themeKey, setThemeKey] = React.useState(0)
+  const [isAutoZoom, setIsAutoZoom] = React.useState(false)
 
   React.useEffect(() => {
     setMounted(true)
@@ -163,6 +164,8 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
           themeControlsBackground: embedControlsBackground,
           themeScoreBackground: embedScoreBackground,
           themeCursorV0: embedThemeColor,
+          controlsZoom : true,
+          
         },
       })
       
@@ -210,9 +213,35 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
     setIsChatOpen(!isChatOpen)
   }
 
+  const extractMusicSheetData = (fullData: any) => {
+    return {
+      work: {
+        title: fullData?.work?.["work-title"]
+      },
+      partList: fullData?.["part-list"]?.["score-part"]?.map((part: any) => ({
+        id: part["$id"],
+        name: part["part-name"],
+        abbreviation: part["part-abbreviation"],
+        instrument: part["score-instrument"]?.["instrument-name"]
+      })),
+      parts: fullData?.part?.map((part: any) => ({
+        id: part["$id"],
+        measures: part.measure?.map((measure: any) => ({
+          number: measure["$number"],
+          attributes: measure.attributes,
+          notes: measure.note,
+          directions: measure.direction,
+          harmony: measure.harmony
+        }))
+      }))
+    };
+  };
+
   const sendMessageToChatGPT = async (message: string) => {
     try {
       let pngData = null
+      let xmlString = null
+      let extractedData = null
       if (embedRef.current) {
         try {
           pngData = await embedRef.current.getPNG({
@@ -220,13 +249,20 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
             layout: "track",
             dpi: 300,
           })
+          console.log("PNG data:", pngData)
         } catch (error) {
           console.error("Error getting PNG:", error)
         }
+        const jsonData = await embedRef.current.getJSON()
+        console.log("Full JSON data from getJSON:", jsonData)
+        extractedData = extractMusicSheetData(jsonData['score-partwise'])
+        console.log("Extracted Music Sheet Data:", extractedData)
+
+        
       }
 
       const response = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4.1-2025-04-14",
         messages: [
           {
             role: "system",
@@ -237,19 +273,25 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
             content: [
               {
                 type: "text",
-                text: `Score: ${score?.name} ${t("by", { ns: "dashboard" })} ${score?.author}\nUser question: ${message}`,
+                text: `User question: ${message}\nScore Data: ${JSON.stringify(extractedData)}`,
               },
-              {
-                type: "image_url",
-                image_url: {
-                  url: pngData,
-                  detail: "high",
-                },
-              },
+              // {
+              //   type: "image_url",
+              //   image_url: {
+              //     url: pngData,
+              //     detail: "high",
+              //   },
+              // },
             ],
           },
         ],
-        max_tokens: 500,
+        response_format: {
+          type: "text",
+        },
+        temperature: 1,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0
       })
 
       const chatGPTResponse = response.choices[0].message.content?.trim()
@@ -327,6 +369,48 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
               <div key={themeKey} ref={containerRef} style={{ height: "450px", width: "100%" }} className="flex-1 flex items-center justify-center" />
             </CardContent>
           </Card>
+        </div>
+        <div className="flex justify-end gap-2 mb-6">
+          <button
+            onClick={async () => {
+              if (embedRef.current) {
+                const currentZoom = await embedRef.current.getZoom();
+                await embedRef.current.setZoom(Math.max(0.5, currentZoom - 0.1));
+              }
+            }}
+            className="p-1.5 rounded-full text-white hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: buttonColor }}
+            title={t("zoomOut", { ns: "dashboard" })}
+          >
+            <ZoomOut className="h-4 w-4" />
+          </button>
+          <button
+            onClick={async () => {
+              if (embedRef.current) {
+                const currentZoom = await embedRef.current.getZoom();
+                await embedRef.current.setZoom(Math.min(2, currentZoom + 0.1));
+              }
+            }}
+            className="p-1.5 rounded-full text-white hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: buttonColor }}
+            title={t("zoomIn", { ns: "dashboard" })}
+          >
+            <ZoomIn className="h-4 w-4" />
+          </button>
+          <button
+            onClick={async () => {
+              if (embedRef.current) {
+                const newAutoZoomState = !isAutoZoom;
+                await embedRef.current.setAutoZoom(newAutoZoomState);
+                setIsAutoZoom(newAutoZoomState);
+              }
+            }}
+            className={`p-1.5 rounded-full text-white hover:opacity-90 transition-opacity ${isAutoZoom ? 'bg-opacity-100' : 'bg-opacity-70'}`}
+            style={{ backgroundColor: buttonColor }}
+            title={t("autoZoom", { ns: "dashboard" })}
+          >
+            <Maximize2 className="h-4 w-4" />
+          </button>
         </div>
         <div className="mt-6 flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
           <p className="text-sm text-[#666666] dark:text-gray-400">
