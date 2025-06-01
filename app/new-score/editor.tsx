@@ -88,8 +88,16 @@ const Editor = ({ title, user }: EditorProps) => {
     if (!embedRef.current || !scoreId) return
 
     try {
-      const buffer = await embedRef.current.getMusicXML({ compressed: true })
+      const buffer = await embedRef.current.getMusicXML({ compressed: false })
+      console.log("buffer", buffer)
+      const xmlString = new TextDecoder().decode(buffer)
+      console.log("`MusicXML`:", xmlString)
       const base64String = btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ""))
+
+
+      const jsonData = await embedRef.current.getJSON()
+      console.log("JSON data:", jsonData)
+
 
       const saveData = {
         title,

@@ -186,6 +186,7 @@ export default function EditScoreClient({ id }: ClientProps) {
       try {
         const buffer = await embedRef.current.getMusicXML({ compressed: true })
 
+
         const base64String = btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ""))
 
         // Save to localStorage
@@ -356,6 +357,19 @@ export default function EditScoreClient({ id }: ClientProps) {
     return false
   }
 
+  const getAndPrintXML = async () => {
+    if (!embedRef.current) return;
+    
+    try {
+      const buffer = await embedRef.current.getMusicXML({ compressed: false });
+      const xmlString = new TextDecoder().decode(buffer);
+      console.log("MusicXML:", xmlString);
+      return xmlString;
+    } catch (error) {
+      console.error("Error getting MusicXML:", error);
+    }
+  };
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center dark:bg-gray-900 dark:text-white">Loading...</div>
   }
@@ -450,11 +464,12 @@ export default function EditScoreClient({ id }: ClientProps) {
               </Button>
               
               <Button
+                onClick={getAndPrintXML}
                 className="text-sm border border-gray-600 rounded px-3 py-1 bg-gray-800 text-white hover:bg-gray-700"
                 variant="outline"
                 size="sm"
               >
-                Edit
+                Print XML
               </Button>
             </div>
           </div>

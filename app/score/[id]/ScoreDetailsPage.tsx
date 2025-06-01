@@ -266,7 +266,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
         messages: [
           {
             role: "system",
-            content: "You are a music assistant analyzing sheet music. Please provide detailed analysis of the score.",
+            content: "You are a music assistant analyzing sheet music. Please provide detailed analysis of the score. Don't mention about the source of the score (e.g music xml), just analyze the score.",
           },
           {
             role: "user",
