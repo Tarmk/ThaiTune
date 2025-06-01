@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useImperativeHandle, forwardRef } from "react"
 import axios from "axios"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
@@ -16,9 +16,10 @@ interface EditorProps {
   title: string
   user: any
   description?: string
+  onGenerateDescription?: () => void
 }
 
-const Editor = ({ title, user, description }: EditorProps) => {
+const Editor = forwardRef(({ title, user, description, onGenerateDescription }: EditorProps, ref) => {
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
   const embedRef = useRef<any>(null)
@@ -234,6 +235,15 @@ const Editor = ({ title, user, description }: EditorProps) => {
     return () => clearInterval(intervalId)
   }, [scoreId, exportCount])
 
+  useImperativeHandle(ref, () => ({
+    async getScoreJSON() {
+      if (embedRef.current) {
+        return await embedRef.current.getJSON();
+      }
+      return null;
+    }
+  }));
+
   return (
     <main className="max-w-7xl mx-auto px-4 py-6 mt-16">
       <div className="mb-6">
@@ -296,7 +306,7 @@ const Editor = ({ title, user, description }: EditorProps) => {
                 The AI can help you generate description of music based on your music sheet
               </TooltipContent>
             </Tooltip>
-            <Button className="ml-2" type="button">
+            <Button className="ml-2" type="button" onClick={onGenerateDescription}>
               Generate Description
             </Button>
           </div>
@@ -312,6 +322,8 @@ const Editor = ({ title, user, description }: EditorProps) => {
       </TooltipProvider>
     </main>
   )
-}
+})
+
+Editor.displayName = "Editor"
 
 export default Editor
