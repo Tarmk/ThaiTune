@@ -167,6 +167,37 @@ const Editor = forwardRef(({ title, user, description, onGenerateDescription }: 
       } catch (apiError) {
         console.error("Error saving to Flat.io:", apiError)
       }
+
+      // Save description to Firestore as well
+      try {
+        if (scoreId) {
+          // Find the Firestore document where flatid == scoreId
+          const scoresRef = collection(db, "scores")
+          const q = query(scoresRef, where("flatid", "==", scoreId))
+          const querySnapshot = await getDocs(q)
+          if (!querySnapshot.empty) {
+            const scoreDoc = querySnapshot.docs[0]
+            await updateDoc(doc(db, "scores", scoreDoc.id), {
+              description: scoreDescription,
+            })
+          } else {
+            console.error("No Firestore document found with flatid == scoreId", scoreId)
+          }
+        } else {
+          // fallback: update by name if scoreId is not available
+          const scoresRef = collection(db, "scores")
+          const q = query(scoresRef, where("name", "==", title))
+          const querySnapshot = await getDocs(q)
+          if (!querySnapshot.empty) {
+            const scoreDoc = querySnapshot.docs[0]
+            await updateDoc(doc(db, "scores", scoreDoc.id), {
+              description: scoreDescription,
+            })
+          }
+        }
+      } catch (firestoreError) {
+        console.error("Error saving description to Firestore:", firestoreError)
+      }
     } catch (error) {
       console.error("Error in save:", error)
     }
@@ -281,18 +312,22 @@ const Editor = forwardRef(({ title, user, description, onGenerateDescription }: 
       <h1 className="text-2xl font-bold text-[#333333] dark:text-white mb-2">{title}</h1>
       <p className="text-gray-600 dark:text-gray-400 mb-6">By {user?.displayName || "Anonymous"}</p>
 
+      {/* Save Version button top right above music sheet */}
+      <div className="relative mb-2">
+        <div className="absolute right-0 top-0 z-10">
+          <Button 
+            onClick={() => handleSave(false)}
+            className="shadow-sm font-medium transition-transform hover:scale-105"
+            style={{ backgroundColor: buttonColor, color: "white" }}
+          >
+            Save Version
+          </Button>
+        </div>
+      </div>
+
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <div ref={containerRef} style={{ height: "450px", width: "100%" }} />
         <div className="p-6 border-t dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <Button 
-              onClick={() => handleSave(false)}
-              className="shadow-sm font-medium transition-transform hover:scale-105"
-              style={{ backgroundColor: buttonColor, color: "white" }}
-            >
-              Save Version
-            </Button>
-          </div>
           <div className="mt-4">
             <h3 className="text-lg font-semibold mb-2 dark:text-white">Saved Versions</h3>
             <div className="space-y-2">
