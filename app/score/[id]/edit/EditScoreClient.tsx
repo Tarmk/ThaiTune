@@ -384,7 +384,7 @@ export default function EditScoreClient({ id }: ClientProps) {
         <SearchParamsHandler onParamsReady={handleSearchParams} />
       </Suspense>
       <TopMenu user={user} />
-      <div className="p-4 md:p-6 flex-grow">
+      <main className="container mx-auto px-6 mt-24 flex-grow">
         <div className="flex mb-2">
           <Button
             variant="outline"
@@ -395,86 +395,74 @@ export default function EditScoreClient({ id }: ClientProps) {
             Back to My Scores
           </Button>
         </div>
-        
         <h1 className="text-2xl font-bold text-white mb-1">{title}</h1>
         <p className="text-gray-400 mb-4">By {user?.displayName || "Anonymous"}</p>
-
+        
         {/* Score Editor */}
-        <div className="max-w-6xl mx-auto">
-          <div className="score-editor-container rounded-md overflow-hidden shadow-lg border border-gray-700 mb-4 bg-white dark:bg-gray-800">
-            <div ref={containerRef} className="w-full" style={{ height: "470px" }} />
-          </div>
+        <div className="score-editor-container rounded-md overflow-hidden shadow-lg border border-gray-700 mb-4 bg-white dark:bg-gray-800">
+          <div ref={containerRef} className="w-full" style={{ height: "470px" }} />
+        </div>
 
-          {/* Footer */}
-          <div className="py-3 px-4 bg-gray-800 rounded-md border border-gray-700 flex justify-between items-center">
-            <div className="text-sm text-gray-400">
-              Modified: {lastSavedTime ? lastSavedTime : new Date().toLocaleString()}
-            </div>
+        {/* Footer */}
+        <div className="py-3 px-4 bg-gray-800 rounded-md border border-gray-700 flex justify-between items-center">
+          <div className="text-sm text-gray-400">
+            Modified: {lastSavedTime ? lastSavedTime : new Date().toLocaleString()}
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <select
+              id="sharing"
+              className="text-sm border border-gray-600 rounded py-1 px-2 bg-gray-800 text-white"
+              value={sharingSetting}
+              onChange={handleSharingChange}
+            >
+              <option value="private">Private</option>
+              <option value="unlisted">Unlisted</option>
+              <option value="public">Public</option>
+            </select>
             
-            <div className="flex items-center space-x-2">
-              <select
-                id="sharing"
-                className="text-sm border border-gray-600 rounded py-1 px-2 bg-gray-800 text-white"
-                value={sharingSetting}
-                onChange={handleSharingChange}
-              >
-                <option value="private">Private</option>
-                <option value="unlisted">Unlisted</option>
-                <option value="public">Public</option>
-              </select>
-              
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button 
-                    className="text-sm border border-gray-600 rounded px-3 py-1 bg-gray-800 text-white hover:bg-gray-700"
-                    variant="outline"
-                    size="sm"
-                  >
-                    Saved Versions
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-80 p-3 bg-gray-800 border-gray-700 text-white">
-                  <h3 className="text-md font-semibold mb-2">Saved Versions</h3>
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    {getSavedVersions().map((version: any) => (
-                      <div key={version.storageKey} className="flex items-center justify-between text-sm text-gray-300">
-                        <span>
-                          {version.version} - {new Date(version.timestamp).toLocaleString()}
-                        </span>
-                        <Button 
-                          onClick={() => loadVersion(version.storageKey)} 
-                          variant="link" 
-                          className="text-blue-400 hover:text-blue-300"
-                          size="sm"
-                        >
-                          Load
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover>
-              
-              <Button 
-                onClick={handleManualSave}
-                className="text-sm bg-red-800 text-white hover:bg-red-700 px-4 py-1"
-                size="sm"
-              >
-                Save
-              </Button>
-              
-              <Button
-                onClick={getAndPrintXML}
-                className="text-sm border border-gray-600 rounded px-3 py-1 bg-gray-800 text-white hover:bg-gray-700"
-                variant="outline"
-                size="sm"
-              >
-                Print XML
-              </Button>
-            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button 
+                  className="text-sm border border-gray-600 rounded px-3 py-1 bg-gray-800 text-white hover:bg-gray-700"
+                  variant="outline"
+                  size="sm"
+                >
+                  Saved Versions
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-3 bg-gray-800 border-gray-700 text-white">
+                <h3 className="text-md font-semibold mb-2">Saved Versions</h3>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {getSavedVersions().map((version: any) => (
+                    <div key={version.storageKey} className="flex items-center justify-between text-sm text-gray-300">
+                      <span>
+                        {version.version} - {new Date(version.timestamp).toLocaleString()}
+                      </span>
+                      <Button 
+                        onClick={() => loadVersion(version.storageKey)} 
+                        variant="link" 
+                        className="text-blue-400 hover:text-blue-300"
+                        size="sm"
+                      >
+                        Load
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+            
+            <Button 
+              onClick={handleManualSave}
+              className="text-sm bg-red-800 text-white hover:bg-red-700 px-4 py-1"
+              size="sm"
+            >
+              Save
+            </Button>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   )
 }
