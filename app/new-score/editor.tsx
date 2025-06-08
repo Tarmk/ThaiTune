@@ -96,14 +96,32 @@ const Editor = forwardRef(({ title, user, description, onGenerateDescription }: 
     try {
       const buffer = await embedRef.current.getMusicXML({ compressed: false })
       console.log("buffer", buffer)
-      const xmlString = new TextDecoder().decode(buffer)
+      console.log("typeof buffer:", typeof buffer)
+      if (buffer && typeof buffer === 'object') {
+        console.log("buffer.constructor:", buffer.constructor?.name)
+        console.log("Object.keys(buffer):", Object.keys(buffer))
+      }
+      let xmlString = ""
+      let base64String = ""
+      if (typeof buffer === "string") {
+        xmlString = buffer
+        // Unicode-safe base64 encoding
+        base64String = btoa(unescape(encodeURIComponent(xmlString)))
+      } else if (buffer instanceof ArrayBuffer) {
+        const uint8arr = new Uint8Array(buffer)
+        xmlString = new TextDecoder().decode(uint8arr)
+        base64String = btoa(uint8arr.reduce((data, byte) => data + String.fromCharCode(byte), ""))
+      } else if (ArrayBuffer.isView(buffer)) {
+        const uint8arr = new Uint8Array(buffer.buffer)
+        xmlString = new TextDecoder().decode(uint8arr)
+        base64String = btoa(uint8arr.reduce((data, byte) => data + String.fromCharCode(byte), ""))
+      } else {
+        throw new Error("getMusicXML did not return a string, ArrayBuffer, or TypedArray")
+      }
       console.log("`MusicXML`:", xmlString)
-      const base64String = btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ""))
-
 
       const jsonData = await embedRef.current.getJSON()
       console.log("JSON data:", jsonData)
-
 
       const saveData = {
         title,
@@ -241,6 +259,9 @@ const Editor = forwardRef(({ title, user, description, onGenerateDescription }: 
         return await embedRef.current.getJSON();
       }
       return null;
+    },
+    setScoreDescription(desc: string) {
+      setScoreDescription(desc);
     }
   }));
 
