@@ -21,6 +21,7 @@ interface Score {
   flatid: string
   userId: string
   sharing: string
+  description?: string
 }
 
 interface ScoreDetailsPageProps {
@@ -101,6 +102,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
             flatid: scoreData.flatid,
             userId: scoreData.userId,
             sharing: scoreData.sharing,
+            description: scoreData.description || "",
           })
         } else {
           setError("Score not found")
@@ -351,7 +353,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
       <main className="max-w-7xl mx-auto px-4 py-6 mt-16">
         <div className="mb-6">
           <button 
-            onClick={() => router.back()} 
+            onClick={() => router.push("/dashboard")}
             className="flex items-center hover:underline"
             style={{ color: linkColor }}
           >
@@ -427,6 +429,12 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
             </>
           )}
         </div>
+        {score.description && score.description.trim() !== "" && (
+          <div className="mt-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+            <h3 className="text-md font-semibold mb-2 text-[#333] dark:text-white">{t("description", { ns: "dashboard", defaultValue: "Description" })}</h3>
+            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">{score.description}</p>
+          </div>
+        )}
       </main>
 
       <button
