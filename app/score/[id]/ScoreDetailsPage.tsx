@@ -353,7 +353,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
       <main className="max-w-7xl mx-auto px-4 py-6 mt-16">
         <div className="mb-6">
           <button 
-            onClick={() => router.back()} 
+            onClick={() => router.push("/dashboard")}
             className="flex items-center hover:underline"
             style={{ color: linkColor }}
           >

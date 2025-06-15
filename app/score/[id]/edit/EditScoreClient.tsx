@@ -65,6 +65,9 @@ export default function EditScoreClient({ id }: ClientProps) {
   // Add loading state for description generation
   const [isLoadingDescription, setIsLoadingDescription] = useState(false)
 
+  // Add saving state
+  const [isSaving, setIsSaving] = useState(false)
+
   // Function to handle search params
   const handleSearchParams = React.useCallback((params: URLSearchParams) => {
     setSearchParamsObj(params)
@@ -192,6 +195,7 @@ export default function EditScoreClient({ id }: ClientProps) {
 
   const handleManualSave = async () => {
     if (embedRef.current && flatId) {
+      setIsSaving(true)
       try {
         const buffer = await embedRef.current.getMusicXML({ compressed: true })
 
@@ -249,8 +253,13 @@ export default function EditScoreClient({ id }: ClientProps) {
         }
 
         setLastSavedTime(new Date().toLocaleTimeString())
+        
+        // Navigate back to the score details page
+        router.push(`/score/${id}`)
       } catch (error) {
         console.error("Error in manual save:", error)
+      } finally {
+        setIsSaving(false)
       }
     }
   }
@@ -438,7 +447,7 @@ export default function EditScoreClient({ id }: ClientProps) {
         messages: [
           {
             role: "system",
-            content: "You are a music assistant analyzing sheet music. Please provide detailed analysis of the score. Don't mention about the source of the score (e.g music xml), just analyze the score. Output as text (Don't use markdown formatting).",
+            content: "You are a music assistant analyzing sheet music. Please provide detailed analysis of the score. Don't mention about the source of the score (e.g music xml), just analyze the score. Output as text (Don't use markdown formatting). Only provide description that is part of the score.",
           },
           {
             role: "user",
@@ -552,6 +561,16 @@ export default function EditScoreClient({ id }: ClientProps) {
           </div>
         )}
 
+        {/* Saving Modal Overlay */}
+        {isSaving && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 flex flex-col items-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-[#4A1D2C] dark:border-[#8A3D4C] mb-4"></div>
+              <span className="text-lg font-semibold dark:text-white">Saving...</span>
+            </div>
+          </div>
+        )}
+
         {/* Footer */}
         <div className="py-3 px-4 bg-gray-800 rounded-md border border-gray-700 flex justify-between items-center">
           <div className="text-sm text-gray-400">
@@ -569,38 +588,6 @@ export default function EditScoreClient({ id }: ClientProps) {
               <option value="unlisted">Unlisted</option>
               <option value="public">Public</option>
             </select>
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button 
-                  className="text-sm border border-gray-600 rounded px-3 py-1 bg-gray-800 text-white hover:bg-gray-700"
-                  variant="outline"
-                  size="sm"
-                >
-                  Saved Versions
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-80 p-3 bg-gray-800 border-gray-700 text-white">
-                <h3 className="text-md font-semibold mb-2">Saved Versions</h3>
-                <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {getSavedVersions().map((version: any) => (
-                    <div key={version.storageKey} className="flex items-center justify-between text-sm text-gray-300">
-                      <span>
-                        {version.version} - {new Date(version.timestamp).toLocaleString()}
-                      </span>
-                      <Button 
-                        onClick={() => loadVersion(version.storageKey)} 
-                        variant="link" 
-                        className="text-blue-400 hover:text-blue-300"
-                        size="sm"
-                      >
-                        Load
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </PopoverContent>
-            </Popover>
             
             <Button 
               onClick={handleManualSave}
