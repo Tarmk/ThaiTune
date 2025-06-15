@@ -5,15 +5,17 @@ import axios from "axios"
 import { usePathname, useRouter } from "next/navigation"
 import { auth, db } from "@/lib/firebase"
 import { onAuthStateChanged } from "firebase/auth"
-import { doc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore"
+import { doc, getDoc, updateDoc, serverTimestamp, collection, query, where, getDocs } from "firebase/firestore"
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import { Card, CardContent } from "@/components/ui/card"
 // Update the Button import to use our custom Button component
 import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Sparkles } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useTheme } from "next-themes"
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover"
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
+import OpenAI from "openai"
 
 interface ClientProps {
   id: string
@@ -56,6 +58,12 @@ export default function EditScoreClient({ id }: ClientProps) {
   const exportInterval = 30000
   const [sharingSetting, setSharingSetting] = useState<string>("private")
   const [lastSavedTime, setLastSavedTime] = useState<string | null>(null)
+  
+  // Add description state
+  const [scoreDescription, setScoreDescription] = useState<string>("")
+
+  // Add loading state for description generation
+  const [isLoadingDescription, setIsLoadingDescription] = useState(false)
 
   // Function to handle search params
   const handleSearchParams = React.useCallback((params: URLSearchParams) => {
@@ -112,6 +120,7 @@ export default function EditScoreClient({ id }: ClientProps) {
             if (scoreData.flatid) setFlatId(scoreData.flatid)
             if (scoreData.name) setTitle(scoreData.name)
             if (scoreData.sharing) setSharingSetting(scoreData.sharing)
+            if (scoreData.description) setScoreDescription(scoreData.description)
           } else {
             setError("Score data is undefined")
           }
@@ -186,12 +195,12 @@ export default function EditScoreClient({ id }: ClientProps) {
       try {
         const buffer = await embedRef.current.getMusicXML({ compressed: true })
 
-
         const base64String = btoa(new Uint8Array(buffer).reduce((data, byte) => data + String.fromCharCode(byte), ""))
 
         // Save to localStorage
         const saveData = {
           title,
+          description: scoreDescription,
           timestamp: new Date().toISOString(),
           content: base64String,
         }
@@ -230,6 +239,15 @@ export default function EditScoreClient({ id }: ClientProps) {
           console.error("Error saving to Flat.io:", apiError)
         }
 
+        // Save description to Firestore
+        try {
+          await updateDoc(doc(db, "scores", id), {
+            description: scoreDescription,
+          })
+        } catch (firestoreError) {
+          console.error("Error saving description to Firestore:", firestoreError)
+        }
+
         setLastSavedTime(new Date().toLocaleTimeString())
       } catch (error) {
         console.error("Error in manual save:", error)
@@ -249,10 +267,12 @@ export default function EditScoreClient({ id }: ClientProps) {
         const scoreRef = doc(db, "scores", id)
         await updateDoc(scoreRef, {
           modified: serverTimestamp(),
+          description: scoreDescription,
         })
 
         const saveData = {
           title,
+          description: scoreDescription,
           timestamp: new Date().toISOString(),
           content: base64String,
         }
@@ -301,7 +321,7 @@ export default function EditScoreClient({ id }: ClientProps) {
         flatId,
       })
     }
-  }, [flatId, exportCount, title, id])
+  }, [flatId, exportCount, title, id, scoreDescription])
 
   // Set up auto-save interval
   useEffect(() => {
@@ -370,6 +390,86 @@ export default function EditScoreClient({ id }: ClientProps) {
     }
   };
 
+  const handleGenerateDescription = async () => {
+    if (!embedRef.current) {
+      console.error("Embed not ready")
+      return
+    }
+
+    setIsLoadingDescription(true)
+    try {
+      const json = await embedRef.current.getJSON()
+      
+      // Extract music sheet data
+      const extractMusicSheetData = (fullData: any) => {
+        return {
+          work: {
+            title: fullData?.work?.["work-title"]
+          },
+          partList: fullData?.["part-list"]?.["score-part"]?.map((part: any) => ({
+            id: part["$id"],
+            name: part["part-name"],
+            abbreviation: part["part-abbreviation"],
+            instrument: part["score-instrument"]?.["instrument-name"]
+          })),
+          parts: fullData?.part?.map((part: any) => ({
+            id: part["$id"],
+            measures: part.measure?.map((measure: any) => ({
+              number: measure["$number"],
+              attributes: measure.attributes,
+              notes: measure.note,
+              directions: measure.direction,
+              harmony: measure.harmony
+            }))
+          }))
+        };
+      };
+
+      const extractedData = extractMusicSheetData(json?.['score-partwise']);
+
+      // Call OpenAI
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY || "sk-svcacct-U1ZLkSvtRFwAzPLrR-XseW0sNZ-rHNf1Mtw5k2s_DNhjj5HxrU_SnVsxlikcjKaT3BlbkFJKFNz4Cza_cDEewCihVQ22wduNQ_JVG6qI-cDZJqgEuWMp0cuAmTn5lY8vdeFYUAA",
+        dangerouslyAllowBrowser: true,
+      });
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4.1-2025-04-14",
+        messages: [
+          {
+            role: "system",
+            content: "You are a music assistant analyzing sheet music. Please provide detailed analysis of the score. Don't mention about the source of the score (e.g music xml), just analyze the score. Output as text (Don't use markdown formatting).",
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `User question: Please generate a description for this music score.\nScore Data: ${JSON.stringify(extractedData)}`,
+              },
+            ],
+          },
+        ],
+        response_format: {
+          type: "text",
+        },
+        temperature: 1,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0
+      });
+
+      const chatGPTResponse = response.choices[0].message.content?.trim();
+      setScoreDescription(chatGPTResponse || "");
+
+    } catch (error) {
+      console.error("Error generating description:", error)
+      alert("Failed to generate description. Please try again.")
+    } finally {
+      setIsLoadingDescription(false)
+    }
+  }
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center dark:bg-gray-900 dark:text-white">Loading...</div>
   }
@@ -402,6 +502,55 @@ export default function EditScoreClient({ id }: ClientProps) {
         <div className="score-editor-container rounded-md overflow-hidden shadow-lg border border-gray-700 mb-4 bg-white dark:bg-gray-800">
           <div ref={containerRef} className="w-full" style={{ height: "470px" }} />
         </div>
+
+        {/* Description Form */}
+        <TooltipProvider>
+          <div className="mb-6 bg-gray-800 rounded-md shadow-md p-6 border border-gray-700">
+            <div className="flex items-center gap-2 mb-2">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-300">
+                Description
+              </label>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-400 cursor-pointer">
+                    <Sparkles className="w-4 h-4 text-white" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  The AI can help you generate description of music based on your music sheet
+                </TooltipContent>
+              </Tooltip>
+              <Button 
+                className="ml-2" 
+                type="button" 
+                onClick={handleGenerateDescription}
+                size="sm"
+                variant="outline"
+                disabled={isLoadingDescription}
+              >
+                {isLoadingDescription ? "Generating..." : "Generate Description"}
+              </Button>
+            </div>
+            <textarea
+              id="description"
+              value={scoreDescription}
+              onChange={(e) => setScoreDescription(e.target.value)}
+              placeholder="Enter a description for your score..."
+              className="w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8A3D4C] focus:border-transparent bg-gray-700 text-white placeholder-gray-400"
+              rows={3}
+            />
+          </div>
+        </TooltipProvider>
+
+        {/* Loading Overlay */}
+        {isLoadingDescription && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 flex flex-col items-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-[#4A1D2C] dark:border-[#8A3D4C] mb-4"></div>
+              <span className="text-lg font-semibold dark:text-white">Generating description...</span>
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
         <div className="py-3 px-4 bg-gray-800 rounded-md border border-gray-700 flex justify-between items-center">
