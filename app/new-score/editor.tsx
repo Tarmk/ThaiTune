@@ -270,3 +270,5 @@ const Editor = ({ title, user }: EditorProps) => {
 }
 
 export default Editor
+
+
