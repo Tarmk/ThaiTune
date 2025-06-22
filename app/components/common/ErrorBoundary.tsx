@@ -2,6 +2,7 @@
 
 import { Component, type ErrorInfo, type ReactNode } from "react"
 import { Button } from "@/app/components/ui/button"
+import Link from "next/link"
 
 interface Props {
   children: ReactNode
@@ -40,8 +41,10 @@ export class ErrorBoundary extends Component<Props, State> {
             <Button onClick={() => this.setState({ hasError: false })} className="mr-4">
               Try again
             </Button>
-            <Button variant="ghost" onClick={() => (window.location.href = "/")}>
-              Go to homepage
+            <Button variant="ghost" asChild>
+              <Link href="/">
+                Go to homepage
+              </Link>
             </Button>
           </div>
         </div>

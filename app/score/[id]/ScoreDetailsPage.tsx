@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft, MessageCircle, X, ZoomIn, ZoomOut, Maximize2, Star } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useTheme } from "next-themes"
+import Link from "next/link"
+import { cn } from "@/lib/utils"
 
 import { Card, CardContent } from "@/app/components/ui/card"
 import { auth, db } from "@/lib/firebase"
