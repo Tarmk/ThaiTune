@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft, MessageCircle, X, ZoomIn, ZoomOut, Maximize2, Star } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useTheme } from "next-themes"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { cn } from "@/lib/utils"
 
 import { Card, CardContent } from "@/app/components/ui/card"
 import { auth, db } from "@/lib/firebase"
@@ -75,6 +77,57 @@ const StarRating = ({
           />
         </button>
       ))}
+    </div>
+  )
+}
+
+// Truncated Description Component
+const TruncatedDescription = ({ 
+  text, 
+  maxPreviewLines = 2,
+  title
+}: { 
+  text: string
+  maxPreviewLines?: number
+  title: string
+}) => {
+  const [isExpanded, setIsExpanded] = React.useState(false)
+  const textRef = React.useRef<HTMLParagraphElement>(null)
+  const [isOverflowing, setIsOverflowing] = React.useState(false)
+  const { t } = useTranslation(["dashboard"])
+
+  React.useEffect(() => {
+    if (textRef.current) {
+      const lineHeight = parseInt(window.getComputedStyle(textRef.current).lineHeight)
+      const maxHeight = lineHeight * maxPreviewLines
+      setIsOverflowing(textRef.current.scrollHeight > maxHeight)
+    }
+  }, [maxPreviewLines, text])
+
+  return (
+    <div className="mt-4 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+      <div className="p-4">
+        <h3 className="text-md font-semibold mb-2 text-[#333] dark:text-white">{title}</h3>
+        <div>
+          <p 
+            ref={textRef}
+            className={cn(
+              "text-gray-700 dark:text-gray-300 whitespace-pre-line",
+              !isExpanded && "line-clamp-2"
+            )}
+          >
+            {text}
+          </p>
+          {isOverflowing && (
+            <button
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="mt-2 text-sm text-maroon-600 dark:text-maroon-400 hover:underline focus:outline-none"
+            >
+              {isExpanded ? t("showLess", { ns: "dashboard", defaultValue: "Show less" }) : t("showMore", { ns: "dashboard", defaultValue: "Show more" })}
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
@@ -547,10 +600,11 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
           )}
         </div>
         {score.description && score.description.trim() !== "" && (
-          <div className="mt-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow border border-gray-200 dark:border-gray-700">
-            <h3 className="text-md font-semibold mb-2 text-[#333] dark:text-white">{t("description", { ns: "dashboard", defaultValue: "Description" })}</h3>
-            <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line">{score.description}</p>
-          </div>
+          <TruncatedDescription 
+            text={score.description} 
+            title={t("description", { ns: "dashboard", defaultValue: "Description" })}
+            maxPreviewLines={2}
+          />
         )}
       </main>
 
