@@ -302,49 +302,22 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
 
   const sendMessageToChatGPT = async (message: string) => {
     try {
-      let pngData = null
-      let xmlString = null
-      let extractedData = null
-      if (embedRef.current) {
-        try {
-          pngData = await embedRef.current.getPNG({
-            result: "dataURL",
-            layout: "track",
-            dpi: 300,
-          })
-          console.log("PNG data:", pngData)
-        } catch (error) {
-          console.error("Error getting PNG:", error)
-        }
-        const jsonData = await embedRef.current.getJSON()
-        console.log("Full JSON data from getJSON:", jsonData)
-        extractedData = extractMusicSheetData(jsonData['score-partwise'])
-        console.log("Extracted Music Sheet Data:", extractedData)
-
-        
-      }
+      if (!score) return;
 
       const response = await openai.chat.completions.create({
         model: "gpt-4.1-2025-04-14",
         messages: [
           {
             role: "system",
-            content: "You are a music assistant analyzing sheet music. Please provide detailed analysis of the score. Don't mention about the source of the score (e.g music xml), just analyze the score.",
+            content: "You are a music assistant analyzing sheet music. Please provide detailed analysis and help answer questions about the score. Do not use any special formatting characters like asterisks (*), hashtags (#), or other Markdown syntax in your responses. Provide your analysis in plain text only. Summarize the response in 1-2 paragraphs.",
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: `User question: ${message}\nScore Data: ${JSON.stringify(extractedData)}`,
+                text: `User question: ${message}\nScore Title: ${score.name}\nAuthor: ${score.author}\nDescription: ${score.description || "No description available"}`,
               },
-              // {
-              //   type: "image_url",
-              //   image_url: {
-              //     url: pngData,
-              //     detail: "high",
-              //   },
-              // },
             ],
           },
         ],
