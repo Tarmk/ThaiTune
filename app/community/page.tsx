@@ -24,10 +24,15 @@ interface CommunityScore {
   modified: string;
   created: string;
   sharing: string;
-  rating?: number;
-  ratingCount?: number;
+  rating: number;
+  ratingCount: number;
   userId: string;
-  isBookmarked?: boolean;
+  isBookmarked: boolean;
+}
+
+interface BookmarkData {
+  id: string;
+  scoreId: string;
 }
 
 export default function CommunityPage() {
@@ -71,7 +76,7 @@ export default function CommunityPage() {
     const bookmarksSnapshot = await getDocs(bookmarksQuery);
     return bookmarksSnapshot.docs.map(doc => ({
       id: doc.id,
-      ...doc.data()
+      scoreId: doc.data().scoreId as string
     }));
   };
 
@@ -95,15 +100,14 @@ export default function CommunityPage() {
             const createdTimestamp = data.created as Timestamp
             return {
               id: doc.id,
-              name: data.name,
-              author: data.author,
+              name: data.name || '',
+              author: data.author || '',
               modified: modifiedTimestamp?.toDate().toLocaleString() || t('unknownDate'),
               created: createdTimestamp?.toDate().toLocaleString() || t('unknownDate'),
-              sharing: data.sharing,
+              sharing: data.sharing || 'private',
               rating: data.rating || 0,
               ratingCount: data.ratingCount || 0,
-              userId: data.userId || ''
-              ratingCount: data.ratingCount || 0,
+              userId: data.userId || '',
               isBookmarked: bookmarkedScoreIds.includes(doc.id)
             }
           })
