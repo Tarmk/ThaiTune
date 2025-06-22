@@ -6,7 +6,7 @@ import { Button } from "@/app/components/ui/button"
 import { Card, CardContent } from "@/app/components/ui/card"
 import Link from "next/link"
 import { auth, db } from '@/lib/firebase'
-import { collection, getDocs, query, where, addDoc, deleteDoc, doc } from 'firebase/firestore'
+import { collection, getDocs, query, where } from 'firebase/firestore'
 import { Timestamp } from 'firebase/firestore'
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import { useCallback, useMemo } from 'react'
@@ -15,9 +15,8 @@ import { useTranslation } from 'react-i18next'
 import { useTheme } from "next-themes"
 import { SearchBar } from "@/app/components/common/SearchBar"
 import Footer from "../components/layout/Footer"
-import { useRouter } from "next/navigation"
 
-interface CommunityScore {
+interface BookmarkedScore {
   id: string;
   name: string;
   author: string;
@@ -26,18 +25,16 @@ interface CommunityScore {
   sharing: string;
   rating?: number;
   ratingCount?: number;
-  isBookmarked?: boolean;
 }
 
-export default function CommunityPage() {
+export default function MyBookmarksPage() {
   const { t } = useTranslation('community')
-  const [scores, setScores] = React.useState<CommunityScore[]>([]);
-  const [sortColumn, setSortColumn] = React.useState<keyof CommunityScore | null>(null)
+  const [scores, setScores] = React.useState<BookmarkedScore[]>([]);
+  const [sortColumn, setSortColumn] = React.useState<keyof BookmarkedScore | null>(null)
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc')
   const [searchQuery, setSearchQuery] = React.useState("")
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
-  const router = useRouter()
 
   React.useEffect(() => {
     setMounted(true)
@@ -51,9 +48,6 @@ export default function CommunityPage() {
   // Background colors matching the landing page
   const pageBg = mounted && resolvedTheme === "dark" ? "#1a1f2c" : "#f3f4f6" 
   const cardBg = mounted && resolvedTheme === "dark" ? "#242A38" : "white"
-  const inputBg = mounted && resolvedTheme === "dark" ? "#212838" : "#f9fafb"
-  const inputBorder = mounted && resolvedTheme === "dark" ? "#323A4B" : "#e5e7eb"
-  const textColor = mounted && resolvedTheme === 'dark' ? 'white' : '#111827'
 
   const debouncedSetSearchQuery = useCallback(
     debounce((query: string) => setSearchQuery(query), 300),
@@ -64,34 +58,29 @@ export default function CommunityPage() {
     debouncedSetSearchQuery(value);
   };
 
-  const fetchBookmarkedScores = async (userId: string) => {
-    const bookmarksRef = collection(db, 'bookmarks');
-    const bookmarksQuery = query(bookmarksRef, where('userId', '==', userId));
-    const bookmarksSnapshot = await getDocs(bookmarksQuery);
-    return bookmarksSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-  };
-
   React.useEffect(() => {
-    const fetchScores = async () => {
+    const fetchBookmarkedScores = async () => {
       try {
         const user = auth.currentUser;
-        const scoresCollection = collection(db, 'scores')
-        const scoresSnapshot = await getDocs(scoresCollection)
+        if (!user) return;
+
+        // First get the user's bookmarks
+        const bookmarksRef = collection(db, 'bookmarks');
+        const bookmarksQuery = query(bookmarksRef, where('userId', '==', user.uid));
+        const bookmarksSnapshot = await getDocs(bookmarksQuery);
         
-        let bookmarkedScoreIds: string[] = [];
-        if (user) {
-          const bookmarks = await fetchBookmarkedScores(user.uid);
-          bookmarkedScoreIds = bookmarks.map(bookmark => bookmark.scoreId);
-        }
+        // Get all bookmarked score IDs
+        const bookmarkedScoreIds = bookmarksSnapshot.docs.map(doc => doc.data().scoreId);
         
+        // Then fetch the actual scores
+        const scoresCollection = collection(db, 'scores');
+        const scoresSnapshot = await getDocs(scoresCollection);
         const scoresList = scoresSnapshot.docs
+          .filter(doc => bookmarkedScoreIds.includes(doc.id))
           .map(doc => {
-            const data = doc.data()
-            const modifiedTimestamp = data.modified as Timestamp
-            const createdTimestamp = data.created as Timestamp
+            const data = doc.data();
+            const modifiedTimestamp = data.modified as Timestamp;
+            const createdTimestamp = data.created as Timestamp;
             return {
               id: doc.id,
               name: data.name,
@@ -100,87 +89,41 @@ export default function CommunityPage() {
               created: createdTimestamp?.toDate().toLocaleString() || t('unknownDate'),
               sharing: data.sharing,
               rating: data.rating || 0,
-              ratingCount: data.ratingCount || 0,
-              isBookmarked: bookmarkedScoreIds.includes(doc.id)
-            }
-          })
-          .filter(score => score.sharing === 'public')
-        setScores(scoresList)
+              ratingCount: data.ratingCount || 0
+            };
+          });
+        setScores(scoresList);
       } catch (error) {
-        console.error('Error fetching scores:', error)
+        console.error('Error fetching bookmarked scores:', error);
       }
-    }
+    };
 
-    fetchScores()
-  }, [t])
+    fetchBookmarkedScores();
+  }, [t]);
 
-  const handleBookmark = async (scoreId: string, isCurrentlyBookmarked: boolean) => {
-    const user = auth.currentUser;
-    if (!user) {
-      router.push('/login');
-      return;
-    }
-
-    try {
-      if (isCurrentlyBookmarked) {
-        // Remove bookmark
-        const bookmarksRef = collection(db, 'bookmarks');
-        const bookmarkQuery = query(
-          bookmarksRef,
-          where('userId', '==', user.uid),
-          where('scoreId', '==', scoreId)
-        );
-        const bookmarkSnapshot = await getDocs(bookmarkQuery);
-        
-        if (!bookmarkSnapshot.empty) {
-          await deleteDoc(doc(db, 'bookmarks', bookmarkSnapshot.docs[0].id));
-        }
-      } else {
-        // Add bookmark
-        const bookmarksRef = collection(db, 'bookmarks');
-        await addDoc(bookmarksRef, {
-          userId: user.uid,
-          scoreId: scoreId,
-          createdAt: new Date()
-        });
-      }
-
-      // Update local state
-      setScores(prevScores =>
-        prevScores.map(score =>
-          score.id === scoreId
-            ? { ...score, isBookmarked: !isCurrentlyBookmarked }
-            : score
-        )
-      );
-    } catch (error) {
-      console.error('Error toggling bookmark:', error);
-    }
-  };
-
-  const handleSort = (column: keyof CommunityScore) => {
+  const handleSort = (column: keyof BookmarkedScore) => {
     if (sortColumn === column) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      setSortColumn(column)
-      setSortDirection('asc')
+      setSortColumn(column);
+      setSortDirection('asc');
     }
 
     const sortedScores = [...scores].sort((a, b) => {
-      if (a[column] < b[column]) return sortDirection === 'asc' ? -1 : 1
-      if (a[column] > b[column]) return sortDirection === 'asc' ? 1 : -1
-      return 0
-    })
+      if (a[column] < b[column]) return sortDirection === 'asc' ? -1 : 1;
+      if (a[column] > b[column]) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
 
-    setScores(sortedScores)
-  }
+    setScores(sortedScores);
+  };
 
-  const SortIcon = ({ column }: { column: keyof CommunityScore }) => {
-    if (sortColumn !== column) return <ChevronDown className="ml-1 h-4 w-4 text-gray-400" />
+  const SortIcon = ({ column }: { column: keyof BookmarkedScore }) => {
+    if (sortColumn !== column) return <ChevronDown className="ml-1 h-4 w-4 text-gray-400" />;
     return sortDirection === 'asc' ? 
       <ChevronUp className="ml-1 h-4 w-4" style={{ color: accentColor }} /> : 
-      <ChevronDown className="ml-1 h-4 w-4" style={{ color: accentColor }} />
-  }
+      <ChevronDown className="ml-1 h-4 w-4" style={{ color: accentColor }} />;
+  };
 
   const filteredScores = useMemo(() => {
     return scores.filter(score => 
@@ -194,7 +137,7 @@ export default function CommunityPage() {
       <TopMenu />
       <main className="flex-grow max-w-7xl mx-auto px-4 pt-20 pb-6 w-full">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-[#333333] dark:text-white">{t('communityScores')}</h1>
+          <h1 className="text-2xl font-bold text-[#333333] dark:text-white">My Bookmarked Scores</h1>
           <div className="flex items-center space-x-4">
             <SearchBar 
               placeholder={t('searchPlaceholder')}
@@ -245,7 +188,7 @@ export default function CommunityPage() {
                 {filteredScores.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-4 text-center text-gray-500 dark:text-gray-400">
-                      {t('noScores')}
+                      No bookmarked scores found
                     </td>
                   </tr>
                 ) : (
@@ -277,20 +220,7 @@ export default function CommunityPage() {
                       </td>
                       <td className="py-3 text-[#666666] dark:text-gray-300">{score.created}</td>
                       <td className="py-3 text-[#666666] dark:text-gray-300">{score.modified}</td>
-                      <td className="py-3 flex items-center space-x-2">
-                        <Button
-                          variant="ghost"
-                          className="p-1"
-                          onClick={() => handleBookmark(score.id, score.isBookmarked || false)}
-                        >
-                          <Bookmark
-                            className={`h-5 w-5 ${
-                              score.isBookmarked
-                                ? 'fill-current text-[#800000] dark:text-[#e5a3b4]'
-                                : 'text-[#666666] dark:text-gray-400'
-                            }`}
-                          />
-                        </Button>
+                      <td className="py-3">
                         <Button variant="ghost" className="p-1">
                           <MoreVertical className="h-5 w-5 text-[#666666] dark:text-gray-400" />
                         </Button>
@@ -305,5 +235,5 @@ export default function CommunityPage() {
       </main>
       <Footer />
     </div>
-  )
-}
+  );
+} 

@@ -1,8 +1,8 @@
 {
-  "communityScores": "โน้ตเพลงชุมชน",
+  "communityScores": "โน้ตเพลงในชุมชน",
   "searchScores": "ค้นหาโน้ตเพลง...",
   "scoreName": "ชื่อโน้ตเพลง",
-  "author": "ผู้สร้าง",
+  "author": "ผู้แต่ง",
   "modified": "แก้ไขล่าสุด",
   "viewScore": "ดูโน้ตเพลง",
   "user": "ผู้ใช้",
@@ -15,9 +15,12 @@
   "loading": "กำลังโหลดโน้ตเพลง...",
   "error": "เกิดข้อผิดพลาดในการโหลดโน้ตเพลง",
   "community": "ชุมชน",
-  "searchPlaceholder": "ค้นหาโน้ตเพลง",
+  "searchPlaceholder": "ค้นหาโน้ตเพลง...",
   "actions": "การดำเนินการ",
   "unknownDate": "ไม่ทราบวันที่",
   "rating": "คะแนน",
-  "created": "สร้างเมื่อ"
+  "created": "สร้างเมื่อ",
+  "myBookmarks": "โน้ตเพลงที่บันทึกไว้",
+  "noBookmarks": "ไม่พบโน้ตเพลงที่บันทึกไว้",
+  "viewBookmarks": "ดูโน้ตเพลงที่บันทึกไว้"
 }

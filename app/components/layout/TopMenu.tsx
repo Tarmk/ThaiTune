@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
-import { ChevronDown, LogOut, User, Settings, HelpCircle, Lock, Menu } from 'lucide-react'
+import { ChevronDown, LogOut, User, Settings, HelpCircle, Lock, Menu, Bookmark } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useState, useEffect } from 'react'
 import {
@@ -67,7 +67,8 @@ export function TopMenu({ user: propUser }: TopMenuProps) {
     login: t('login'),
     getStarted: t('getStarted'),
     settings: t('settings'),
-    logout: t('logout')
+    logout: t('logout'),
+    myBookmarks: t('myBookmarks', { ns: 'community' })
   }
 
   return (
@@ -96,6 +97,12 @@ export function TopMenu({ user: propUser }: TopMenuProps) {
                     <Link href="/community">
                       <Button variant="ghost" className="font-medium text-gray-700 hover:text-[#4A1D2C] transition-colors dark:text-gray-200 dark:hover:text-white">
                         {translatedStrings.community}
+                      </Button>
+                    </Link>
+                    <Link href="/my-bookmarks">
+                      <Button variant="ghost" className="font-medium text-gray-700 hover:text-[#4A1D2C] transition-colors dark:text-gray-200 dark:hover:text-white flex items-center gap-2">
+                        <Bookmark className="h-4 w-4" />
+                        {translatedStrings.myBookmarks}
                       </Button>
                     </Link>
                   </>
@@ -265,6 +272,14 @@ export function TopMenu({ user: propUser }: TopMenuProps) {
                         {translatedStrings.community}
                       </Button>
                     </Link>
+                    {user && (
+                      <Link href="/my-bookmarks">
+                        <Button variant="ghost" className="w-full justify-start text-lg dark:text-gray-200 flex items-center gap-2">
+                          <Bookmark className="h-4 w-4" />
+                          {translatedStrings.myBookmarks}
+                        </Button>
+                      </Link>
+                    )}
                     {!user && (
                       <Button variant="ghost" className="w-full justify-start text-lg dark:text-gray-200">
                         {translatedStrings.ourProducts}

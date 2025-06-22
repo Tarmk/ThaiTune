@@ -19,5 +19,8 @@
   "actions": "Actions",
   "unknownDate": "Unknown date",
   "rating": "Rating",
-  "created": "Created"
+  "created": "Created",
+  "myBookmarks": "My Bookmarks",
+  "noBookmarks": "No bookmarked scores found",
+  "viewBookmarks": "View My Bookmarks"
 }
