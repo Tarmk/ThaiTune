@@ -11,10 +11,19 @@ import { cn } from "@/lib/utils"
 import { Card, CardContent } from "@/app/components/ui/card"
 import { auth, db } from "@/lib/firebase"
 import { signOut, onAuthStateChanged } from "firebase/auth"
-import { doc, getDoc, updateDoc } from "firebase/firestore"
+import { doc, getDoc, updateDoc, collection, addDoc, query, orderBy, onSnapshot, Timestamp } from "firebase/firestore"
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import OpenAI from "openai"
 import Footer from "@/app/components/layout/Footer"
+
+interface Comment {
+  id: string
+  text: string
+  userId: string
+  userName: string
+  createdAt: Date
+  scoreId: string
+}
 
 interface Score {
   id: string
@@ -28,6 +37,7 @@ interface Score {
   rating?: number
   ratingCount?: number
   userRating?: number
+  comments?: Comment[]
 }
 
 interface ScoreDetailsPageProps {
@@ -132,6 +142,136 @@ const TruncatedDescription = ({
   )
 }
 
+// Comment Component
+const CommentSection = ({ 
+  scoreId, 
+  user 
+}: { 
+  scoreId: string
+  user: any
+}) => {
+  const [comments, setComments] = React.useState<Comment[]>([])
+  const [newComment, setNewComment] = React.useState("")
+  const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const { t } = useTranslation(["dashboard"])
+
+  React.useEffect(() => {
+    if (!scoreId) return
+
+    // Subscribe to comments
+    const commentsRef = collection(db, "comments")
+    const q = query(
+      commentsRef,
+      orderBy("createdAt", "desc")
+    )
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const newComments: Comment[] = []
+      snapshot.forEach((doc) => {
+        const data = doc.data()
+        if (data.scoreId === scoreId) {
+          newComments.push({
+            id: doc.id,
+            text: data.text,
+            userId: data.userId,
+            userName: data.userName,
+            createdAt: data.createdAt.toDate(),
+            scoreId: data.scoreId
+          })
+        }
+      })
+      setComments(newComments)
+    })
+
+    return () => unsubscribe()
+  }, [scoreId])
+
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!user || !newComment.trim()) return
+
+    setIsSubmitting(true)
+    try {
+      const commentsRef = collection(db, "comments")
+      await addDoc(commentsRef, {
+        text: newComment.trim(),
+        userId: user.uid,
+        userName: user.displayName || "Anonymous",
+        createdAt: Timestamp.now(),
+        scoreId: scoreId
+      })
+      setNewComment("")
+    } catch (error) {
+      console.error("Error adding comment:", error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat('default', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date)
+  }
+
+  return (
+    <div className="mt-6 bg-[#1a1f2e] dark:bg-[#1a1f2e] rounded-lg shadow">
+      <div className="p-4">
+        <h3 className="text-md font-semibold mb-4 text-white">
+          {t("comments", { ns: "dashboard", defaultValue: "Comments" })}
+        </h3>
+        
+        {user ? (
+          <form onSubmit={handleSubmitComment} className="mb-6">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+                placeholder={t("writeAComment", { ns: "dashboard", defaultValue: "Write a comment..." })}
+                className="flex-1 min-w-0 rounded-md bg-[#2a2f3e] border-none px-3 py-2 text-sm text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-maroon-500"
+                disabled={isSubmitting}
+              />
+              <button
+                type="submit"
+                disabled={isSubmitting || !newComment.trim()}
+                className="px-4 py-2 bg-[#2a2f3e] text-gray-300 rounded-md text-sm font-medium hover:bg-[#3a3f4e] focus:outline-none focus:ring-2 focus:ring-maroon-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {t("post", { ns: "dashboard", defaultValue: "Post" })}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <p className="mb-6 text-sm text-gray-400">
+            {t("loginToComment", { ns: "dashboard", defaultValue: "Please login to post comments" })}
+          </p>
+        )}
+
+        <div className="space-y-6">
+          {comments.map((comment) => (
+            <div key={comment.id} className="border-b border-[#2a2f3e] last:border-0 pb-4 last:pb-0">
+              <p className="text-gray-100 text-sm whitespace-pre-line mb-2">{comment.text}</p>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-400">{comment.userName}</span>
+                <span className="text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
+              </div>
+            </div>
+          ))}
+          {comments.length === 0 && (
+            <p className="text-gray-400 text-sm text-center py-4">
+              {t("noComments", { ns: "dashboard", defaultValue: "No comments yet" })}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
   const [user, setUser] = React.useState<any>(null)
   const [score, setScore] = React.useState<Score | null>(null)
@@ -217,6 +357,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
             rating: scoreData.rating || 0,
             ratingCount: scoreData.ratingCount || 0,
             userRating: userRating,
+            comments: scoreData.comments || [],
           })
         } else {
           setError("Score not found")
@@ -606,6 +747,8 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
             maxPreviewLines={2}
           />
         )}
+        
+        <CommentSection scoreId={id} user={user} />
       </main>
 
       <button
