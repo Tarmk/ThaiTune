@@ -4,8 +4,10 @@ import Link from "next/link"
 import { Facebook, Twitter, Instagram, Github, Linkedin, Youtube, MusicIcon } from "lucide-react"
 import { Logo } from "../common/Logo"
 import { useTheme } from "next-themes"
+import { useTranslation } from "react-i18next"
 
 export default function Footer() {
+  const { t } = useTranslation('common')
   // Theme colors
   const maroonColor = "#4A1D2C"
   const maroonLighter = "#6A2D3C"
@@ -21,8 +23,7 @@ export default function Footer() {
           <div className="mb-8 md:mb-0 md:max-w-xs">
             <Logo size="lg" withText={true} variant="primary" borderRadius="rounded-lg" />
             <p className="mt-4 text-gray-500 dark:text-gray-300 text-sm">
-              ThaiTune helps musicians learn, create, and share traditional Thai music with a modern platform 
-              designed to preserve cultural heritage.
+              {t('footer.description')}
             </p>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8 xl:gap-12">
@@ -31,27 +32,27 @@ export default function Footer() {
                 className="text-base font-bold mb-4 dark:text-[#e5a3b4]" 
                 style={{ color: theme === 'dark' ? undefined : maroonColor }}
               >
-                ThaiTune
+                {t('footer.thaitune.title')}
               </h3>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    Database Overview
+                    {t('footer.thaitune.databaseOverview')}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    Song Submission
+                    {t('footer.thaitune.songSubmission')}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    Learning Resources
+                    {t('footer.thaitune.learningResources')}
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    Community
+                  <Link href="/community" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
+                    {t('footer.thaitune.community')}
                   </Link>
                 </li>
               </ul>
@@ -61,27 +62,27 @@ export default function Footer() {
                 className="text-base font-bold mb-4 dark:text-[#e5a3b4]" 
                 style={{ color: theme === 'dark' ? undefined : maroonColor }}
               >
-                Organization
+                {t('footer.organization.title')}
               </h3>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    About Us
+                    {t('footer.organization.aboutUs')}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    Blog
+                    {t('footer.organization.blog')}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    Careers
+                    {t('footer.organization.careers')}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    Partners
+                    {t('footer.organization.partners')}
                   </Link>
                 </li>
               </ul>
@@ -91,27 +92,27 @@ export default function Footer() {
                 className="text-base font-bold mb-4 dark:text-[#e5a3b4]" 
                 style={{ color: theme === 'dark' ? undefined : maroonColor }}
               >
-                Support
+                {t('footer.support.title')}
               </h3>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    Help Center
+                    {t('footer.support.helpCenter')}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    API Documentation
+                    {t('footer.support.apiDocumentation')}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    Terms of Service
+                    {t('footer.support.termsOfService')}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    Privacy Policy
+                    {t('footer.support.privacyPolicy')}
                   </Link>
                 </li>
               </ul>
@@ -121,22 +122,22 @@ export default function Footer() {
                 className="text-base font-bold mb-4 dark:text-[#e5a3b4]" 
                 style={{ color: theme === 'dark' ? undefined : maroonColor }}
               >
-                Contact
+                {t('footer.contact.title')}
               </h3>
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    Get in Touch
+                    {t('footer.contact.getInTouch')}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    Feedback
+                    {t('footer.contact.feedback')}
                   </Link>
                 </li>
                 <li>
                   <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    Report an Issue
+                    {t('footer.contact.reportAnIssue')}
                   </Link>
                 </li>
               </ul>
@@ -146,7 +147,7 @@ export default function Footer() {
 
         {/* Bottom section with socials and copyright */}
         <div className="border-t border-gray-100 dark:border-gray-800 pt-8 mt-8 flex flex-col md:flex-row items-center justify-between">
-          <p className="text-sm text-gray-500 dark:text-gray-400">&copy; 2025 ThaiTune. All rights reserved.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t('footer.copyright')}</p>
           
           <div className="flex space-x-3 mt-4 md:mt-0">
             <Link href="#" aria-label="Twitter" className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-[#1a1f2c] dark:hover:bg-gray-700 transition-colors">

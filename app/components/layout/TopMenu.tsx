@@ -19,6 +19,7 @@ import { Logo } from "../common/Logo"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { NoSSR } from "../common/NoSSR"
 import { ThemeToggle } from "@/app/components/ui/theme-toggle"
+import { LanguageToggle } from "@/app/components/ui/language-toggle"
 import { useTheme } from "next-themes"
 import { useAuth } from "@/app/providers/auth-provider"
 
@@ -33,7 +34,6 @@ export function TopMenu({ user: propUser }: TopMenuProps) {
   const maroonLightest = "#F8F1F3"
   const maroonDark = "#8A3D4C"
   
-  const [language, setLanguage] = useState('en')
   const [open, setOpen] = useState(false)
   const { t, i18n } = useTranslation('common')
   const router = useRouter()
@@ -48,12 +48,6 @@ export function TopMenu({ user: propUser }: TopMenuProps) {
   useEffect(() => {
     setMounted(true)
   }, [])
-
-  const handleLanguageChange = (lang: string) => {
-    setLanguage(lang)
-    i18n.changeLanguage(lang)
-    setOpen(false)
-  }
 
   const handleLogout = async () => {
     try {
@@ -221,46 +215,8 @@ export function TopMenu({ user: propUser }: TopMenuProps) {
                 </div>
               )}
               
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    className="flex items-center justify-center rounded-full w-8 h-8 p-0 border border-[#4A1D2C] hover:bg-[#F8F1F3] hover:text-[#4A1D2C] dark:border-[#8A3D4C] dark:hover:bg-[#232838]" 
-                    aria-label="Change language"
-                  >
-                    <span className="text-sm">{language === 'en' ? '🇺🇸' : '🇹🇭'}</span>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-52 p-2 rounded-lg border-[#4A1D2C] dark:border-[#8A3D4C] dark:bg-[#232838] shadow-md">
-                  <div className="space-y-1">
-                    <button
-                      className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-2 transition-colors ${
-                        language === 'en' 
-                          ? 'bg-[#F8F1F3] text-[#4A1D2C] font-medium dark:bg-[#333b52] dark:text-white' 
-                          : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
-                      }`}
-                      onClick={() => handleLanguageChange('en')}
-                    >
-                      <span className="text-base">🇺🇸</span>
-                      <span>English</span>
-                    </button>
-                    <button
-                      className={`w-full text-left px-3 py-2 rounded-md flex items-center gap-2 transition-colors ${
-                        language === 'th' 
-                          ? 'bg-[#F8F1F3] text-[#4A1D2C] font-medium dark:bg-[#333b52] dark:text-white' 
-                          : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
-                      }`}
-                      onClick={() => handleLanguageChange('th')}
-                    >
-                      <span className="text-base">🇹🇭</span>
-                      <span>ไทย</span>
-                    </button>
-                  </div>
-                </PopoverContent>
-              </Popover>
-              
-              {/* Theme Toggle */}
               <ThemeToggle />
+              <LanguageToggle />
             </NoSSR>
             
             {/* Mobile menu */}

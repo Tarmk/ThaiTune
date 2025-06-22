@@ -1,6 +1,6 @@
 {
   "getStarted": "Get started for free",
-  "login": "Log In",
+  "login": "Login",
   "learnTitle": "Learn Traditional Thai Music",
   "description": "ThaiTune is a program that allows users to contribute their knowledge of Traditional Thai Melodies by adding songs they know, while also providing an opportunity to discover and learn new melodies from the existing database.",
   "features": "Features",
@@ -19,5 +19,39 @@
   "feature3Title": "Learn New Melodies",
   "feature3Desc": "Discover and learn new traditional Thai melodies from our growing collection",
   "advancedEditor": "Advanced Music Score Editor",
-  "editorDescription": "A powerful yet easy-to-use editor designed specifically for Thai traditional music"
+  "editorDescription": "A powerful yet easy-to-use editor designed specifically for Thai traditional music",
+  "contact": "Contact Us",
+  "help": "Help",
+  "logout": "Logout",
+  "footer": {
+    "description": "ThaiTune helps musicians learn, create, and share traditional Thai music with a modern platform designed to preserve cultural heritage.",
+    "thaitune": {
+      "title": "ThaiTune",
+      "databaseOverview": "Database Overview",
+      "songSubmission": "Song Submission",
+      "learningResources": "Learning Resources",
+      "community": "Community"
+    },
+    "organization": {
+      "title": "Organization",
+      "aboutUs": "About Us",
+      "blog": "Blog",
+      "careers": "Careers",
+      "partners": "Partners"
+    },
+    "support": {
+      "title": "Support",
+      "helpCenter": "Help Center",
+      "apiDocumentation": "API Documentation",
+      "termsOfService": "Terms of Service",
+      "privacyPolicy": "Privacy Policy"
+    },
+    "contact": {
+      "title": "Contact",
+      "getInTouch": "Get in Touch",
+      "feedback": "Feedback",
+      "reportAnIssue": "Report an Issue"
+    },
+    "copyright": "© 2025 ThaiTune. All rights reserved."
+  }
 }

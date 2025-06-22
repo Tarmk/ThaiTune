@@ -12,6 +12,7 @@ import { signOut, onAuthStateChanged } from "firebase/auth"
 import { doc, getDoc, updateDoc } from "firebase/firestore"
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import OpenAI from "openai"
+import Footer from "@/app/components/layout/Footer"
 
 interface Score {
   id: string
@@ -468,9 +469,9 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
   const isOwner = user?.uid === score.userId
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] dark:bg-gray-900 font-sans">
+    <div className="flex flex-col min-h-screen bg-[#F5F5F5] dark:bg-gray-900 font-sans">
       <TopMenu user={user} />
-      <main className="max-w-7xl mx-auto px-4 py-6 mt-16">
+      <main className="flex-grow max-w-7xl mx-auto px-4 py-6 mt-16 w-full">
         <div className="mb-6">
           <button 
             onClick={() => router.push("/dashboard")}
@@ -614,6 +615,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
           </div>
         </div>
       )}
+      <Footer />
     </div>
   )
 }

@@ -15,6 +15,7 @@ import debounce from 'lodash.debounce'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from "next-themes"
 import { SearchBar } from "@/app/components/common/SearchBar"
+import Footer from "../components/layout/Footer"
 
 interface CommunityScore {
   id: string;
@@ -124,9 +125,9 @@ export default function CommunityPage() {
   }, [scores, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#1a1f2c] transition-colors duration-300" style={{ background: pageBg }}>
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-[#1a1f2c] transition-colors duration-300" style={{ background: pageBg }}>
       <TopMenu />
-      <main className="max-w-7xl mx-auto px-4 pt-20 pb-6">
+      <main className="flex-grow max-w-7xl mx-auto px-4 pt-20 pb-6 w-full">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-[#333333] dark:text-white">{t('communityScores')}</h1>
           <div className="flex items-center space-x-4">
@@ -224,6 +225,7 @@ export default function CommunityPage() {
           </CardContent>
         </Card>
       </main>
+      <Footer />
     </div>
   )
 }
