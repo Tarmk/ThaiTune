@@ -23,5 +23,9 @@
   "typeAMessage": "Type a message...",
   "by": "By",
   "edit": "Edit",
-  "delete": "Delete"
+  "delete": "Delete",
+  "loginToRate": "Login to rate this score",
+  "rating": "Rating",
+  "votes": "votes",
+  "vote": "vote"
 }

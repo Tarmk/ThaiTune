@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { MoreVertical, ChevronUp, ChevronDown } from 'lucide-react'
+import { MoreVertical, ChevronUp, ChevronDown, Star } from 'lucide-react'
 import { Button } from "@/app/components/ui/button"
 import { Card, CardContent } from "@/app/components/ui/card"
 import Link from "next/link"
@@ -21,7 +21,10 @@ interface CommunityScore {
   name: string;
   author: string;
   modified: string;
+  created: string;
   sharing: string;
+  rating?: number;
+  ratingCount?: number;
 }
 
 export default function CommunityPage() {
@@ -47,6 +50,7 @@ export default function CommunityPage() {
   const cardBg = mounted && resolvedTheme === "dark" ? "#242A38" : "white"
   const inputBg = mounted && resolvedTheme === "dark" ? "#212838" : "#f9fafb"
   const inputBorder = mounted && resolvedTheme === "dark" ? "#323A4B" : "#e5e7eb"
+  const textColor = mounted && resolvedTheme === 'dark' ? 'white' : '#111827'
 
   const debouncedSetSearchQuery = useCallback(
     debounce((query: string) => setSearchQuery(query), 300),
@@ -65,13 +69,17 @@ export default function CommunityPage() {
         const scoresList = scoresSnapshot.docs
           .map(doc => {
             const data = doc.data()
-            const timestamp = data.modified as Timestamp
+            const modifiedTimestamp = data.modified as Timestamp
+            const createdTimestamp = data.created as Timestamp
             return {
               id: doc.id,
               name: data.name,
               author: data.author,
-              modified: timestamp?.toDate().toLocaleDateString() || t('unknownDate'),
-              sharing: data.sharing
+              modified: modifiedTimestamp?.toDate().toLocaleString() || t('unknownDate'),
+              created: createdTimestamp?.toDate().toLocaleString() || t('unknownDate'),
+              sharing: data.sharing,
+              rating: data.rating || 0,
+              ratingCount: data.ratingCount || 0
             }
           })
           .filter(score => score.sharing === 'public')
@@ -147,6 +155,18 @@ export default function CommunityPage() {
                     </button>
                   </th>
                   <th className="py-2 font-medium text-[#333333] dark:text-white">
+                    <button className="flex items-center focus:outline-none" onClick={() => handleSort('rating')}>
+                      {t('rating', { ns: 'dashboard' })}
+                      <SortIcon column="rating" />
+                    </button>
+                  </th>
+                  <th className="py-2 font-medium text-left text-[#333333] dark:text-white">
+                    <button className="flex items-center focus:outline-none" onClick={() => handleSort('created')}>
+                      {t('created', { ns: 'community' })}
+                      <SortIcon column="created" />
+                    </button>
+                  </th>
+                  <th className="py-2 font-medium text-left text-[#333333] dark:text-white">
                     <button className="flex items-center focus:outline-none" onClick={() => handleSort('modified')}>
                       {t('modified')}
                       <SortIcon column="modified" />
@@ -171,6 +191,25 @@ export default function CommunityPage() {
                         </Link>
                       </td>
                       <td className="py-3 text-[#666666] dark:text-gray-300">{score.author}</td>
+                      <td className="py-3">
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`h-4 w-4 ${
+                                  star <= score.rating ? 'fill-current text-yellow-400' : 'text-gray-300 dark:text-gray-600'
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm text-[#666666] dark:text-gray-400">
+                            {score.rating ? score.rating.toFixed(1) : "0.0"}
+                            {score.ratingCount ? ` (${score.ratingCount})` : ""}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 text-[#666666] dark:text-gray-300">{score.created}</td>
                       <td className="py-3 text-[#666666] dark:text-gray-300">{score.modified}</td>
                       <td className="py-3">
                         <Button variant="ghost" className="p-1">

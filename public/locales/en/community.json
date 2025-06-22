@@ -17,5 +17,7 @@
   "community": "Community",
   "searchPlaceholder": "Search scores",
   "actions": "Actions",
-  "unknownDate": "Unknown date"
+  "unknownDate": "Unknown date",
+  "rating": "Rating",
+  "created": "Created"
 }

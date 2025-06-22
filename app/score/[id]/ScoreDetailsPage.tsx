@@ -2,14 +2,14 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, MessageCircle, X, ZoomIn, ZoomOut, Maximize2 } from "lucide-react"
+import { ArrowLeft, MessageCircle, X, ZoomIn, ZoomOut, Maximize2, Star } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useTheme } from "next-themes"
 
 import { Card, CardContent } from "@/app/components/ui/card"
 import { auth, db } from "@/lib/firebase"
 import { signOut, onAuthStateChanged } from "firebase/auth"
-import { doc, getDoc } from "firebase/firestore"
+import { doc, getDoc, updateDoc } from "firebase/firestore"
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import OpenAI from "openai"
 
@@ -22,10 +22,60 @@ interface Score {
   userId: string
   sharing: string
   description?: string
+  rating?: number
+  ratingCount?: number
+  userRating?: number
 }
 
 interface ScoreDetailsPageProps {
   id: string
+}
+
+// Star Rating Component
+const StarRating = ({ 
+  rating, 
+  onRatingChange, 
+  userRating, 
+  disabled = false 
+}: { 
+  rating: number
+  onRatingChange: (rating: number) => void
+  userRating?: number
+  disabled?: boolean
+}) => {
+  const { resolvedTheme } = useTheme()
+  const [mounted, setMounted] = React.useState(false)
+
+  React.useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const starColor = mounted && resolvedTheme === "dark" ? "#FFD700" : "#FFD700"
+  const emptyStarColor = mounted && resolvedTheme === "dark" ? "#4B5563" : "#D1D5DB"
+
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          onClick={() => !disabled && onRatingChange(star)}
+          disabled={disabled}
+          className={`transition-colors duration-200 ${
+            disabled ? 'cursor-default' : 'cursor-pointer hover:scale-110'
+          }`}
+        >
+          <Star
+            className={`h-5 w-5 ${
+              star <= (userRating || rating) ? 'fill-current' : ''
+            }`}
+            style={{ 
+              color: star <= (userRating || rating) ? starColor : emptyStarColor 
+            }}
+          />
+        </button>
+      ))}
+    </div>
+  )
 }
 
 export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
@@ -34,6 +84,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
   const [authChecked, setAuthChecked] = React.useState(false)
+  const [ratingLoading, setRatingLoading] = React.useState(false)
   const router = useRouter()
   const containerRef = React.useRef<HTMLDivElement>(null)
   const embedRef = React.useRef<any>(null)
@@ -94,6 +145,12 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
             return
           }
 
+          // Check if user has already rated this score
+          let userRating = 0
+          if (user && scoreData.ratings && scoreData.ratings[user.uid]) {
+            userRating = scoreData.ratings[user.uid]
+          }
+
           setScore({
             id: scoreDoc.id,
             name: scoreData.name,
@@ -103,6 +160,9 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
             userId: scoreData.userId,
             sharing: scoreData.sharing,
             description: scoreData.description || "",
+            rating: scoreData.rating || 0,
+            ratingCount: scoreData.ratingCount || 0,
+            userRating: userRating,
           })
         } else {
           setError("Score not found")
@@ -321,6 +381,66 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
     }
   }
 
+  // Handle rating submission
+  const handleRating = async (rating: number) => {
+    if (!user || !score) return
+
+    setRatingLoading(true)
+    try {
+      const scoreRef = doc(db, "scores", id)
+      const scoreDoc = await getDoc(scoreRef)
+      
+      if (!scoreDoc.exists()) {
+        throw new Error("Score not found")
+      }
+
+      const scoreData = scoreDoc.data()
+      const currentRatings = scoreData.ratings || {}
+      const currentRating = scoreData.rating || 0
+      const currentRatingCount = scoreData.ratingCount || 0
+      const previousUserRating = currentRatings[user.uid] || 0
+
+      // Update user's rating
+      const newRatings = {
+        ...currentRatings,
+        [user.uid]: rating
+      }
+
+      // Calculate new average rating
+      let newRating = currentRating
+      let newRatingCount = currentRatingCount
+
+      if (previousUserRating === 0) {
+        // New rating
+        newRating = ((currentRating * currentRatingCount) + rating) / (currentRatingCount + 1)
+        newRatingCount = currentRatingCount + 1
+      } else {
+        // Updated rating
+        newRating = ((currentRating * currentRatingCount) - previousUserRating + rating) / currentRatingCount
+      }
+
+      // Update the document
+      await updateDoc(scoreRef, {
+        ratings: newRatings,
+        rating: Math.round(newRating * 10) / 10, // Round to 1 decimal place
+        ratingCount: newRatingCount
+      })
+
+      // Update local state
+      setScore(prev => prev ? {
+        ...prev,
+        rating: Math.round(newRating * 10) / 10,
+        ratingCount: newRatingCount,
+        userRating: rating
+      } : null)
+
+    } catch (error) {
+      console.error("Error updating rating:", error)
+    } finally {
+      setRatingLoading(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center font-sans dark:bg-gray-900 dark:text-white">
@@ -365,6 +485,29 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
         <p className="text-lg text-[#666666] dark:text-gray-300 mb-6">
           {t("by", { ns: "dashboard" })} {score.author}
         </p>
+        <div className="mb-6 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <StarRating
+                  rating={score.rating || 0}
+                  onRatingChange={handleRating}
+                  userRating={score.userRating}
+                  disabled={ratingLoading || !user}
+                />
+                <span className="text-sm text-[#666666] dark:text-gray-400">
+                  {score.rating ? `${score.rating.toFixed(1)}` : "0.0"} 
+                  {score.ratingCount ? ` (${score.ratingCount} ${score.ratingCount === 1 ? t('vote', { ns: 'dashboard' }) : t('votes', { ns: 'dashboard' })})` : ""}
+                </span>
+              </div>
+            </div>
+            {!user && (
+              <p className="text-sm text-[#666666] dark:text-gray-400">
+                {t("loginToRate", { ns: "dashboard", defaultValue: "Login to rate this score" })}
+              </p>
+            )}
+          </div>
+        </div>
         <div className="rounded-lg overflow-hidden mb-6">
           <Card className="bg-white dark:bg-gray-800 shadow-md flex-1 flex items-stretch rounded-lg">
             <CardContent className="p-4 flex justify-center items-center w-full">

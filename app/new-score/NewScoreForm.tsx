@@ -98,6 +98,7 @@ export default function NewScoreForm() {
       const scoreData = {
         name: name.trim(),
         author: user.displayName || "Anonymous",
+        created: serverTimestamp(),
         modified: serverTimestamp(),
         userId: user.uid,
         sharing: sharing,
