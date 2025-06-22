@@ -8,18 +8,39 @@ import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { auth, db, functions } from "@/lib/firebase"
+import { auth, db, functions, storage } from "@/lib/firebase"
 import { onAuthStateChanged } from "firebase/auth"
 import { ProtectedRoute } from "@/app/components/auth/protectedroute"
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import { useTranslation } from "react-i18next"
 import { httpsCallable } from "firebase/functions"
-import { doc, getDoc, setDoc } from "firebase/firestore"
+import { doc, getDoc, updateDoc } from "firebase/firestore"
 import { VerificationCodeInput } from "@/app/components/auth/VerificationCodeInput"
 import { useTheme } from "next-themes"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage"
+import { toast } from "@/components/ui/use-toast"
+import Image from "next/image"
+import { useAuth } from "@/app/providers/auth-provider"
+import Footer from "@/app/components/layout/Footer"
+
+const settingsSchema = z.object({
+  displayName: z.string().min(2, "Display name must be at least 2 characters.").max(50, "Display name must be at most 50 characters."),
+  bio: z.string().max(160, "Bio must be at most 160 characters.").optional(),
+  roles: z.string().optional(),
+  profilePictureUrl: z.string().optional(),
+  coverImageUrl: z.string().optional(),
+})
+
+type SettingsFormValues = z.infer<typeof settingsSchema>
 
 export default function SettingsPage() {
-  const [user, setUser] = React.useState<any>(null)
+  const { user: authUser } = useAuth()
   const [isLoading, setIsLoading] = React.useState(true)
   const [is2faEnabled, setIs2faEnabled] = React.useState(false)
   const [is2faToggling, setIs2faToggling] = React.useState(false)
@@ -27,40 +48,161 @@ export default function SettingsPage() {
   const [verificationError, setVerificationError] = React.useState<string | null>(null)
   const [success, setSuccess] = React.useState<string | null>(null)
   const router = useRouter()
-  const { t } = useTranslation()
+  const { t } = useTranslation(['common'])
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
+  const [saving, setSaving] = React.useState(false)
+  const [profilePicFile, setProfilePicFile] = React.useState<File | null>(null)
+  const [coverImageFile, setCoverImageFile] = React.useState<File | null>(null)
+  const [profilePicPreview, setProfilePicPreview] = React.useState<string | null>(null)
+  const [coverImagePreview, setCoverImagePreview] = React.useState<string | null>(null)
+  
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors },
+    setValue,
+  } = useForm<SettingsFormValues>({
+    resolver: zodResolver(settingsSchema),
+    defaultValues: {
+      displayName: "",
+      bio: "",
+      roles: "",
+      profilePictureUrl: "",
+      coverImageUrl: "",
+    },
+  })
 
   React.useEffect(() => {
     setMounted(true)
   }, [])
-  
-  // Theme-aware colors
-  const maroonColor = "#4A1D2C"
-  const maroonDark = "#8A3D4C"
-  const textColor = mounted && resolvedTheme === "dark" ? "#e5a3b4" : maroonColor
 
-  // Fetch user and 2FA settings
   React.useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser)
-      if (currentUser) {
+    if (authUser) {
+      const fetchUserData = async () => {
+        setIsLoading(true)
         try {
+          // Fetch 2FA settings
           const get2faSettings = httpsCallable<any, { twoFactorEnabled: boolean }>(functions, 'get2faSettings')
           const result = await get2faSettings({})
           setIs2faEnabled(result.data.twoFactorEnabled)
+
+          // Fetch user profile from Firestore
+          const userDoc = await getDoc(doc(db, "users", authUser.uid))
+          if (userDoc.exists()) {
+            const userData = userDoc.data()
+            reset({
+              displayName: userData.displayName || authUser.displayName || "",
+              bio: userData.bio || "",
+              roles: Array.isArray(userData.roles) ? userData.roles.join(', ') : (userData.roles || ""),
+              profilePictureUrl: userData.profilePictureUrl || "",
+              coverImageUrl: userData.coverImageUrl || "",
+            })
+            if (userData.profilePictureUrl) setProfilePicPreview(userData.profilePictureUrl)
+            if (userData.coverImageUrl) setCoverImagePreview(userData.coverImageUrl)
+          } else {
+             reset({
+              displayName: authUser.displayName || "",
+              bio: "",
+              roles: "",
+              profilePictureUrl: "",
+              coverImageUrl: "",
+            })
+          }
         } catch (error) {
-          console.error("Error fetching 2FA settings:", error)
+          console.error("Error fetching user settings:", error)
         } finally {
           setIsLoading(false)
         }
-      } else {
-        setIsLoading(false)
       }
-    })
+      fetchUserData()
+    } else {
+       setIsLoading(false)
+    }
+  }, [authUser, reset])
+  
+  // Theme-aware colors
+  const textColor = "hsl(var(--primary))"
 
-    return () => unsubscribe()
-  }, [])
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'cover') => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      const previewUrl = URL.createObjectURL(file)
+      if (type === 'profile') {
+        setProfilePicFile(file)
+        setProfilePicPreview(previewUrl)
+      } else {
+        setCoverImageFile(file)
+        setCoverImagePreview(previewUrl)
+      }
+    }
+  }
+
+  const uploadImage = async (file: File, path: string): Promise<string> => {
+    const storageRef = ref(storage, path)
+    await uploadBytes(storageRef, file)
+    return getDownloadURL(storageRef)
+  }
+
+  const onSubmit = async (data: SettingsFormValues) => {
+    if (!authUser) {
+      console.error('No authenticated user');
+      return;
+    }
+    
+    setSaving(true);
+
+    try {
+      // Start with basic user data
+      const updateData: any = {
+        displayName: data.displayName || '',
+        bio: data.bio || '',
+      };
+
+      // Handle roles - convert string to array
+      if (data.roles) {
+        updateData.roles = data.roles.split(',').map((role: string) => role.trim()).filter((role: string) => role.length > 0);
+      } else {
+        updateData.roles = [];
+      }
+
+      // Handle profile picture upload
+      if (profilePicFile) {
+        const profileUrl = await uploadImage(profilePicFile, `users/${authUser.uid}/profile-picture`);
+        updateData.profilePictureUrl = profileUrl;
+      }
+
+      // Handle cover image upload
+      if (coverImageFile) {
+        const coverUrl = await uploadImage(coverImageFile, `users/${authUser.uid}/cover-image`);
+        updateData.coverImageUrl = coverUrl;
+      }
+
+      // Update Firestore
+      const userDocRef = doc(db, "users", authUser.uid);
+      await updateDoc(userDocRef, updateData);
+
+      // Reset file states after successful upload
+      setProfilePicFile(null);
+      setCoverImageFile(null);
+
+      toast({
+        title: "Success",
+        description: "Your settings have been updated successfully.",
+      });
+
+    } catch (error) {
+      console.error("Error updating settings:", error);
+      toast({
+        title: "Error",
+        description: `Failed to update settings: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
 
   // Handle 2FA toggle
   const handle2faToggle = async () => {
@@ -71,7 +213,7 @@ export default function SettingsPage() {
       try {
         setIs2faToggling(true)
         const send2faCode = httpsCallable(functions, 'send2faCode')
-        await send2faCode({ email: user.email })
+        await send2faCode({ email: authUser?.email })
         setShowVerification(true)
       } catch (error) {
         console.error("Error sending 2FA code:", error)
@@ -125,7 +267,7 @@ export default function SettingsPage() {
   const handleResendCode = async () => {
     try {
       const send2faCode = httpsCallable(functions, 'send2faCode')
-      await send2faCode({ email: user.email })
+      await send2faCode({ email: authUser?.email })
       setVerificationError(null)
     } catch (error) {
       if (error instanceof Error) {
@@ -136,11 +278,17 @@ export default function SettingsPage() {
     }
   }
 
+  const handleViewProfile = () => {
+    if (authUser) {
+      router.push(`/user/${authUser.uid}`)
+    }
+  }
+
   if (showVerification) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
         <VerificationCodeInput
-          email={user?.email || ""}
+          email={authUser?.email || ""}
           onVerify={handleVerify}
           onResend={handleResendCode}
           error={verificationError || undefined}
@@ -149,11 +297,19 @@ export default function SettingsPage() {
     )
   }
 
+  if (isLoading) {
+    return (
+       <div className="flex flex-col min-h-screen items-center justify-center">
+        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+      </div>
+    )
+  }
+
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <TopMenu user={user} />
-        <main className="max-w-3xl mx-auto px-4 pt-20 pb-6">
+      <div className="flex flex-col min-h-screen">
+        <TopMenu />
+        <main className="flex-grow container mx-auto p-4 md:p-6">
           <div className="mb-6">
             <button 
               onClick={() => router.back()} 
@@ -166,9 +322,12 @@ export default function SettingsPage() {
           </div>
 
           <Card className="dark:bg-gray-800 dark:border-gray-700">
-            <CardHeader>
-              <CardTitle className="text-2xl font-bold text-[#333333] dark:text-white">Account Settings</CardTitle>
-              <CardDescription className="dark:text-gray-400">Manage your account settings and preferences</CardDescription>
+            <CardHeader className="flex flex-row justify-between items-center">
+              <div>
+                <CardTitle className="text-2xl font-bold text-[#333333] dark:text-white">{t('settings')}</CardTitle>
+                <CardDescription className="dark:text-gray-400">Manage your account and profile settings.</CardDescription>
+              </div>
+              <Button onClick={handleViewProfile} variant="outline">View Profile</Button>
             </CardHeader>
             <CardContent className="space-y-6">
               {success && (
@@ -178,16 +337,81 @@ export default function SettingsPage() {
                 </Alert>
               )}
 
-              <div>
-                <h3 className="text-lg font-medium mb-2 dark:text-white">Profile Information</h3>
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div className="text-gray-500 dark:text-gray-400">Name</div>
-                  <div className="dark:text-gray-300">{user?.displayName || "Not set"}</div>
-                  
-                  <div className="text-gray-500 dark:text-gray-400">Email</div>
-                  <div className="dark:text-gray-300">{user?.email || "Not set"}</div>
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-medium mb-2 dark:text-white">Profile Information</h3>
+                  <div className="space-y-2">
+                    <div>
+                      <Label htmlFor="displayName" className="dark:text-gray-300">Display Name</Label>
+                      <Controller
+                        name="displayName"
+                        control={control}
+                        render={({ field }) => <Input id="displayName" {...field} />}
+                      />
+                      {errors.displayName && <p className="text-sm text-red-500">{errors.displayName.message}</p>}
+                    </div>
+                    <div>
+                      <Label htmlFor="bio" className="dark:text-gray-300">Bio</Label>
+                      <Controller
+                        name="bio"
+                        control={control}
+                        render={({ field }) => <Textarea id="bio" {...field} />}
+                      />
+                      {errors.bio && <p className="text-sm text-red-500">{errors.bio.message}</p>}
+                    </div>
+                    <div>
+                      <Label htmlFor="roles" className="dark:text-gray-300">Roles</Label>
+                      <Controller
+                        name="roles"
+                        control={control}
+                        render={({ field }) => (
+                          <Input
+                            id="roles"
+                            {...field}
+                            placeholder="e.g. Composer, Performer"
+                          />
+                        )}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="profilePictureUrl" className="dark:text-gray-300">Profile Picture</Label>
+                      <div className="flex items-center space-x-4">
+                        <Image
+                          src={profilePicPreview || "/placeholder-user.jpg"}
+                          alt="Profile preview"
+                          width={80}
+                          height={80}
+                          className="rounded-full w-20 h-20 object-cover"
+                        />
+                        <Input id="profilePictureUrl" type="file" onChange={(e) => handleFileChange(e, 'profile')} className="max-w-xs" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="coverImageUrl" className="dark:text-gray-300">Cover Image</Label>
+                      <div className="flex items-center space-x-4">
+                        <Image
+                          src={coverImagePreview || "/images/default-cover.jpg"}
+                          alt="Cover preview"
+                          width={200}
+                          height={100}
+                          className="rounded-md w-48 h-24 object-cover"
+                        />
+                        <Input id="coverImageUrl" type="file" onChange={(e) => handleFileChange(e, 'cover')} className="max-w-xs" />
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Email: {authUser?.email || "Not set"}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
+                <Button 
+                  type="submit" 
+                  style={{ backgroundColor: textColor, color: 'white' }} 
+                  disabled={saving}
+                >
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </form>
 
               <Separator className="dark:bg-gray-700" />
               
@@ -212,6 +436,7 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         </main>
+        <Footer />
       </div>
     </ProtectedRoute>
   )

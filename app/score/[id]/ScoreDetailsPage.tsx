@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { ArrowLeft, MessageCircle, X, ZoomIn, ZoomOut, Maximize2, Star } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useTheme } from "next-themes"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import Link from "next/link"
 import { cn } from "@/lib/utils"
 
 import { Card, CardContent } from "@/app/components/ui/card"
@@ -297,10 +297,8 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
   }, [])
 
   // Theme-aware colors
-  const maroonColor = "#800000"
-  const maroonDark = "#e5a3b4"
-  const buttonColor = mounted && resolvedTheme === "dark" ? "#8A3D4C" : "#4A1D2C"
-  const linkColor = mounted && resolvedTheme === "dark" ? maroonDark : maroonColor
+  const buttonColor = "hsl(var(--primary))"
+  const linkColor = "hsl(var(--primary))"
 
   const openai = new OpenAI({
     apiKey:
@@ -651,7 +649,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
         </div>
         <h1 className="text-2xl font-bold text-[#333333] dark:text-white mb-4">{score.name}</h1>
         <p className="text-lg text-[#666666] dark:text-gray-300 mb-6">
-          {t("by", { ns: "dashboard" })} {score.author}
+          {t("by", { ns: "dashboard" })} <Link href={`/user/${score.userId}`} className="hover:underline" style={{ color: linkColor }}>{score.author}</Link>
         </p>
         <div className="mb-6 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
           <div className="flex items-center justify-between">

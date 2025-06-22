@@ -78,10 +78,8 @@ export default function EditScoreClient({ id }: ClientProps) {
   }, [])
 
   // Theme-aware colors
-  const maroonColor = "#4A1D2C"
-  const maroonDark = "#8A3D4C"
-  const buttonColor = mounted && resolvedTheme === "dark" ? maroonDark : maroonColor
-  const linkColor = mounted && resolvedTheme === "dark" ? "#e5a3b4" : "#800000"
+  const buttonColor = "hsl(var(--primary))"
+  const linkColor = "hsl(var(--primary))"
 
   // Effect to update themeKey when resolvedTheme changes
   useEffect(() => {

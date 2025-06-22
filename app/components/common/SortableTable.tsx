@@ -39,9 +39,7 @@ export function SortableTable<T extends Record<string, any>>({
   }, [])
 
   // Theme-aware colors
-  const maroonColor = "#800000"
-  const maroonDark = "#e5a3b4"
-  const accentColor = mounted && resolvedTheme === "dark" ? maroonDark : maroonColor
+  const accentColor = "hsl(var(--primary))"
 
   React.useEffect(() => {
     if (sortColumn) {

@@ -22,17 +22,14 @@ import { ThemeToggle } from "@/app/components/ui/theme-toggle"
 import { LanguageToggle } from "@/app/components/ui/language-toggle"
 import { useTheme } from "next-themes"
 import { useAuth } from "@/app/providers/auth-provider"
+import { useThemeColors } from "@/hooks/use-theme-colors"
 
 interface TopMenuProps {
   user?: any; // Make user optional as we'll primarily use the auth context
 }
 
 export function TopMenu({ user: propUser }: TopMenuProps) {
-  // Theme colors
-  const maroonColor = "#4A1D2C"
-  const maroonLighter = "#6A2D3C"
-  const maroonLightest = "#F8F1F3"
-  const maroonDark = "#8A3D4C"
+  const colors = useThemeColors()
   
   const [open, setOpen] = useState(false)
   const { t, i18n } = useTranslation('common')
@@ -172,8 +169,7 @@ export function TopMenu({ user: propUser }: TopMenuProps) {
                       className="flex items-center gap-2 font-medium hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
                       <div 
-                        className="h-8 w-8 rounded-full text-white flex items-center justify-center"
-                        style={{ backgroundColor: theme === 'dark' ? maroonDark : maroonColor }}
+                        className="h-8 w-8 rounded-full text-white flex items-center justify-center bg-primary"
                       >
                         {user?.displayName ? user.displayName.charAt(0) : 'U'}
                       </div>
@@ -289,8 +285,7 @@ export function TopMenu({ user: propUser }: TopMenuProps) {
                       <>
                         <div className="flex items-center gap-3 px-3 py-4 border-b dark:border-gray-700 mb-2">
                           <div 
-                            className="h-10 w-10 rounded-full text-white flex items-center justify-center text-lg"
-                            style={{ backgroundColor: theme === 'dark' ? maroonDark : maroonColor }}
+                            className="h-10 w-10 rounded-full text-white flex items-center justify-center text-lg bg-primary"
                           >
                             {user?.displayName ? user.displayName.charAt(0) : 'U'}
                           </div>

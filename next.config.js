@@ -6,6 +6,9 @@ const nextConfig = {
   serverExternalPackages: [
     // Add any packages that need to be externalized
   ],
+  images: {
+    domains: ['firebasestorage.googleapis.com', 'flat.io'],
+  },
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if
