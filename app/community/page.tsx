@@ -26,6 +26,7 @@ interface CommunityScore {
   sharing: string;
   rating?: number;
   ratingCount?: number;
+  userId: string;
 }
 
 export default function CommunityPage() {
@@ -80,7 +81,8 @@ export default function CommunityPage() {
               created: createdTimestamp?.toDate().toLocaleString() || t('unknownDate'),
               sharing: data.sharing,
               rating: data.rating || 0,
-              ratingCount: data.ratingCount || 0
+              ratingCount: data.ratingCount || 0,
+              userId: data.userId || ''
             }
           })
           .filter(score => score.sharing === 'public')
@@ -191,7 +193,11 @@ export default function CommunityPage() {
                           {score.name}
                         </Link>
                       </td>
-                      <td className="py-3 text-[#666666] dark:text-gray-300">{score.author}</td>
+                      <td className="py-3 text-[#666666] dark:text-gray-300">
+                        <Link href={`/user/${score.userId}`} className="hover:underline">
+                          {score.author}
+                        </Link>
+                      </td>
                       <td className="py-3">
                         <div className="flex items-center gap-2">
                           <div className="flex items-center">

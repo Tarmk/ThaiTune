@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { MoreVertical, DoorClosedIcon as CloseIcon } from "lucide-react"
+import { MoreVertical, DoorClosedIcon as CloseIcon, Star } from "lucide-react"
 import { WebcamIcon as ChatIcon } from "lucide-react"
 import { Button } from "@/app/components/ui/button"
 import { Card, CardContent } from "@/app/components/ui/card"
@@ -23,7 +23,9 @@ import Footer from "../components/layout/Footer"
 interface Score {
   name: string
   modified: string
+  created: string
   sharing: string
+  rating: number
   score_id: string
 }
 
@@ -59,10 +61,8 @@ export default function Dashboard() {
   }, [])
 
   // Theme-aware colors
-  const maroonColor = "#4A1D2C"
-  const maroonDark = "#8A3D4C"
-  const buttonColor = mounted && resolvedTheme === "dark" ? maroonDark : maroonColor
-  const linkColor = mounted && resolvedTheme === "dark" ? "#e5a3b4" : "#800000"
+  const buttonColor = "hsl(var(--primary))"
+  const linkColor = "hsl(var(--primary))"
   
   // Background colors matching the landing page
   const pageBg = mounted && resolvedTheme === "dark" ? "#1a1f2c" : "#f3f4f6" 
@@ -85,14 +85,19 @@ export default function Dashboard() {
         const q = query(collection(db, "scores"), where("userId", "==", user.uid))
         const querySnapshot = await getDocs(q)
 
-        const userScores = querySnapshot.docs.map((doc) => ({
-          name: doc.data().name,
-          modified: new Date(doc.data().modified.toDate()).toLocaleDateString(),
-          sharing: doc.data().sharing
-            ? doc.data().sharing.charAt(0).toUpperCase() + doc.data().sharing.slice(1)
-            : "Only me",
-          score_id: doc.id,
-        }))
+        const userScores = querySnapshot.docs.map((doc) => {
+          const data = doc.data()
+          return {
+            name: data.name,
+            modified: new Date(data.modified.toDate()).toLocaleString(),
+            created: data.created ? new Date(data.created.toDate()).toLocaleString() : 'N/A',
+            sharing: data.sharing
+              ? data.sharing.charAt(0).toUpperCase() + data.sharing.slice(1)
+              : "Only me",
+            rating: data.rating || 0,
+            score_id: doc.id,
+          }
+        })
 
         setScores(userScores)
       } catch (error) {
@@ -173,6 +178,17 @@ export default function Dashboard() {
         </Link>
       ),
     },
+    {
+      key: "rating" as keyof Score,
+      label: t("rating"),
+      render: (score: Score) => (
+        <div className="flex items-center gap-1">
+          <Star className={`h-4 w-4 ${score.rating > 0 ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} />
+          <span>{score.rating.toFixed(1)}</span>
+        </div>
+      )
+    },
+    { key: "created" as keyof Score, label: t('created', { ns: 'community' }) },
     { key: "modified" as keyof Score, label: t("modified") },
     { key: "sharing" as keyof Score, label: t("sharing") },
   ]

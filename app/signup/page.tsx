@@ -2,11 +2,12 @@
 
 import { useRouter } from "next/navigation"
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth"
-import { auth } from "@/lib/firebase"
+import { auth, db } from "@/lib/firebase"
 import { VerificationCodeInput } from "@/app/components/auth/VerificationCodeInput"
 import { useState, useEffect } from "react"
 import { httpsCallable } from "firebase/functions"
 import { functions } from "@/lib/firebase"
+import { setDoc, doc } from "firebase/firestore"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -15,6 +16,8 @@ import { UserPlus, ArrowRight, Eye, EyeOff, AlertCircle } from "lucide-react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
 import { usePageTransition } from "../components/common/PageTransitionProvider"
+
+import { useTranslation } from "react-i18next"
 
 export default function SignupPage() {
   const router = useRouter()
@@ -30,23 +33,26 @@ export default function SignupPage() {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
+  const [formData, setFormData] = useState({
+    displayName: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    role: 'musician'
+  })
+  
+  const [errors, setErrors] = useState<{ [key: string]: string }>({})
+  const { t } = useTranslation(['auth', 'common'])
+
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  // The specific maroon color
-  const maroonColor = "#4A1D2C"
-  const maroonDark = "#8A3D4C" 
-  const maroonLighter = "#6A2D3C"
-  const maroonLightest = "#F8F1F3"
-
-  // Use theme-aware colors
-  const buttonColor = mounted && resolvedTheme === "dark" ? maroonDark : maroonColor
-  const bgGradient = mounted && resolvedTheme === "dark" 
-    ? `linear-gradient(to right, ${maroonDark}, #9A4D5C)` 
-    : `linear-gradient(to right, ${maroonColor}, ${maroonLighter})`
-  const iconBgColor = mounted && resolvedTheme === "dark" ? "#3A2D35" : maroonLightest
-  const linkColor = mounted && resolvedTheme === "dark" ? "#e5a3b4" : maroonColor
+  // Use standardized theme colors
+  const buttonColor = "hsl(var(--primary))"
+  const bgGradient = "linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-hover)))"
+  const iconBgColor = "hsl(var(--primary-foreground))"
+  const linkColor = "hsl(var(--primary))"
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -104,9 +110,17 @@ export default function SignupPage() {
 
       // Create the user account
       const userCredential = await createUserWithEmailAndPassword(auth, pendingEmail, pendingPassword)
-      if (pendingName) {
-        await updateProfile(userCredential.user, { displayName: pendingName })
-      }
+      await updateProfile(userCredential.user, { displayName: pendingName })
+
+      // Create user document in Firestore
+      await setDoc(doc(db, "users", userCredential.user.uid), {
+        displayName: pendingName,
+        email: pendingEmail,
+        bio: "",
+        createdAt: new Date(),
+        followers: [],
+        following: []
+      })
       
       // No need for explicit navigation - the verification component handles this
       return Promise.resolve()

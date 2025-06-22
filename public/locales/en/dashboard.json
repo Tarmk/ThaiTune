@@ -27,5 +27,8 @@
   "loginToRate": "Login to rate this score",
   "rating": "Rating",
   "votes": "votes",
-  "vote": "vote"
+  "vote": "vote",
+  "created": "Created",
+  "totalScores": "Total Scores",
+  "averageRating": "Average Rating"
 }

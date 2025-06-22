@@ -50,18 +50,11 @@ export default function NewScoreForm() {
   }, [i18n.language])
 
   // The specific maroon color
-  const maroonColor = "#4A1D2C"
-  const maroonDark = "#8A3D4C" 
-  const maroonLighter = "#6A2D3C"
-  const maroonLightest = "#F8F1F3"
-
-  // Use theme-aware colors
-  const buttonColor = mounted && resolvedTheme === "dark" ? maroonDark : maroonColor
-  const bgGradient = mounted && resolvedTheme === "dark" 
-    ? `linear-gradient(to right, ${maroonDark}, #9A4D5C)` 
-    : `linear-gradient(to right, ${maroonColor}, ${maroonLighter})`
-  const iconBgColor = mounted && resolvedTheme === "dark" ? "#3A2D35" : maroonLightest
-  const linkColor = mounted && resolvedTheme === "dark" ? "#e5a3b4" : maroonColor
+    // Use standardized theme colors
+  const buttonColor = "hsl(var(--primary))"
+  const bgGradient = "linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary-hover)))"
+  const iconBgColor = "hsl(var(--primary-foreground))"
+  const linkColor = "hsl(var(--primary))"
 
   // Theme-aware background and text colors
   const cardBg = mounted && resolvedTheme === "dark" ? "#242A38" : "white"
@@ -75,7 +68,7 @@ export default function NewScoreForm() {
   // Option colors
   const optionBorderInactive = mounted && resolvedTheme === "dark" ? "#323A4B" : "#e5e7eb"
   const optionBgActive = mounted && resolvedTheme === "dark" ? "rgba(154, 53, 72, 0.1)" : "rgba(74, 29, 44, 0.05)"
-  const optionBorderActive = mounted && resolvedTheme === "dark" ? "#9A3548" : maroonColor
+  const optionBorderActive = "hsl(var(--primary))"
 
   const handleLogout = async () => {
     try {
