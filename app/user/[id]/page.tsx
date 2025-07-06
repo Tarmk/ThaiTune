@@ -1,8 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { collection, query, where, getDocs, Timestamp, getDoc, doc, updateDoc, arrayUnion, arrayRemove, runTransaction } from "firebase/firestore"
+import { collection, query, where, getDocs, Timestamp, getDoc, doc, updateDoc, setDoc, arrayUnion, arrayRemove, runTransaction } from "firebase/firestore"
 import { db } from "@/lib/firebase"
+import { auth } from "@/lib/firebase"
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import Footer from "@/app/components/layout/Footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
@@ -13,7 +14,7 @@ import { useTheme } from "next-themes"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { useAuth } from "@/app/providers/auth-provider"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import Image from "next/image"
 import { useEffect, useState } from "react"
 import { onAuthStateChanged } from "firebase/auth"
@@ -109,7 +110,9 @@ const DefaultBioCard = ({ isOwnProfile, userName }: { isOwnProfile: boolean, use
 export default function UserProfilePage() {
   const params = useParams()
   const id = params.id as string
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, loading: authLoading } = useAuth()
+  
+
   const [userProfile, setUserProfile] = React.useState<UserProfile | null>(null)
   const [scores, setScores] = React.useState<Score[]>([])
   const [loading, setLoading] = React.useState(true)
@@ -119,6 +122,7 @@ export default function UserProfilePage() {
   const { t } = useTranslation(["common", "dashboard"])
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = React.useState(false)
+  const router = useRouter()
 
   React.useEffect(() => { setMounted(true) }, [])
 
@@ -126,9 +130,28 @@ export default function UserProfilePage() {
   const cardBg = mounted && resolvedTheme === "dark" ? "#242A38" : "white"
   const textColor = mounted && resolvedTheme === 'dark' ? 'white' : '#111827'
 
+  // Create a deterministic gradient based on user ID
+  const getDefaultGradient = (userId: string) => {
+    const gradients = [
+      'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', // Purple-blue
+      'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', // Pink-red
+      'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', // Blue-cyan
+      'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', // Green-teal
+      'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', // Pink-yellow
+      'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', // Teal-pink
+      'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', // Peach
+      'linear-gradient(135deg, #ff8a80 0%, #ea4c89 100%)', // Coral-magenta
+    ]
+    
+    // Use a simple hash of the user ID to pick a gradient
+    const hash = userId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    return gradients[hash % gradients.length]
+  }
+
   React.useEffect(() => {
     const fetchUserData = async () => {
-      if (!id) return
+      if (!id || authLoading) return // Wait for auth to be determined
+      
       setLoading(true)
       try {
         const userDocRef = doc(db, "users", id)
@@ -144,8 +167,57 @@ export default function UserProfilePage() {
             userData.createdAt = newDate
           }
           
+          // Update existing documents that have "User" as displayName for current user
+          if (currentUser && currentUser.uid === id && userData.displayName === "User") {
+
+            const realDisplayName = currentUser.displayName || currentUser.email?.split('@')[0] || "User"
+            try {
+              await updateDoc(userDocRef, { 
+                displayName: realDisplayName,
+                profilePictureUrl: currentUser.photoURL || userData.profilePictureUrl
+              })
+              userData.displayName = realDisplayName
+              userData.profilePictureUrl = currentUser.photoURL || userData.profilePictureUrl
+            } catch (error) {
+              console.error("Failed to update user document:", error)
+            }
+          }
+          
           setUserProfile(userData)
           setFollowersCount(userData.followers?.length || 0)
+        } else {
+          // User document doesn't exist
+          if (currentUser && currentUser.uid === id) {
+            // For the current user, create a profile with their auth info
+
+            const defaultUserData = {
+              displayName: currentUser.displayName || currentUser.email?.split('@')[0] || "User",
+              bio: "",
+              roles: [],
+              profilePictureUrl: currentUser.photoURL || "",
+              coverImageUrl: "",
+              createdAt: Timestamp.now(),
+              followers: [],
+              following: []
+            }
+            
+            try {
+              // Try to create the user document
+              await setDoc(userDocRef, defaultUserData)
+              setUserProfile(defaultUserData as UserProfile)
+              setFollowersCount(0)
+            } catch (error) {
+              console.error("Failed to create user document:", error)
+              // Still set a basic profile even if we can't save to Firestore
+              setUserProfile(defaultUserData as UserProfile)
+              setFollowersCount(0)
+            }
+          } else {
+            // For other users, we can't get their auth info, so show error
+
+            setUserProfile(null)
+            setFollowersCount(0)
+          }
         }
 
         const q = query(collection(db, "scores"), where("userId", "==", id), where("sharing", "==", "public"))
@@ -172,7 +244,7 @@ export default function UserProfilePage() {
       }
     }
     fetchUserData()
-  }, [id])
+  }, [id, currentUser, authLoading])
 
   React.useEffect(() => {
     if (userProfile && currentUser) {
@@ -220,45 +292,76 @@ export default function UserProfilePage() {
   const spotlightScores = scores.slice(0, 2)
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-[#1a1f2c] transition-colors duration-300" style={{ background: pageBg }}>
       <TopMenu />
-      <main className="flex-grow container mx-auto p-4 md:p-6">
+      <main className="flex-grow container mx-auto p-4 md:p-6 pt-20 md:pt-24">
         {loading ? (
           <div className="flex flex-col min-h-screen items-center justify-center" style={{ background: pageBg }}>
             <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
           </div>
         ) : userProfile ? (
           <div>
+            {/* Banner that covers the entire top section */}
             <div
-              className="w-full h-48 md:h-64 bg-cover bg-center rounded-lg relative"
-              style={{ backgroundImage: `url(${userProfile.coverImageUrl || '/images/default-cover.jpg'})` }}
+              className="w-full h-48 md:h-56 bg-cover bg-center rounded-lg relative overflow-hidden"
+              style={{ 
+                backgroundImage: userProfile.coverImageUrl 
+                  ? `url(${userProfile.coverImageUrl})` 
+                  : getDefaultGradient(id),
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+              }}
             >
-              <div className="absolute bottom-[-50px] left-8">
-                <div className="w-28 h-28 md:w-36 md:h-36 rounded-full bg-background p-1">
-                  <Image
-                    src={userProfile.profilePictureUrl || "/placeholder-user.jpg"}
-                    alt={userProfile.displayName || "User"}
-                    width={144}
-                    height={144}
-                    className="w-full h-full rounded-full object-cover"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-20 md:mt-16 flex justify-between items-center">
-              <div>
-                <h1 className="text-2xl md:text-3xl font-bold">
-                  {userProfile?.displayName || "User Profile"}
-                </h1>
-                {currentUser && currentUser.uid !== id && (
-                  <div className="flex space-x-2 mt-2">
-                    <Button onClick={handleFollowToggle} disabled={isUpdatingFollow}>
-                      {isFollowing ? 'Following' : 'Follow'}
-                    </Button>
-                    <Button variant="ghost">...</Button>
+              {/* Music note pattern for default covers */}
+              {!userProfile.coverImageUrl && (
+                <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                  <div className="grid grid-cols-4 gap-8 text-white/30">
+                    {[...Array(12)].map((_, i) => (
+                      <Music key={i} className="w-8 h-8 rotate-12" />
+                    ))}
                   </div>
-                )}
+                </div>
+              )}
+              
+              {/* Edit cover button for own profile only */}
+              {currentUser?.uid === id && (
+                <button
+                  onClick={() => router.push('/settings')}
+                  className="absolute top-4 right-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded-md text-sm hover:bg-opacity-70 transition-all"
+                >
+                  Edit Cover
+                </button>
+              )}
+              
+              {/* Gradient overlay for better text readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+              
+              {/* Profile picture and name positioned near bottom with small spacing */}
+              <div className="absolute bottom-4 left-0 right-0 px-8">
+                <div className="flex items-end space-x-6">
+                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white dark:bg-gray-800 p-1 shadow-lg">
+                    <Image
+                      src={userProfile.profilePictureUrl || "/placeholder-user.jpg"}
+                      alt={userProfile.displayName || "User"}
+                      width={128}
+                      height={128}
+                      className="w-full h-full rounded-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 pb-2">
+                    <h1 className="text-2xl md:text-3xl font-bold text-white mb-2">
+                      {userProfile?.displayName || "User Profile"}
+                    </h1>
+                    {currentUser && currentUser.uid !== id && (
+                      <div className="flex space-x-2">
+                        <Button onClick={handleFollowToggle} disabled={isUpdatingFollow}>
+                          {isFollowing ? 'Following' : 'Follow'}
+                        </Button>
+                        <Button variant="ghost">...</Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 

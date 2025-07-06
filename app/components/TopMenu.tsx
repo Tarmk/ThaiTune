@@ -98,7 +98,12 @@ export function TopMenu({ user }: TopMenuProps) {
               <DropdownMenuContent align="end" className="w-56">
                 <div className="px-2 py-2 border-b">
                   <div className="font-medium">{user?.displayName || 'User'}</div>
-                  <div className="text-sm text-gray-500">View profile</div>
+                  <button 
+                    onClick={() => router.push(`/user/${user?.uid}`)}
+                    className="text-sm text-gray-500 hover:text-gray-700 transition-colors cursor-pointer"
+                  >
+                    View profile
+                  </button>
                 </div>
                 <DropdownMenuItem className="flex items-center gap-2 cursor-pointer" onClick={() => router.push('/settings')}>
                   <Settings className="h-4 w-4" />

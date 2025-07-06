@@ -7,7 +7,7 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-import * as functions from "firebase-functions/v1";
+import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import * as nodemailer from "nodemailer";
 
@@ -391,5 +391,87 @@ export const get2faSettings = functions.https.onCall(
     return {
       twoFactorEnabled: doc.data()?.twoFactorEnabled || false,
     };
+  }
+);
+
+// Admin function to fix user profiles with generic "User" displayName
+export const fixUserProfiles = functions.https.onCall(
+  async (data: {adminKey?: string}, context: functions.https.CallableContext) => {
+    // Simple admin authentication - you should use a proper admin key
+    const adminKey = data.adminKey || "";
+    const expectedAdminKey = functions.config().admin?.key || "admin123"; // Set this in Firebase config
+    
+    if (adminKey !== expectedAdminKey) {
+      throw new functions.https.HttpsError(
+        "permission-denied",
+        "Admin access required"
+      );
+    }
+
+    let updatedCount = 0;
+    let errors: string[] = [];
+
+    try {
+      // Get all users with displayName "User"
+      const usersQuery = await admin.firestore()
+        .collection("users")
+        .where("displayName", "==", "User")
+        .get();
+
+      console.log(`Found ${usersQuery.docs.length} users with generic "User" displayName`);
+
+      for (const userDoc of usersQuery.docs) {
+        const userId = userDoc.id;
+        const userData = userDoc.data();
+
+        try {
+          // Get the user's Firebase Auth record
+          const authUser = await admin.auth().getUser(userId);
+          
+          // Prepare update data
+          const updateData: any = {};
+          
+          // Update displayName if Auth has a better name
+          if (authUser.displayName) {
+            updateData.displayName = authUser.displayName;
+          } else if (authUser.email) {
+            // Use email username if no displayName
+            updateData.displayName = authUser.email.split('@')[0];
+          }
+          
+          // Update profile picture if Auth has one
+          if (authUser.photoURL && !userData.profilePictureUrl) {
+            updateData.profilePictureUrl = authUser.photoURL;
+          }
+
+          // Only update if we have new data
+          if (Object.keys(updateData).length > 0) {
+            await admin.firestore()
+              .collection("users")
+              .doc(userId)
+              .update(updateData);
+            
+            updatedCount++;
+            console.log(`Updated user ${userId} with:`, updateData);
+          }
+        } catch (error) {
+          console.error(`Error updating user ${userId}:`, error);
+          errors.push(`${userId}: ${error}`);
+        }
+      }
+
+      return {
+        success: true,
+        message: `Updated ${updatedCount} user profiles`,
+        updatedCount,
+        errors: errors.length > 0 ? errors : undefined
+      };
+    } catch (error) {
+      console.error("Error in fixUserProfiles:", error);
+      throw new functions.https.HttpsError(
+        "internal",
+        `Failed to fix user profiles: ${error}`
+      );
+    }
   }
 );

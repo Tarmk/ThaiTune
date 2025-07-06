@@ -7,7 +7,24 @@ const nextConfig = {
     // Add any packages that need to be externalized
   ],
   images: {
-    domains: ['firebasestorage.googleapis.com', 'flat.io'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'firebasestorage.googleapis.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'flat.io',
+        port: '',
+        pathname: '/**',
+      },
+    ],
+  },
+  // Allow cross-origin requests in development
+  experimental: {
+    allowedDevOrigins: ['10.206.101.57'],
   },
   typescript: {
     // !! WARN !!

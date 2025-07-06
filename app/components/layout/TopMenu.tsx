@@ -179,7 +179,12 @@ export function TopMenu({ user: propUser }: TopMenuProps) {
                   <DropdownMenuContent align="end" className="w-56 p-1 shadow-md dark:bg-[#232838] dark:border-gray-700">
                     <div className="px-4 py-3 border-b dark:border-gray-700">
                       <div className="font-medium dark:text-white">{user?.displayName || 'User'}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">View profile</div>
+                      <button 
+                        onClick={() => router.push(`/user/${user?.uid}`)}
+                        className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors cursor-pointer"
+                      >
+                        View profile
+                      </button>
                     </div>
                     <DropdownMenuItem className="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-md" onClick={() => router.push('/settings')}>
                       <Settings className="h-4 w-4" />

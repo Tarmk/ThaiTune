@@ -13,7 +13,7 @@ export default function Footer() {
   const maroonLighter = "#6A2D3C"
   const maroonLightest = "#F8F1F3"
   const maroonDark = "#8A3D4C"
-  const { theme } = useTheme()
+  const { resolvedTheme } = useTheme()
 
   return (
     <footer className="bg-white dark:bg-[#232838] pt-16 pb-12 border-t border-gray-100 dark:border-gray-800">
@@ -30,7 +30,7 @@ export default function Footer() {
             <div>
               <h3 
                 className="text-base font-bold mb-4 dark:text-[#e5a3b4]" 
-                style={{ color: theme === 'dark' ? undefined : maroonColor }}
+                style={{ color: resolvedTheme === 'dark' ? undefined : maroonColor }}
               >
                 {t('footer.thaitune.title')}
               </h3>
@@ -60,7 +60,7 @@ export default function Footer() {
             <div>
               <h3 
                 className="text-base font-bold mb-4 dark:text-[#e5a3b4]" 
-                style={{ color: theme === 'dark' ? undefined : maroonColor }}
+                style={{ color: resolvedTheme === 'dark' ? undefined : maroonColor }}
               >
                 {t('footer.organization.title')}
               </h3>
@@ -90,7 +90,7 @@ export default function Footer() {
             <div>
               <h3 
                 className="text-base font-bold mb-4 dark:text-[#e5a3b4]" 
-                style={{ color: theme === 'dark' ? undefined : maroonColor }}
+                style={{ color: resolvedTheme === 'dark' ? undefined : maroonColor }}
               >
                 {t('footer.support.title')}
               </h3>
@@ -120,7 +120,7 @@ export default function Footer() {
             <div>
               <h3 
                 className="text-base font-bold mb-4 dark:text-[#e5a3b4]" 
-                style={{ color: theme === 'dark' ? undefined : maroonColor }}
+                style={{ color: resolvedTheme === 'dark' ? undefined : maroonColor }}
               >
                 {t('footer.contact.title')}
               </h3>
@@ -151,19 +151,19 @@ export default function Footer() {
           
           <div className="flex space-x-3 mt-4 md:mt-0">
             <Link href="#" aria-label="Twitter" className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-[#1a1f2c] dark:hover:bg-gray-700 transition-colors">
-              <Twitter className="h-4 w-4" style={{ color: theme === 'dark' ? '#e5a3b4' : maroonColor }} />
+              <Twitter className="h-4 w-4" style={{ color: resolvedTheme === 'dark' ? '#e5a3b4' : maroonColor }} />
             </Link>
             <Link href="#" aria-label="Instagram" className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-[#1a1f2c] dark:hover:bg-gray-700 transition-colors">
-              <Instagram className="h-4 w-4" style={{ color: theme === 'dark' ? '#e5a3b4' : maroonColor }} />
+              <Instagram className="h-4 w-4" style={{ color: resolvedTheme === 'dark' ? '#e5a3b4' : maroonColor }} />
             </Link>
             <Link href="#" aria-label="Facebook" className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-[#1a1f2c] dark:hover:bg-gray-700 transition-colors">
-              <Facebook className="h-4 w-4" style={{ color: theme === 'dark' ? '#e5a3b4' : maroonColor }} />
+              <Facebook className="h-4 w-4" style={{ color: resolvedTheme === 'dark' ? '#e5a3b4' : maroonColor }} />
             </Link>
             <Link href="#" aria-label="GitHub" className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-[#1a1f2c] dark:hover:bg-gray-700 transition-colors">
-              <Github className="h-4 w-4" style={{ color: theme === 'dark' ? '#e5a3b4' : maroonColor }} />
+              <Github className="h-4 w-4" style={{ color: resolvedTheme === 'dark' ? '#e5a3b4' : maroonColor }} />
             </Link>
             <Link href="#" aria-label="LinkedIn" className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-[#1a1f2c] dark:hover:bg-gray-700 transition-colors">
-              <Linkedin className="h-4 w-4" style={{ color: theme === 'dark' ? '#e5a3b4' : maroonColor }} />
+              <Linkedin className="h-4 w-4" style={{ color: resolvedTheme === 'dark' ? '#e5a3b4' : maroonColor }} />
             </Link>
           </div>
         </div>
