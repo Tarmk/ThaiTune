@@ -174,15 +174,15 @@ export default function SettingsPage() {
       setCoverImageFile(null);
 
       toast({
-        title: "Success",
-        description: "Your settings have been updated successfully.",
+        title: t('success'),
+        description: t('settingsUpdatedSuccess'),
       });
 
     } catch (error) {
       console.error("Error updating settings:", error);
       toast({
-        title: "Error",
-        description: `Failed to update settings: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        title: t('error'),
+        description: `${t('settingsUpdateError')}: ${error instanceof Error ? error.message : t('unknownError')}`,
         variant: "destructive",
       });
     } finally {
@@ -220,7 +220,7 @@ export default function SettingsPage() {
               style={{ color: textColor }}
             >
               <ArrowLeft className="mr-2" />
-              Back
+              {t('back')}
             </button>
           </div>
 
@@ -228,19 +228,19 @@ export default function SettingsPage() {
             <CardHeader className="flex flex-row justify-between items-center">
               <div>
                 <CardTitle className="text-2xl font-bold text-[#333333] dark:text-white">{t('settings')}</CardTitle>
-                <CardDescription className="dark:text-gray-400">Manage your account and profile settings.</CardDescription>
+                <CardDescription className="dark:text-gray-400">{t('manageAccountDescription')}</CardDescription>
               </div>
-              <Button onClick={handleViewProfile} variant="outline">View Profile</Button>
+              <Button onClick={handleViewProfile} variant="outline">{t('viewProfile')}</Button>
             </CardHeader>
             <CardContent className="space-y-6">
 
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-medium mb-2 dark:text-white">Profile Information</h3>
+                  <h3 className="text-lg font-medium mb-2 dark:text-white">{t('profileInformation')}</h3>
                   <div className="space-y-2">
                     <div>
-                      <Label htmlFor="displayName" className="dark:text-gray-300">Display Name</Label>
+                      <Label htmlFor="displayName" className="dark:text-gray-300">{t('displayName')}</Label>
                       <Controller
                         name="displayName"
                         control={control}
@@ -249,7 +249,7 @@ export default function SettingsPage() {
                       {errors.displayName && <p className="text-sm text-red-500">{errors.displayName.message}</p>}
                     </div>
                     <div>
-                      <Label htmlFor="bio" className="dark:text-gray-300">Bio</Label>
+                      <Label htmlFor="bio" className="dark:text-gray-300">{t('bio')}</Label>
                       <Controller
                         name="bio"
                         control={control}
@@ -258,7 +258,7 @@ export default function SettingsPage() {
                       {errors.bio && <p className="text-sm text-red-500">{errors.bio.message}</p>}
                     </div>
                     <div>
-                      <Label htmlFor="roles" className="dark:text-gray-300">Roles</Label>
+                      <Label htmlFor="roles" className="dark:text-gray-300">{t('roles')}</Label>
                       <Controller
                         name="roles"
                         control={control}
@@ -266,13 +266,13 @@ export default function SettingsPage() {
                           <Input
                             id="roles"
                             {...field}
-                            placeholder="e.g. Composer, Performer"
+                            placeholder={t('rolesPlaceholder')}
                           />
                         )}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="profilePictureUrl" className="dark:text-gray-300">Profile Picture</Label>
+                      <Label htmlFor="profilePictureUrl" className="dark:text-gray-300">{t('profilePicture')}</Label>
                       <div className="flex items-center space-x-4">
                         {profilePicPreview && (
                           <Image
@@ -283,11 +283,32 @@ export default function SettingsPage() {
                             className="rounded-full w-20 h-20 object-cover"
                           />
                         )}
-                        <Input id="profilePictureUrl" type="file" onChange={(e) => handleFileChange(e, 'profile')} className="max-w-xs" />
+                        <div className="flex flex-col space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => document.getElementById('profilePictureUrl')?.click()}
+                              className="text-sm"
+                            >
+                              {t('chooseFile')}
+                            </Button>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                              {profilePicFile ? profilePicFile.name : t('noFileChosen')}
+                            </span>
+                          </div>
+                          <Input 
+                            id="profilePictureUrl" 
+                            type="file" 
+                            onChange={(e) => handleFileChange(e, 'profile')} 
+                            className="hidden" 
+                            accept="image/*"
+                          />
+                        </div>
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="coverImageUrl" className="dark:text-gray-300">Cover Image</Label>
+                      <Label htmlFor="coverImageUrl" className="dark:text-gray-300">{t('coverImage')}</Label>
                       <div className="flex items-center space-x-4">
                         {coverImagePreview && (
                           <Image
@@ -298,11 +319,32 @@ export default function SettingsPage() {
                             className="rounded-md w-48 h-24 object-cover"
                           />
                         )}
-                        <Input id="coverImageUrl" type="file" onChange={(e) => handleFileChange(e, 'cover')} className="max-w-xs" />
+                        <div className="flex flex-col space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => document.getElementById('coverImageUrl')?.click()}
+                              className="text-sm"
+                            >
+                              {t('chooseFile')}
+                            </Button>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                              {coverImageFile ? coverImageFile.name : t('noFileChosen')}
+                            </span>
+                          </div>
+                          <Input 
+                            id="coverImageUrl" 
+                            type="file" 
+                            onChange={(e) => handleFileChange(e, 'cover')} 
+                            className="hidden" 
+                            accept="image/*"
+                          />
+                        </div>
                       </div>
                     </div>
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Email: {authUser?.email || "Not set"}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('email')}: {authUser?.email || t('notSet')}</p>
                     </div>
                   </div>
                 </div>
@@ -311,7 +353,7 @@ export default function SettingsPage() {
                   style={{ backgroundColor: textColor, color: 'white' }} 
                   disabled={saving}
                 >
-                  {saving ? 'Saving...' : 'Save Changes'}
+                  {saving ? t('saving') : t('saveChanges')}
                 </Button>
               </form>
 
