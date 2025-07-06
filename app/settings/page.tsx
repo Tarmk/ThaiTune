@@ -2,20 +2,16 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, ShieldCheck } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { auth, db, functions, storage } from "@/lib/firebase"
+import { auth, db, storage } from "@/lib/firebase"
 import { onAuthStateChanged } from "firebase/auth"
 import { ProtectedRoute } from "@/app/components/auth/protectedroute"
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import { useTranslation } from "react-i18next"
-import { httpsCallable } from "firebase/functions"
 import { doc, getDoc, updateDoc } from "firebase/firestore"
-import { VerificationCodeInput } from "@/app/components/auth/VerificationCodeInput"
 import { useTheme } from "next-themes"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -42,11 +38,6 @@ type SettingsFormValues = z.infer<typeof settingsSchema>
 export default function SettingsPage() {
   const { user: authUser } = useAuth()
   const [isLoading, setIsLoading] = React.useState(true)
-  const [is2faEnabled, setIs2faEnabled] = React.useState(false)
-  const [is2faToggling, setIs2faToggling] = React.useState(false)
-  const [showVerification, setShowVerification] = React.useState(false)
-  const [verificationError, setVerificationError] = React.useState<string | null>(null)
-  const [success, setSuccess] = React.useState<string | null>(null)
   const router = useRouter()
   const { t } = useTranslation(['common'])
   const { resolvedTheme } = useTheme()
@@ -83,11 +74,6 @@ export default function SettingsPage() {
       const fetchUserData = async () => {
         setIsLoading(true)
         try {
-          // Fetch 2FA settings
-          const get2faSettings = httpsCallable<any, { twoFactorEnabled: boolean }>(functions, 'get2faSettings')
-          const result = await get2faSettings({})
-          setIs2faEnabled(result.data.twoFactorEnabled)
-
           // Fetch user profile from Firestore
           const userDoc = await getDoc(doc(db, "users", authUser.uid))
           if (userDoc.exists()) {
@@ -204,79 +190,7 @@ export default function SettingsPage() {
     }
   }
 
-  // Handle 2FA toggle
-  const handle2faToggle = async () => {
-    setSuccess(null)
-    
-    if (!is2faEnabled) {
-      // Enable 2FA - show verification first
-      try {
-        setIs2faToggling(true)
-        const send2faCode = httpsCallable(functions, 'send2faCode')
-        await send2faCode({ email: authUser?.email })
-        setShowVerification(true)
-      } catch (error) {
-        console.error("Error sending 2FA code:", error)
-        setVerificationError("Failed to send verification code. Please try again.")
-      } finally {
-        setIs2faToggling(false)
-      }
-    } else {
-      // Disable 2FA - direct update
-      try {
-        setIs2faToggling(true)
-        const update2faSettings = httpsCallable(functions, 'update2faSettings')
-        await update2faSettings({ enabled: false })
-        setIs2faEnabled(false)
-        setSuccess("Two-factor authentication has been disabled")
-        setTimeout(() => setSuccess(null), 3000)
-      } catch (error) {
-        console.error("Error disabling 2FA:", error)
-      } finally {
-        setIs2faToggling(false)
-      }
-    }
-  }
 
-  // Handle verification code submission
-  const handleVerify = async (code: string) => {
-    try {
-      // Verify the code
-      const verify2faCode = httpsCallable(functions, 'verify2faCode')
-      await verify2faCode({ code })
-      
-      // Enable 2FA
-      const update2faSettings = httpsCallable(functions, 'update2faSettings')
-      await update2faSettings({ enabled: true })
-      
-      // Update UI
-      setIs2faEnabled(true)
-      setShowVerification(false)
-      setSuccess("Two-factor authentication has been enabled")
-      setTimeout(() => setSuccess(null), 3000)
-    } catch (error) {
-      if (error instanceof Error) {
-        setVerificationError(error.message)
-      } else {
-        setVerificationError("Failed to verify code. Please try again.")
-      }
-    }
-  }
-
-  // Handle resend code
-  const handleResendCode = async () => {
-    try {
-      const send2faCode = httpsCallable(functions, 'send2faCode')
-      await send2faCode({ email: authUser?.email })
-      setVerificationError(null)
-    } catch (error) {
-      if (error instanceof Error) {
-        setVerificationError(error.message)
-      } else {
-        setVerificationError("Failed to resend code. Please try again.")
-      }
-    }
-  }
 
   const handleViewProfile = () => {
     if (authUser) {
@@ -284,18 +198,7 @@ export default function SettingsPage() {
     }
   }
 
-  if (showVerification) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-        <VerificationCodeInput
-          email={authUser?.email || ""}
-          onVerify={handleVerify}
-          onResend={handleResendCode}
-          error={verificationError || undefined}
-        />
-      </div>
-    )
-  }
+
 
   if (isLoading) {
     return (
@@ -309,7 +212,7 @@ export default function SettingsPage() {
     <ProtectedRoute>
       <div className="flex flex-col min-h-screen">
         <TopMenu />
-        <main className="flex-grow container mx-auto p-4 md:p-6">
+        <main className="flex-grow container mx-auto px-4 md:px-6 pt-20 pb-6">
           <div className="mb-6">
             <button 
               onClick={() => router.back()} 
@@ -330,12 +233,7 @@ export default function SettingsPage() {
               <Button onClick={handleViewProfile} variant="outline">View Profile</Button>
             </CardHeader>
             <CardContent className="space-y-6">
-              {success && (
-                <Alert className="bg-green-50 border-green-200 text-green-800 dark:bg-green-900/20 dark:border-green-800 dark:text-green-400">
-                  <AlertTitle>Success</AlertTitle>
-                  <AlertDescription>{success}</AlertDescription>
-                </Alert>
-              )}
+
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div>
@@ -376,26 +274,30 @@ export default function SettingsPage() {
                     <div>
                       <Label htmlFor="profilePictureUrl" className="dark:text-gray-300">Profile Picture</Label>
                       <div className="flex items-center space-x-4">
-                        <Image
-                          src={profilePicPreview || "/placeholder-user.jpg"}
-                          alt="Profile preview"
-                          width={80}
-                          height={80}
-                          className="rounded-full w-20 h-20 object-cover"
-                        />
+                        {profilePicPreview && (
+                          <Image
+                            src={profilePicPreview}
+                            alt="Profile preview"
+                            width={80}
+                            height={80}
+                            className="rounded-full w-20 h-20 object-cover"
+                          />
+                        )}
                         <Input id="profilePictureUrl" type="file" onChange={(e) => handleFileChange(e, 'profile')} className="max-w-xs" />
                       </div>
                     </div>
                     <div>
                       <Label htmlFor="coverImageUrl" className="dark:text-gray-300">Cover Image</Label>
                       <div className="flex items-center space-x-4">
-                        <Image
-                          src={coverImagePreview || "/images/default-cover.jpg"}
-                          alt="Cover preview"
-                          width={200}
-                          height={100}
-                          className="rounded-md w-48 h-24 object-cover"
-                        />
+                        {coverImagePreview && (
+                          <Image
+                            src={coverImagePreview}
+                            alt="Cover preview"
+                            width={200}
+                            height={100}
+                            className="rounded-md w-48 h-24 object-cover"
+                          />
+                        )}
                         <Input id="coverImageUrl" type="file" onChange={(e) => handleFileChange(e, 'cover')} className="max-w-xs" />
                       </div>
                     </div>
@@ -413,26 +315,7 @@ export default function SettingsPage() {
                 </Button>
               </form>
 
-              <Separator className="dark:bg-gray-700" />
-              
-              <div>
-                <h3 className="text-lg font-medium mb-4 dark:text-white">Security</h3>
-                
-                <div className="flex items-center justify-between py-2">
-                  <div className="flex items-center space-x-2">
-                    <ShieldCheck className="h-5 w-5" style={{ color: textColor }} />
-                    <div>
-                      <p className="font-medium dark:text-white">Two-Factor Authentication</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Add an extra layer of security when signing in</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={is2faEnabled}
-                    onCheckedChange={handle2faToggle}
-                    disabled={isLoading || is2faToggling}
-                  />
-                </div>
-              </div>
+
             </CardContent>
           </Card>
         </main>
