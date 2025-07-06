@@ -639,12 +639,12 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
       <main className="flex-grow max-w-7xl mx-auto px-4 py-6 mt-16 w-full">
         <div className="mb-6">
           <button 
-            onClick={() => router.push("/dashboard")}
+            onClick={() => router.back()}
             className="flex items-center hover:underline"
             style={{ color: linkColor }}
           >
             <ArrowLeft className="mr-2" />
-            {t("backToScores", { ns: "dashboard" })}
+            {t("back", { ns: "dashboard", defaultValue: "Back" })}
           </button>
         </div>
         <h1 className="text-2xl font-bold text-[#333333] dark:text-white mb-4">{score.name}</h1>

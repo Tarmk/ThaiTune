@@ -499,7 +499,7 @@ export default function EditScoreClient({ id }: ClientProps) {
             onClick={() => router.back()}
           >
             <ArrowLeft className="h-4 w-4 mr-1" />
-            Back to My Scores
+            Back
           </Button>
         </div>
         <h1 className="text-2xl font-bold text-white mb-1">{title}</h1>
