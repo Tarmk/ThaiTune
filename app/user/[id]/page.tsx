@@ -283,8 +283,54 @@ export default function UserProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex flex-col min-h-screen items-center justify-center" style={{ background: pageBg }}>
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+      <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-[#1a1f2c]">
+        <TopMenu />
+        <main className="flex-grow container mx-auto p-4 md:p-6 pt-20 md:pt-24">
+          {/* Banner skeleton */}
+          <div className="w-full h-64 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse mb-6"></div>
+          
+          {/* Profile info skeleton */}
+          <div className="flex items-center space-x-4 mb-6">
+            <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+            <div className="space-y-2">
+              <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            </div>
+          </div>
+          
+          {/* Stats skeleton */}
+          <div className="grid grid-cols-3 gap-4 mb-8">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                <div className="h-6 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2"></div>
+                <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Bio skeleton */}
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg mb-6">
+            <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-4"></div>
+            <div className="space-y-2">
+              <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            </div>
+          </div>
+          
+          {/* Scores skeleton */}
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg">
+            <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-4"></div>
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="flex items-center space-x-4 p-4 border rounded">
+                  <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                  <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                  <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
       </div>
     )
   }
@@ -296,8 +342,51 @@ export default function UserProfilePage() {
       <TopMenu />
       <main className="flex-grow container mx-auto p-4 md:p-6 pt-20 md:pt-24">
         {loading ? (
-          <div className="flex flex-col min-h-screen items-center justify-center" style={{ background: pageBg }}>
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+          <div className="space-y-6">
+            {/* Banner skeleton */}
+            <div className="w-full h-64 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
+            
+            {/* Profile info skeleton */}
+            <div className="flex items-center space-x-4">
+              <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+              <div className="space-y-2">
+                <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              </div>
+            </div>
+            
+            {/* Stats skeleton */}
+            <div className="grid grid-cols-3 gap-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                  <div className="h-6 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2"></div>
+                  <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Bio skeleton */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg">
+              <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-4"></div>
+              <div className="space-y-2">
+                <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              </div>
+            </div>
+            
+            {/* Scores skeleton */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg">
+              <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-4"></div>
+              <div className="space-y-4">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="flex items-center space-x-4 p-4 border rounded">
+                    <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                    <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                    <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         ) : userProfile ? (
           <div>

@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { LogIn, ArrowRight, Eye, EyeOff, AlertCircle } from "lucide-react"
+import { LogIn, ArrowRight, Eye, EyeOff, AlertCircle, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useTheme } from "next-themes"
 import { usePageTransition } from "../components/common/PageTransitionProvider"
@@ -136,6 +136,15 @@ export default function LoginPage() {
   if (showVerification) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+        {/* Back button for verification screen */}
+        <Button
+          variant="ghost"
+          onClick={() => setShowVerification(false)}
+          className="absolute top-4 left-4 z-10 flex items-center gap-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
         <VerificationCodeInput
           email={pendingUser?.email || ""}
           onVerify={handleVerify}
@@ -148,6 +157,16 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+      {/* Back button */}
+      <Button
+        variant="ghost"
+        onClick={() => router.push("/")}
+        className="absolute top-4 left-4 z-10 flex items-center gap-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </Button>
+
       <Card className="w-full max-w-md overflow-hidden border-0 shadow-lg dark:bg-gray-800 dark:border-gray-700">
         <div className="h-2" style={{ background: bgGradient }} />
 
@@ -227,50 +246,54 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+
+            <Button
+              type="submit"
+              className={`w-full text-white ${isNavigating ? 'navigation-active' : ''}`}
+              style={{ backgroundColor: buttonColor }}
+              disabled={isLoading || isNavigating}
+            >
+              {isLoading || isNavigating ? (
+                <span className="flex items-center">
+                  <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Signing in...
+                </span>
+              ) : (
+                <span className="flex items-center">
+                  Login
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </span>
+              )}
+            </Button>
           </form>
         </CardContent>
 
         <CardFooter className="flex flex-col gap-3 pb-6">
-          <Button
-            type="submit"
-            className={`w-full text-white ${isNavigating ? 'navigation-active' : ''}`}
-            style={{ backgroundColor: buttonColor }}
-            disabled={isLoading || isNavigating}
-            onClick={() => document.querySelector("form")?.requestSubmit()}
-          >
-            {isLoading || isNavigating ? (
-              <span className="flex items-center">
-                <svg className="mr-2 h-4 w-4 animate-spin" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  />
-                </svg>
-                Logging in...
-              </span>
-            ) : (
-              <span className="flex items-center">
-                Login <ArrowRight className="ml-2 h-4 w-4" />
-              </span>
-            )}
-          </Button>
-
-          <div className="text-center text-sm">
-            <span className="text-gray-500 dark:text-gray-400">Don't have an account?</span>{" "}
-            <Link href="/signup" className="font-medium transition-colors" style={{ color: linkColor }}>
-              Sign up
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400">
+            Don't have an account?{' '}
+            <Link
+              href="/signup"
+              className="font-medium transition-colors"
+              style={{ color: linkColor }}
+            >
+              Sign Up
             </Link>
-          </div>
+          </p>
         </CardFooter>
       </Card>
     </div>

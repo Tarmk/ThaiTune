@@ -219,9 +219,9 @@ const CommentSection = ({
   }
 
   return (
-    <div className="mt-6 bg-[#1a1f2e] dark:bg-[#1a1f2e] rounded-lg shadow">
+    <div className="mt-6 bg-white dark:bg-[#232838] rounded-lg shadow">
       <div className="p-4">
-        <h3 className="text-md font-semibold mb-4 text-white">
+        <h3 className="text-md font-semibold mb-4 text-gray-900 dark:text-white">
           {t("comments", { ns: "dashboard", defaultValue: "Comments" })}
         </h3>
         
@@ -233,20 +233,20 @@ const CommentSection = ({
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder={t("writeAComment", { ns: "dashboard", defaultValue: "Write a comment..." })}
-                className="flex-1 min-w-0 rounded-md bg-[#2a2f3e] border-none px-3 py-2 text-sm text-gray-100 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-maroon-500"
+                className="flex-1 min-w-0 rounded-md bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 px-3 py-2 text-sm text-gray-900 dark:text-gray-100 placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#4A1D2C] dark:focus:ring-[#8A3D4C]"
                 disabled={isSubmitting}
               />
               <button
                 type="submit"
                 disabled={isSubmitting || !newComment.trim()}
-                className="px-4 py-2 bg-[#2a2f3e] text-gray-300 rounded-md text-sm font-medium hover:bg-[#3a3f4e] focus:outline-none focus:ring-2 focus:ring-maroon-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-[#4A1D2C] dark:bg-[#8A3D4C] text-white rounded-md text-sm font-medium hover:bg-[#3A1520] dark:hover:bg-[#6A2D3C] focus:outline-none focus:ring-2 focus:ring-[#4A1D2C] dark:focus:ring-[#8A3D4C] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t("post", { ns: "dashboard", defaultValue: "Post" })}
               </button>
             </div>
           </form>
         ) : (
-          <p className="mb-6 text-sm text-gray-400">
+          <p className="mb-6 text-sm text-gray-600 dark:text-gray-400">
             {t("loginToComment", { ns: "dashboard", defaultValue: "Please login to post comments" })}
           </p>
         )}
@@ -609,15 +609,103 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-sans dark:bg-gray-900 dark:text-white">
-        {t("loading", { ns: "dashboard" })}
+      <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-[#1a1f2c] font-sans">
+        <TopMenu user={user} />
+        <main className="flex-grow max-w-7xl mx-auto px-4 py-6 mt-16 w-full">
+          <div className="mb-6">
+            {/* Back button skeleton */}
+            <div className="flex items-center">
+              <div className="h-4 w-4 bg-gray-200 dark:bg-gray-700 rounded mr-2 animate-pulse"></div>
+              <div className="h-4 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            </div>
+          </div>
+          
+          {/* Title skeleton */}
+          <div className="h-8 w-64 bg-gray-200 dark:bg-gray-700 rounded mb-4 animate-pulse"></div>
+          
+          {/* Author skeleton */}
+          <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded mb-6 animate-pulse"></div>
+          
+          {/* Rating section skeleton */}
+          <div className="mb-6 bg-white dark:bg-[#232838] p-4 rounded-lg shadow-md">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  {/* Star rating skeleton */}
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <div key={i} className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                    ))}
+                  </div>
+                  <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Score viewer skeleton */}
+          <div className="rounded-lg overflow-hidden mb-6">
+            <div className="bg-white dark:bg-[#232838] shadow-md rounded-lg">
+              <div className="p-4">
+                <div className="h-[450px] bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-solid border-[#4A1D2C] dark:border-[#8A3D4C] border-r-transparent mb-4"></div>
+                    <p className="text-gray-600 dark:text-gray-400 font-medium">
+                      {t("loading", { ns: "dashboard" })}...
+                    </p>
+                    <p className="text-sm text-gray-500 dark:text-gray-500 mt-1">
+                      Loading music score
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Control buttons skeleton */}
+          <div className="flex justify-end gap-2 mb-6">
+            <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+            <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+            <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse"></div>
+          </div>
+          
+          {/* Footer info skeleton */}
+          <div className="mt-6 bg-white dark:bg-[#232838] p-4 rounded-lg shadow-md">
+            <div className="flex justify-between items-center">
+              <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              <div className="h-4 w-12 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+            </div>
+          </div>
+          
+          {/* Description skeleton */}
+          <div className="mt-4 bg-white dark:bg-[#232838] rounded-lg shadow border border-gray-200 dark:border-gray-700">
+            <div className="p-4">
+              <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-2 animate-pulse"></div>
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Comments skeleton */}
+          <div className="mt-6 bg-white dark:bg-[#232838] rounded-lg shadow">
+            <div className="p-4">
+              <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded mb-4 animate-pulse"></div>
+              <div className="space-y-3">
+                <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+        </main>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-red-500 font-sans dark:bg-gray-900">
+      <div className="min-h-screen flex items-center justify-center text-red-500 font-sans bg-gray-50 dark:bg-[#1a1f2c]">
         {error}
       </div>
     )
@@ -625,7 +713,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
 
   if (!score) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-sans dark:bg-gray-900 dark:text-white">
+      <div className="min-h-screen flex items-center justify-center font-sans bg-gray-50 dark:bg-[#1a1f2c] text-gray-900 dark:text-white">
         {t("noScores", { ns: "dashboard" })}
       </div>
     )
@@ -634,7 +722,7 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
   const isOwner = user?.uid === score.userId
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F5F5F5] dark:bg-gray-900 font-sans">
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-[#1a1f2c] font-sans">
       <TopMenu user={user} />
       <main className="flex-grow max-w-7xl mx-auto px-4 py-6 mt-16 w-full">
         <div className="mb-6">

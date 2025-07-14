@@ -8,11 +8,13 @@ import { MusicIcon, Code, Headphones, ArrowRight } from "lucide-react"
 import Image from "next/image"
 import { useEffect, useState } from "react"
 import { useTheme } from "next-themes"
+import { useAuth } from "@/app/providers/auth-provider"
 
 export default function Main() {
   const { t, ready } = useTranslation("common")
   const [isClient, setIsClient] = useState(false)
   const { theme } = useTheme()
+  const { user } = useAuth()
 
   // Set isClient to true on component mount
   useEffect(() => {
@@ -51,27 +53,22 @@ export default function Main() {
           <div className="grid gap-16 lg:grid-cols-2 items-center">
             <div className="flex flex-col justify-center space-y-8">
               <div className="space-y-6">
-                <div className="inline-block rounded-full px-3 py-1 text-sm font-medium" 
-                  style={{ 
-                    backgroundColor: theme === 'dark' ? 'rgba(138, 61, 76, 0.2)' : maroonLightest, 
-                    color: theme === 'dark' ? '#e5a3b4' : maroonColor
-                  }}>
-                  {t("newFeature")}
-                </div>
                 <h1 className="text-5xl font-bold tracking-tight text-gray-900 dark:text-white lg:text-6xl/none leading-tight">
                   {t("learnTitle")}
                 </h1>
                 <p className="text-xl text-gray-500 dark:text-gray-300 max-w-[600px]">{t("description")}</p>
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link href="/signup">
-                  <Button 
-                    className="text-base px-6 py-3 shadow-md transition-transform hover:scale-105 bg-[#4A1D2C] hover:bg-[#3A1520] dark:bg-[#8A3D4C] dark:hover:bg-[#6A2D3C] text-white"
-                  >
-                    {t("getStarted")}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
+                {!user && (
+                  <Link href="/signup">
+                    <Button 
+                      className="text-base px-6 py-3 shadow-md transition-transform hover:scale-105 bg-[#4A1D2C] hover:bg-[#3A1520] dark:bg-[#8A3D4C] dark:hover:bg-[#6A2D3C] text-white"
+                    >
+                      {t("getStarted")}
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
+                )}
                 <Link href="/community">
                   <Button 
                     variant="outline" 
@@ -139,8 +136,14 @@ export default function Main() {
             </div>
             <div className="relative rounded-xl overflow-hidden shadow-2xl bg-white dark:bg-[#2a3349] aspect-[2/1]">
               <div className="absolute inset-0 bg-gradient-to-br from-[#4A1D2C]/5 to-[#8A3D4C]/5 dark:from-[#8A3D4C]/10 dark:to-[#af5169]/10"></div>
-              <div className="w-full h-full flex items-center justify-center">
-                <span className="text-gray-400 dark:text-gray-300">{t("editorInterface")}</span>
+              <div className="w-full h-full relative">
+                <Image
+                  src="/images/music-editor-preview.png"
+                  alt="Music Score Editor Interface"
+                  fill
+                  className="object-cover"
+                  priority
+                />
               </div>
             </div>
           </div>

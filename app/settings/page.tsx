@@ -202,8 +202,40 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-       <div className="flex flex-col min-h-screen items-center justify-center">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+      <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-[#1a1f2c]">
+        <TopMenu />
+        <main className="flex-grow container mx-auto px-4 py-8 mt-16">
+          <div className="max-w-2xl mx-auto">
+            {/* Title skeleton */}
+            <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-8" />
+            
+            {/* Form skeleton */}
+            <div className="space-y-6">
+              {/* Profile Picture section */}
+              <div className="space-y-4">
+                <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                <div className="h-24 w-24 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
+              </div>
+              
+              {/* Form fields */}
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="space-y-2">
+                  <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                  <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                </div>
+              ))}
+              
+              {/* Bio section */}
+              <div className="space-y-2">
+                <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                <div className="h-24 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+              </div>
+              
+              {/* Save button */}
+              <div className="h-10 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+            </div>
+          </div>
+        </main>
       </div>
     )
   }

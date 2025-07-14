@@ -30,6 +30,7 @@ interface BookmarkedScore {
 export default function MyBookmarksPage() {
   const { t } = useTranslation('community')
   const [scores, setScores] = React.useState<BookmarkedScore[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const [sortColumn, setSortColumn] = React.useState<keyof BookmarkedScore | null>(null)
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc')
   const [searchQuery, setSearchQuery] = React.useState("")
@@ -61,8 +62,12 @@ export default function MyBookmarksPage() {
   React.useEffect(() => {
     const fetchBookmarkedScores = async () => {
       try {
+        setLoading(true);
         const user = auth.currentUser;
-        if (!user) return;
+        if (!user) {
+          setLoading(false);
+          return;
+        }
 
         // First get the user's bookmarks
         const bookmarksRef = collection(db, 'bookmarks');
@@ -79,15 +84,15 @@ export default function MyBookmarksPage() {
           .filter(doc => bookmarkedScoreIds.includes(doc.id))
           .map(doc => {
             const data = doc.data();
-            const modifiedTimestamp = data.modified as Timestamp;
-            const createdTimestamp = data.created as Timestamp;
+            const modifiedTimestamp = data.modified as Timestamp | undefined;
+            const createdTimestamp = data.created as Timestamp | undefined;
             return {
               id: doc.id,
-              name: data.name,
-              author: data.author,
-              modified: modifiedTimestamp?.toDate().toLocaleString() || t('unknownDate'),
-              created: createdTimestamp?.toDate().toLocaleString() || t('unknownDate'),
-              sharing: data.sharing,
+              name: data.name || '',
+              author: data.author || '',
+              modified: modifiedTimestamp && modifiedTimestamp.toDate ? modifiedTimestamp.toDate().toLocaleString() : t('unknownDate'),
+              created: createdTimestamp && createdTimestamp.toDate ? createdTimestamp.toDate().toLocaleString() : t('unknownDate'),
+              sharing: data.sharing || 'private',
               rating: data.rating || 0,
               ratingCount: data.ratingCount || 0
             };
@@ -95,6 +100,8 @@ export default function MyBookmarksPage() {
         setScores(scoresList);
       } catch (error) {
         console.error('Error fetching bookmarked scores:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -185,7 +192,30 @@ export default function MyBookmarksPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredScores.length === 0 ? (
+                {loading ? (
+                  [...Array(5)].map((_, i) => (
+                    <tr key={i} className="border-b last:border-b-0 dark:border-gray-700">
+                      <td className="py-3">
+                        <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      </td>
+                      <td className="py-3">
+                        <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      </td>
+                      <td className="py-3">
+                        <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      </td>
+                      <td className="py-3">
+                        <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      </td>
+                      <td className="py-3">
+                        <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      </td>
+                      <td className="py-3">
+                        <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      </td>
+                    </tr>
+                  ))
+                ) : filteredScores.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-4 text-center text-gray-500 dark:text-gray-400">
                       No bookmarked scores found
@@ -207,13 +237,13 @@ export default function MyBookmarksPage() {
                               <Star
                                 key={star}
                                 className={`h-4 w-4 ${
-                                  star <= score.rating ? 'fill-current text-yellow-400' : 'text-gray-300 dark:text-gray-600'
+                                  star <= (score.rating || 0) ? 'fill-current text-yellow-400' : 'text-gray-300 dark:text-gray-600'
                                 }`}
                               />
                             ))}
                           </div>
                           <span className="text-sm text-[#666666] dark:text-gray-400">
-                            {score.rating ? score.rating.toFixed(1) : "0.0"}
+                            {score.rating !== undefined ? score.rating.toFixed(1) : "0.0"}
                             {score.ratingCount ? ` (${score.ratingCount})` : ""}
                           </span>
                         </div>

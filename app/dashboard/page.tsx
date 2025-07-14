@@ -63,13 +63,6 @@ export default function Dashboard() {
   // Theme-aware colors
   const buttonColor = "hsl(var(--primary))"
   const linkColor = "hsl(var(--primary))"
-  
-  // Background colors matching the landing page
-  const pageBg = mounted && resolvedTheme === "dark" ? "#1a1f2c" : "#f3f4f6" 
-  const cardBg = mounted && resolvedTheme === "dark" ? "#242A38" : "white"
-  const inputBg = mounted && resolvedTheme === "dark" ? "#212838" : "#f9fafb"
-  const inputBorder = mounted && resolvedTheme === "dark" ? "#323A4B" : "#e5e7eb"
-  const popoverBg = mounted && resolvedTheme === "dark" ? "#242A38" : "white"
 
   const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY || "",
@@ -200,7 +193,7 @@ export default function Dashboard() {
           <MoreVertical className="h-5 w-5 text-[#666666] dark:text-gray-400" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-48 p-2 dark:border-gray-700" style={{ background: popoverBg }}>
+      <PopoverContent className="w-48 p-2 bg-white dark:bg-[#232838] dark:border-gray-700">
         <div className="flex flex-col space-y-2">
           <Button
             variant="ghost"
@@ -219,7 +212,7 @@ export default function Dashboard() {
 
   return (
     <ProtectedRoute>
-      <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-[#1a1f2c] transition-colors duration-300" style={{ background: pageBg }}>
+      <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-[#1a1f2c] transition-colors duration-300">
         <TopMenu />
         <main className="flex-grow max-w-7xl mx-auto px-4 pt-20 pb-6 w-full">
           <div className="flex justify-between items-center mb-6">
@@ -234,12 +227,22 @@ export default function Dashboard() {
               </Button>
             </Link>
           </div>
-          <Card className="bg-white shadow-md transition-colors duration-300" style={{ background: cardBg }}>
+          <Card className="bg-white dark:bg-[#232838] shadow-md transition-colors duration-300">
             <CardContent className="p-4">
               {isLoading ? (
-                <div className="py-8 text-center">
-                  <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#800000] border-r-transparent dark:border-[#8A3D4C] dark:border-r-transparent"></div>
-                  <p className="mt-2 text-gray-500 dark:text-gray-400">{t("loading")}</p>
+                <div className="space-y-4">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="flex items-center justify-between py-4">
+                      <div className="flex items-center space-x-4">
+                        <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                        <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                        <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                        <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                        <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      </div>
+                      <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <SortableTable
@@ -248,7 +251,6 @@ export default function Dashboard() {
                   initialSortColumn="name"
                   emptyMessage={t("noScores")}
                   actions={renderActions}
-                  onRowClick={(score) => router.push(`/score/${score.score_id}`)}
                 />
               )}
             </CardContent>
@@ -267,7 +269,7 @@ export default function Dashboard() {
 
         {/* Chat UI */}
         {isChatOpen && (
-          <div className="fixed bottom-16 right-4 shadow-lg rounded-lg w-80 h-96 flex flex-col transition-colors duration-300" style={{ background: cardBg }}>
+          <div className="fixed bottom-16 right-4 bg-white dark:bg-[#232838] shadow-lg rounded-lg w-80 h-96 flex flex-col transition-colors duration-300">
             <div className="flex justify-between items-center p-4 border-b dark:border-gray-700">
               <h2 className="text-lg font-bold dark:text-white">{t("chat")}</h2>
               <button onClick={toggleChat} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300" aria-label="Close chat">
@@ -290,8 +292,7 @@ export default function Dashboard() {
               <input
                 type="text"
                 placeholder={t("typeAMessage")}
-                className="w-full border rounded p-2 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
-                style={{ background: inputBg, borderColor: inputBorder }}
+                className="w-full border border-gray-300 dark:border-gray-600 rounded p-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 onKeyDown={handleChatInputKeyDown}
                 aria-label="Type a message"
               />

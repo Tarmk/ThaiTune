@@ -11,6 +11,7 @@ import { sendPasswordResetEmail } from "firebase/auth"
 import { auth } from "@/lib/firebase"
 import { useTheme } from "next-themes"
 import { usePageTransition } from "../components/common/PageTransitionProvider"
+import { useRouter } from "next/navigation"
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
@@ -20,6 +21,7 @@ export default function ForgotPasswordPage() {
   const { resolvedTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
   const { isNavigating } = usePageTransition()
+  const router = useRouter()
 
   useEffect(() => {
     setMounted(true)
@@ -73,6 +75,16 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+      {/* Back button */}
+      <Button
+        variant="ghost"
+        onClick={() => router.push("/login")}
+        className="absolute top-4 left-4 z-10 flex items-center gap-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </Button>
+
       <Card className="w-full max-w-md overflow-hidden border-0 shadow-lg dark:bg-gray-800 dark:border-gray-700">
         <div className="h-2" style={{ background: bgGradient }} />
 

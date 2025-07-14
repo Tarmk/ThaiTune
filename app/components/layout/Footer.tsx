@@ -136,7 +136,7 @@ export default function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
+                  <Link href="/report-issue" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
                     {t('footer.contact.reportAnIssue')}
                   </Link>
                 </li>

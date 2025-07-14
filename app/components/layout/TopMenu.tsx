@@ -79,7 +79,7 @@ export function TopMenu({ user: propUser }: TopMenuProps) {
               variant="primary" 
               borderRadius="rounded-lg" 
               scale={1.3}
-              href={user ? "/dashboard" : "/"} 
+              href="/" 
             />
             
             <div className="hidden md:flex items-center gap-6">
@@ -116,7 +116,7 @@ export function TopMenu({ user: propUser }: TopMenuProps) {
                       </PopoverTrigger>
                       <PopoverContent className="w-56 p-2 dark:bg-[#232838] dark:border-gray-700">
                         <div className="space-y-1">
-                          <Link href="#" className="block px-3 py-2 rounded-md text-sm hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-200">
+                          <Link href="/database" className="block px-3 py-2 rounded-md text-sm hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-200">
                             Database
                           </Link>
                           <Link href="#" className="block px-3 py-2 rounded-md text-sm hover:bg-gray-100 dark:hover:bg-gray-800 dark:text-gray-200">

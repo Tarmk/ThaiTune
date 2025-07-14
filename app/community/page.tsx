@@ -38,6 +38,7 @@ interface BookmarkData {
 export default function CommunityPage() {
   const { t } = useTranslation('community')
   const [scores, setScores] = React.useState<CommunityScore[]>([]);
+  const [loading, setLoading] = React.useState(true);
   const [sortColumn, setSortColumn] = React.useState<keyof CommunityScore | null>(null)
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc')
   const [searchQuery, setSearchQuery] = React.useState("")
@@ -83,6 +84,7 @@ export default function CommunityPage() {
   React.useEffect(() => {
     const fetchScores = async () => {
       try {
+        setLoading(true);
         const user = auth.currentUser;
         const scoresCollection = collection(db, 'scores')
         const scoresSnapshot = await getDocs(scoresCollection)
@@ -115,6 +117,8 @@ export default function CommunityPage() {
         setScores(scoresList)
       } catch (error) {
         console.error('Error fetching scores:', error)
+      } finally {
+        setLoading(false);
       }
     }
 
@@ -249,7 +253,33 @@ export default function CommunityPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredScores.length === 0 ? (
+                {loading ? (
+                  [...Array(5)].map((_, i) => (
+                    <tr key={i} className="border-b last:border-b-0 dark:border-gray-700">
+                      <td className="py-3">
+                        <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      </td>
+                      <td className="py-3">
+                        <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      </td>
+                      <td className="py-3">
+                        <div className="h-4 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      </td>
+                      <td className="py-3">
+                        <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      </td>
+                      <td className="py-3">
+                        <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                      </td>
+                      <td className="py-3">
+                        <div className="flex items-center space-x-2">
+                          <div className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                          <div className="h-5 w-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : filteredScores.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="py-4 text-center text-gray-500 dark:text-gray-400">
                       {t('noScores')}

@@ -57,6 +57,8 @@ ThaiTune is a web platform dedicated to preserving, sharing, and exploring tradi
    OPENAI_API_KEY=your_openai_api_key
    ```
 
+   📋 **For detailed setup instructions, see [SETUP.md](SETUP.md)**
+
 4. Start the development server:
    ```bash
    npm run dev

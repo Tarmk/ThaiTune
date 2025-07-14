@@ -478,15 +478,24 @@ export default function EditScoreClient({ id }: ClientProps) {
   }
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center dark:bg-gray-900 dark:text-white">Loading...</div>
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#1a1f2c]">
+        <div className="flex flex-col items-center space-y-3">
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#4A1D2C] dark:border-[#8A3D4C] border-r-transparent"></div>
+          <p className="text-gray-600 dark:text-gray-400 font-medium">
+            {t("loading", { ns: "common" })}...
+          </p>
+        </div>
+      </div>
+    )
   }
 
   if (error) {
-    return <div className="min-h-screen flex items-center justify-center text-red-500 dark:bg-gray-900">{error}</div>
+    return <div className="min-h-screen flex items-center justify-center text-red-500 bg-gray-50 dark:bg-[#1a1f2c]">{error}</div>
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#111827]">
+    <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-[#1a1f2c]">
       <Suspense fallback={null}>
         <SearchParamsHandler onParamsReady={handleSearchParams} />
       </Suspense>
@@ -502,8 +511,8 @@ export default function EditScoreClient({ id }: ClientProps) {
             Back
           </Button>
         </div>
-        <h1 className="text-2xl font-bold text-white mb-1">{title}</h1>
-        <p className="text-gray-400 mb-4">By {user?.displayName || "Anonymous"}</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">{title}</h1>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">By {user?.displayName || "Anonymous"}</p>
         
         {/* Score Editor */}
         <div className="score-editor-container rounded-md overflow-hidden shadow-lg border border-gray-700 mb-4 bg-white dark:bg-gray-800">
@@ -512,11 +521,11 @@ export default function EditScoreClient({ id }: ClientProps) {
 
         {/* Description Form */}
         <TooltipProvider>
-          <div className="mb-6 bg-gray-800 rounded-md shadow-md p-6 border border-gray-700">
-            <div className="flex items-center gap-2 mb-2">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-300">
-                Description
-              </label>
+          <div className="mb-6 bg-white dark:bg-[#232838] rounded-md shadow-md p-6 border border-gray-200 dark:border-gray-700">
+                          <div className="flex items-center gap-2 mb-2">
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Description
+                </label>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-400 cursor-pointer">
@@ -543,7 +552,7 @@ export default function EditScoreClient({ id }: ClientProps) {
               value={scoreDescription}
               onChange={(e) => setScoreDescription(e.target.value)}
               placeholder="Enter a description for your score..."
-              className="w-full px-3 py-2 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#8A3D4C] focus:border-transparent bg-gray-700 text-white placeholder-gray-400"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#4A1D2C] dark:focus:ring-[#8A3D4C] focus:border-transparent bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               rows={3}
             />
           </div>
@@ -570,15 +579,15 @@ export default function EditScoreClient({ id }: ClientProps) {
         )}
 
         {/* Footer */}
-        <div className="py-3 px-4 bg-gray-800 rounded-md border border-gray-700 flex justify-between items-center">
-          <div className="text-sm text-gray-400">
+        <div className="py-3 px-4 bg-white dark:bg-[#232838] rounded-md border border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <div className="text-sm text-gray-600 dark:text-gray-400">
             Modified: {lastSavedTime ? lastSavedTime : new Date().toLocaleString()}
           </div>
           
           <div className="flex items-center space-x-2">
             <select
               id="sharing"
-              className="text-sm border border-gray-600 rounded py-1 px-2 bg-gray-800 text-white"
+              className="text-sm border border-gray-300 dark:border-gray-600 rounded py-1 px-2 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white"
               value={sharingSetting}
               onChange={handleSharingChange}
             >
