@@ -7,13 +7,15 @@ import { Button } from "@/app/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
-import { AlertTriangle, Bug, MessageSquare, Zap, Send } from "lucide-react"
+import { AlertTriangle, Bug, MessageSquare, Zap, Send, Shield, Eye, EyeOff } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useTheme } from "next-themes"
+import { useRouter } from "next/navigation"
 
 export default function ReportIssuePage() {
   const { t } = useTranslation("common")
   const { theme } = useTheme()
+  const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
@@ -26,6 +28,11 @@ export default function ReportIssuePage() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [showAdminModal, setShowAdminModal] = useState(false)
+  const [adminPassword, setAdminPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [adminError, setAdminError] = useState("")
+  const [isAdminLoading, setIsAdminLoading] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -94,6 +101,31 @@ export default function ReportIssuePage() {
     }))
   }
 
+  const handleAdminAccess = async () => {
+    if (!adminPassword.trim()) {
+      setAdminError("Please enter password")
+      return
+    }
+
+    setIsAdminLoading(true)
+    setAdminError("")
+
+    try {
+      // Simple password check - in production, this would be more secure
+      if (adminPassword === "admin123") {
+        // Set admin session
+        localStorage.setItem("admin_session", "true")
+        router.push("/admin/support-tickets")
+      } else {
+        setAdminError("Invalid password")
+      }
+    } catch (error) {
+      setAdminError("Error accessing admin panel")
+    } finally {
+      setIsAdminLoading(false)
+    }
+  }
+
   // Theme colors
   const maroonColor = "#4A1D2C"
   const maroonLighter = "#6A2D3C"
@@ -120,7 +152,7 @@ export default function ReportIssuePage() {
 
       <main className="flex-1 pt-16">
         {/* Hero Section */}
-        <section className="w-full py-16 bg-gradient-to-br from-[#4A1D2C] to-[#6A2D3C] dark:from-[#1a1f2c] dark:to-[#2a1f2c]">
+        <section className="w-full py-16 bg-gradient-to-br from-[#4A1D2C] to-[#6A2D3C] dark:from-[#1a1f2c] dark:to-[#2a1f2c] relative">
           <div className="container px-4 md:px-6 max-w-4xl mx-auto text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/10 backdrop-blur-sm mb-6">
               <Bug className="h-8 w-8 text-white" />
@@ -132,7 +164,92 @@ export default function ReportIssuePage() {
               Help us improve ThaiTune by reporting bugs, issues, or suggesting improvements. Your feedback is valuable to us.
             </p>
           </div>
+          
+          {/* Admin Access Button */}
+          <div className="absolute top-4 right-4">
+            <Button
+              onClick={() => setShowAdminModal(true)}
+              variant="ghost"
+              size="sm"
+              className="text-white/80 hover:text-white hover:bg-white/10"
+            >
+              <Shield className="h-4 w-4 mr-2" />
+              Admin
+            </Button>
+          </div>
         </section>
+
+        {/* Admin Modal */}
+        {showAdminModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-[#2a3349] p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Admin Access</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowAdminModal(false)
+                    setAdminPassword("")
+                    setAdminError("")
+                  }}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                >
+                  ×
+                </Button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="admin-password" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Enter admin password
+                  </Label>
+                  <div className="relative mt-1">
+                    <Input
+                      id="admin-password"
+                      type={showPassword ? "text" : "password"}
+                      value={adminPassword}
+                      onChange={(e) => setAdminPassword(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleAdminAccess()}
+                      placeholder="Enter password"
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {adminError && (
+                    <p className="text-sm text-red-600 dark:text-red-400 mt-1">{adminError}</p>
+                  )}
+                </div>
+                
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleAdminAccess}
+                    disabled={isAdminLoading}
+                    className="flex-1"
+                  >
+                    {isAdminLoading ? "Checking..." : "Access Admin Panel"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowAdminModal(false)
+                      setAdminPassword("")
+                      setAdminError("")
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Issue Types */}
         <section className="w-full py-16 bg-gray-50 dark:bg-[#232838]">

@@ -66,7 +66,7 @@ export default function Footer() {
               </h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
+                  <Link href="/about" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
                     {t('footer.organization.aboutUs')}
                   </Link>
                 </li>

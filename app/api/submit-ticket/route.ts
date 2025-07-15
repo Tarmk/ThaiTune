@@ -183,7 +183,20 @@ export async function POST(request: NextRequest) {
 
     // Store ticket in Firebase
     try {
-      await addDoc(collection(db, 'support_tickets'), ticketData)
+      const docRef = await addDoc(collection(db, 'support_tickets'), ticketData)
+      
+      // Create initial conversation message
+      const initialMessage = {
+        message: `${formData.description}${formData.steps ? `\n\nSteps to reproduce:\n${formData.steps}` : ''}`,
+        isAdmin: false,
+        senderName: formData.name,
+        senderEmail: formData.email,
+        createdAt: serverTimestamp()
+      }
+      
+      // Add initial message to conversation
+      await addDoc(collection(db, 'support_tickets', docRef.id, 'messages'), initialMessage)
+      
     } catch (dbError) {
       console.error('Database error:', dbError)
       return NextResponse.json(

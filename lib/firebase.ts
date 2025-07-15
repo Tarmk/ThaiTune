@@ -16,12 +16,10 @@ const requiredEnvVars = [
 
 const missingEnvVars = requiredEnvVars.filter(varName => !process.env[varName])
 
-if (missingEnvVars.length > 0) {
-  console.error('Missing required Firebase environment variables:', missingEnvVars)
-  console.error('Please create a .env.local file with the following variables:')
-  requiredEnvVars.forEach(varName => {
-    console.error(`${varName}=your_${varName.toLowerCase().replace('next_public_firebase_', '').replace('_', '_')}`)
-  })
+// Only log warnings in development mode and don't use console.error to prevent flashing errors
+if (missingEnvVars.length > 0 && process.env.NODE_ENV === 'development') {
+  console.warn('Some Firebase environment variables are missing:', missingEnvVars)
+  console.warn('Using fallback demo values. Please check your .env.local file.')
 }
 
 const firebaseConfig = {

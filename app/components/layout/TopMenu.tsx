@@ -26,9 +26,10 @@ import { useThemeColors } from "@/hooks/use-theme-colors"
 
 interface TopMenuProps {
   user?: any; // Make user optional as we'll primarily use the auth context
+  collapsible?: boolean; // Add collapsible prop
 }
 
-export function TopMenu({ user: propUser }: TopMenuProps) {
+export function TopMenu({ user: propUser, collapsible = false }: TopMenuProps) {
   const colors = useThemeColors()
   
   const [open, setOpen] = useState(false)
@@ -38,6 +39,10 @@ export function TopMenu({ user: propUser }: TopMenuProps) {
   const [mounted, setMounted] = useState(false)
   const { user: contextUser, loading } = useAuth()
   
+  // Collapsible header state
+  const [isVisible, setIsVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
+  
   // Use context user if available, otherwise fall back to prop user
   const user = contextUser || propUser
 
@@ -45,6 +50,46 @@ export function TopMenu({ user: propUser }: TopMenuProps) {
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  // Handle scroll for collapsible header
+  useEffect(() => {
+    if (!collapsible) return
+
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY
+      
+      // Show header when scrolling up or at the top
+      if (currentScrollY < lastScrollY || currentScrollY < 100) {
+        setIsVisible(true)
+      } 
+      // Hide header when scrolling down (after 100px threshold)
+      else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false)
+      }
+      
+      setLastScrollY(currentScrollY)
+    }
+
+    // Throttle scroll events for better performance
+    let ticking = false
+    const throttledHandleScroll = () => {
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          handleScroll()
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+
+    // Add scroll event listener
+    window.addEventListener('scroll', throttledHandleScroll, { passive: true })
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('scroll', throttledHandleScroll)
+    }
+  }, [collapsible, lastScrollY])
 
   const handleLogout = async () => {
     try {
@@ -70,7 +115,13 @@ export function TopMenu({ user: propUser }: TopMenuProps) {
 
   return (
     <div className="relative z-10">
-      <header className="fixed top-0 left-0 right-0 z-50 flex h-16 items-center px-6 bg-white dark:bg-[#1a1f2c] shadow-sm dark:shadow-none border-b border-transparent dark:border-gray-800 transition-colors duration-300">
+      <header className={`fixed top-0 left-0 right-0 z-50 flex h-16 items-center px-6 ${
+        collapsible 
+          ? 'bg-white/95 dark:bg-[#1a1f2c]/95 backdrop-blur-sm' 
+          : 'bg-white dark:bg-[#1a1f2c]'
+      } shadow-sm dark:shadow-none border-b border-transparent dark:border-gray-800 transition-all duration-300 ${
+        collapsible ? (isVisible ? 'translate-y-0' : '-translate-y-full') : ''
+      }`}>
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-12">
             <Logo 
