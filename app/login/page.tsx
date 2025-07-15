@@ -135,12 +135,19 @@ export default function LoginPage() {
 
   if (showVerification) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 relative overflow-hidden">
+        {/* Background decorative elements */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4A1D2C]/30 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#6A2D3C]/20 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#8A3D4C]/10 rounded-full blur-3xl"></div>
+        </div>
+        
         {/* Back button for verification screen */}
         <Button
           variant="ghost"
           onClick={() => setShowVerification(false)}
-          className="absolute top-4 left-4 z-10 flex items-center gap-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+          className="absolute top-4 left-4 z-10 flex items-center gap-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 backdrop-blur-sm bg-white/10 dark:bg-gray-800/10 border border-white/20 dark:border-gray-700/20"
         >
           <ArrowLeft className="h-4 w-4" />
           Back
@@ -156,18 +163,25 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-20 left-20 w-96 h-96 bg-[#4A1D2C]/30 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#6A2D3C]/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#8A3D4C]/10 rounded-full blur-3xl"></div>
+      </div>
+
       {/* Back button */}
       <Button
         variant="ghost"
         onClick={() => router.push("/")}
-        className="absolute top-4 left-4 z-10 flex items-center gap-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
+        className="absolute top-4 left-4 z-10 flex items-center gap-2 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 backdrop-blur-sm bg-white/10 dark:bg-gray-800/10 border border-white/20 dark:border-gray-700/20"
       >
         <ArrowLeft className="h-4 w-4" />
         Back
       </Button>
 
-      <Card className="w-full max-w-md overflow-hidden border-0 shadow-lg dark:bg-gray-800 dark:border-gray-700">
+      <Card className="w-full max-w-md overflow-hidden border-0 shadow-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm dark:border-gray-700 relative z-10">
         <div className="h-2" style={{ background: bgGradient }} />
 
         <CardHeader className="space-y-1 pt-6 pb-4">

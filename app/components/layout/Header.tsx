@@ -30,7 +30,6 @@ export default function Header() {
   const translatedStrings = {
     features: t("features"),
     community: t("community"),
-    ourProducts: t("ourProducts"),
     login: t("login"),
     getStarted: t("getStarted")
   }
@@ -59,7 +58,7 @@ export default function Header() {
                   </PopoverTrigger>
                   <PopoverContent className="w-56 p-2">
                     <div className="space-y-1">
-                      <Link href="#" className="block px-3 py-2 rounded-md text-sm hover:bg-gray-100">
+                      <Link href="/database" className="block px-3 py-2 rounded-md text-sm hover:bg-gray-100">
                         Database
                       </Link>
                       <Link href="#" className="block px-3 py-2 rounded-md text-sm hover:bg-gray-100">
@@ -81,26 +80,7 @@ export default function Header() {
                 </Link>
               </NoSSR>
               
-              <NoSSR>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="ghost" className="font-medium text-gray-700 hover:text-[#4A1D2C] transition-colors flex items-center gap-1.5">
-                      {translatedStrings.ourProducts}
-                      <ChevronDown className="h-4 w-4 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-56 p-2">
-                    <div className="space-y-1">
-                      <Link href="#" className="block px-3 py-2 rounded-md text-sm hover:bg-gray-100">
-                        ThaiTune Database
-                      </Link>
-                      <Link href="#" className="block px-3 py-2 rounded-md text-sm hover:bg-gray-100">
-                        ThaiTune for Education
-                      </Link>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </NoSSR>
+
             </div>
           </div>
           
@@ -197,9 +177,7 @@ export default function Header() {
                         {t('community')}
                       </Button>
                     </Link>
-                    <Button variant="ghost" className="w-full justify-start text-lg">
-                      {t('ourProducts')}
-                    </Button>
+
                   </nav>
                 </NoSSR>
               </SheetContent>

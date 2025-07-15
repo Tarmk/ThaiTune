@@ -2,17 +2,14 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowLeft, Settings, User, Camera, Image as ImageIcon, Mail, Save, Eye } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Separator } from "@/components/ui/separator"
 import { auth, db, storage } from "@/lib/firebase"
-import { onAuthStateChanged } from "firebase/auth"
 import { ProtectedRoute } from "@/app/components/auth/protectedroute"
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import { useTranslation } from "react-i18next"
 import { doc, getDoc, updateDoc } from "firebase/firestore"
-import { useTheme } from "next-themes"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
@@ -24,6 +21,7 @@ import { toast } from "@/components/ui/use-toast"
 import Image from "next/image"
 import { useAuth } from "@/app/providers/auth-provider"
 import Footer from "@/app/components/layout/Footer"
+import { motion } from "framer-motion"
 
 const settingsSchema = z.object({
   displayName: z.string().min(2, "Display name must be at least 2 characters.").max(50, "Display name must be at most 50 characters."),
@@ -40,8 +38,6 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = React.useState(true)
   const router = useRouter()
   const { t } = useTranslation(['common'])
-  const { resolvedTheme } = useTheme()
-  const [mounted, setMounted] = React.useState(false)
   const [saving, setSaving] = React.useState(false)
   const [profilePicFile, setProfilePicFile] = React.useState<File | null>(null)
   const [coverImageFile, setCoverImageFile] = React.useState<File | null>(null)
@@ -53,7 +49,6 @@ export default function SettingsPage() {
     handleSubmit,
     reset,
     formState: { errors },
-    setValue,
   } = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsSchema),
     defaultValues: {
@@ -64,10 +59,6 @@ export default function SettingsPage() {
       coverImageUrl: "",
     },
   })
-
-  React.useEffect(() => {
-    setMounted(true)
-  }, [])
 
   React.useEffect(() => {
     if (authUser) {
@@ -107,9 +98,6 @@ export default function SettingsPage() {
        setIsLoading(false)
     }
   }, [authUser, reset])
-  
-  // Theme-aware colors
-  const textColor = "hsl(var(--primary))"
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, type: 'profile' | 'cover') => {
     if (e.target.files && e.target.files[0]) {
@@ -140,49 +128,43 @@ export default function SettingsPage() {
     setSaving(true);
 
     try {
-      // Start with basic user data
       const updateData: any = {
         displayName: data.displayName || '',
         bio: data.bio || '',
       };
 
-      // Handle roles - convert string to array
       if (data.roles) {
         updateData.roles = data.roles.split(',').map((role: string) => role.trim()).filter((role: string) => role.length > 0);
       } else {
         updateData.roles = [];
       }
 
-      // Handle profile picture upload
       if (profilePicFile) {
         const profileUrl = await uploadImage(profilePicFile, `users/${authUser.uid}/profile-picture`);
         updateData.profilePictureUrl = profileUrl;
       }
 
-      // Handle cover image upload
       if (coverImageFile) {
         const coverUrl = await uploadImage(coverImageFile, `users/${authUser.uid}/cover-image`);
         updateData.coverImageUrl = coverUrl;
       }
 
-      // Update Firestore
       const userDocRef = doc(db, "users", authUser.uid);
       await updateDoc(userDocRef, updateData);
 
-      // Reset file states after successful upload
       setProfilePicFile(null);
       setCoverImageFile(null);
 
       toast({
-        title: t('success'),
-        description: t('settingsUpdatedSuccess'),
+        title: "Success!",
+        description: "Your settings have been updated successfully.",
       });
 
     } catch (error) {
       console.error("Error updating settings:", error);
       toast({
-        title: t('error'),
-        description: `${t('settingsUpdateError')}: ${error instanceof Error ? error.message : t('unknownError')}`,
+        title: "Error",
+        description: "Failed to update settings. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -190,51 +172,160 @@ export default function SettingsPage() {
     }
   }
 
-
-
   const handleViewProfile = () => {
     if (authUser) {
       router.push(`/user/${authUser.uid}`)
     }
   }
 
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 60 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut" }
+    }
+  }
 
+  const staggerContainer = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.15,
+        delayChildren: 0.1
+      }
+    }
+  }
 
   if (isLoading) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-[#1a1f2c]">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        {/* Background decorative elements */}
+        <div className="fixed inset-0 opacity-20 pointer-events-none">
+          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4A1D2C]/30 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#6A2D3C]/20 rounded-full blur-3xl animate-pulse delay-1000"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#8A3D4C]/10 rounded-full blur-3xl animate-pulse delay-2000"></div>
+        </div>
+
         <TopMenu />
-        <main className="flex-grow container mx-auto px-4 py-8 mt-16">
-          <div className="max-w-2xl mx-auto">
-            {/* Title skeleton */}
-            <div className="h-8 w-48 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-8" />
-            
-            {/* Form skeleton */}
-            <div className="space-y-6">
-              {/* Profile Picture section */}
-              <div className="space-y-4">
-                <div className="h-5 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                <div className="h-24 w-24 bg-gray-200 dark:bg-gray-700 rounded-full animate-pulse" />
-              </div>
-              
-              {/* Form fields */}
-              {[...Array(4)].map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                  <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                </div>
-              ))}
-              
-              {/* Bio section */}
-              <div className="space-y-2">
-                <div className="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-                <div className="h-24 w-full bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
-              </div>
-              
-              {/* Save button */}
-              <div className="h-10 w-24 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+        
+        <main className="flex-1 pt-16 pb-8">
+          {/* Header Skeleton */}
+          <section className="w-full py-20 bg-gradient-to-r from-[#4A1D2C] via-[#6A2D3C] to-[#8A3D4C] dark:from-[#1a1f2c] dark:via-[#2a1f2c] dark:to-[#3a2f3c] relative overflow-hidden">
+            <div className="absolute inset-0 opacity-10 pointer-events-none">
+              <div className="absolute top-10 left-10 w-64 h-64 bg-white rounded-full blur-3xl animate-pulse"></div>
+              <div className="absolute bottom-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl animate-pulse delay-1000"></div>
             </div>
-          </div>
+            
+            <div className="container px-4 md:px-6 max-w-4xl mx-auto relative text-center">
+              <div className="animate-pulse">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-2xl mb-4">
+                  <div className="w-8 h-8 bg-white/30 rounded"></div>
+                </div>
+                <div className="space-y-4">
+                  <div className="h-12 bg-white/20 rounded-lg w-80 mx-auto"></div>
+                  <div className="h-6 bg-white/15 rounded-lg w-96 mx-auto"></div>
+                  <div className="flex justify-center gap-4 mt-8">
+                    <div className="h-12 bg-white/20 rounded-lg w-24"></div>
+                    <div className="h-12 bg-white/20 rounded-lg w-32"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Settings Form Skeleton */}
+          <section className="w-full py-20 bg-white dark:bg-gray-900 relative">
+            <div className="container px-4 md:px-6 max-w-4xl mx-auto">
+              <div className="animate-pulse">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                  {/* Card Header Skeleton */}
+                  <div className="text-center p-8 border-b border-gray-200 dark:border-gray-700">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-2xl mb-6">
+                      <div className="w-8 h-8 bg-gray-300 dark:bg-gray-600 rounded"></div>
+                    </div>
+                    <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-lg w-48 mx-auto mb-2"></div>
+                    <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-lg w-64 mx-auto"></div>
+                  </div>
+
+                  {/* Card Content Skeleton */}
+                  <div className="p-8 space-y-8">
+                    {/* Profile Information Section */}
+                    <div className="space-y-6">
+                      <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+                        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-40 mb-2"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-56"></div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-24"></div>
+                          <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                          <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-8"></div>
+                        <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                      </div>
+                    </div>
+
+                    {/* Profile Picture Section */}
+                    <div className="space-y-6">
+                      <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+                        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-32 mb-2"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-64"></div>
+                      </div>
+                      
+                      <div className="flex items-center gap-6">
+                        <div className="flex-shrink-0">
+                          <div className="w-30 h-30 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                        </div>
+                        <div className="flex-1 space-y-3">
+                          <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-lg w-32"></div>
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-72"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Cover Image Section */}
+                    <div className="space-y-6">
+                      <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+                        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-28 mb-2"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-60"></div>
+                      </div>
+                      
+                      <div className="space-y-4">
+                        <div className="h-48 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                        <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-lg w-32"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-80"></div>
+                      </div>
+                    </div>
+
+                    {/* Account Information Section */}
+                    <div className="space-y-6">
+                      <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+                        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-36 mb-2"></div>
+                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-68"></div>
+                      </div>
+                      
+                      <div className="h-16 bg-gray-100 dark:bg-gray-700 rounded-lg"></div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                      <div className="h-14 bg-gradient-to-r from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-lg"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
         </main>
       </div>
     )
@@ -242,129 +333,289 @@ export default function SettingsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="flex flex-col min-h-screen">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        {/* Background decorative elements */}
+        <div className="fixed inset-0 opacity-20 pointer-events-none">
+          <div className="absolute top-20 left-20 w-96 h-96 bg-[#4A1D2C]/30 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-80 h-80 bg-[#6A2D3C]/20 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#8A3D4C]/10 rounded-full blur-3xl"></div>
+        </div>
+
         <TopMenu />
-        <main className="flex-grow container mx-auto px-4 md:px-6 pt-20 pb-6">
-          <div className="mb-6">
-            <button 
-              onClick={() => router.back()} 
-              className="flex items-center hover:underline"
-              style={{ color: textColor }}
-            >
-              <ArrowLeft className="mr-2" />
-              {t('back')}
-            </button>
-          </div>
+        
+        <main className="flex-1 pt-16 pb-8">
+          {/* Header */}
+          <section className="w-full py-20 bg-gradient-to-r from-[#4A1D2C] via-[#6A2D3C] to-[#8A3D4C] dark:from-[#1a1f2c] dark:via-[#2a1f2c] dark:to-[#3a2f3c] relative overflow-hidden">
+            {/* Background decorative elements */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none">
+              <div className="absolute top-10 left-10 w-64 h-64 bg-white rounded-full blur-3xl"></div>
+              <div className="absolute bottom-10 right-10 w-96 h-96 bg-white rounded-full blur-3xl"></div>
+            </div>
+            
+            <div className="container px-4 md:px-6 max-w-4xl mx-auto relative">
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={staggerContainer}
+                className="text-center"
+              >
+                <motion.div variants={fadeInUp} className="mb-6">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl mb-4">
+                    <Settings className="h-8 w-8 text-white" />
+                  </div>
+                </motion.div>
+                
+                <motion.h1 
+                  variants={fadeInUp}
+                  className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight"
+                >
+                  Account 
+                  <span className="block text-transparent bg-clip-text bg-gradient-to-r from-pink-200 to-yellow-200">
+                    Settings
+                  </span>
+                </motion.h1>
+                
+                <motion.p 
+                  variants={fadeInUp}
+                  className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto leading-relaxed"
+                >
+                  Manage your account and profile settings to personalize your ThaiTune experience
+                </motion.p>
+                
+                <motion.div variants={fadeInUp} className="flex justify-center gap-4">
+                  <Button
+                    onClick={() => router.back()}
+                    variant="ghost"
+                    className="text-white hover:bg-white/10 transition-all duration-300 border border-white/20 hover:border-white/30"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Back
+                  </Button>
+                  <Button
+                    onClick={handleViewProfile}
+                    variant="ghost"
+                    className="text-white hover:bg-white/10 transition-all duration-300 border border-white/20 hover:border-white/30"
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    View Profile
+                  </Button>
+                </motion.div>
+              </motion.div>
+            </div>
+          </section>
 
-          <Card className="dark:bg-gray-800 dark:border-gray-700">
-            <CardHeader className="flex flex-row justify-between items-center">
-              <div>
-                <CardTitle className="text-2xl font-bold text-[#333333] dark:text-white">{t('settings')}</CardTitle>
-                <CardDescription className="dark:text-gray-400">{t('manageAccountDescription')}</CardDescription>
-              </div>
-              <Button onClick={handleViewProfile} variant="outline">{t('viewProfile')}</Button>
-            </CardHeader>
-            <CardContent className="space-y-6">
-
-
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-medium mb-2 dark:text-white">{t('profileInformation')}</h3>
-                  <div className="space-y-2">
-                    <div>
-                      <Label htmlFor="displayName" className="dark:text-gray-300">{t('displayName')}</Label>
-                      <Controller
-                        name="displayName"
-                        control={control}
-                        render={({ field }) => <Input id="displayName" {...field} />}
-                      />
-                      {errors.displayName && <p className="text-sm text-red-500">{errors.displayName.message}</p>}
-                    </div>
-                    <div>
-                      <Label htmlFor="bio" className="dark:text-gray-300">{t('bio')}</Label>
-                      <Controller
-                        name="bio"
-                        control={control}
-                        render={({ field }) => <Textarea id="bio" {...field} />}
-                      />
-                      {errors.bio && <p className="text-sm text-red-500">{errors.bio.message}</p>}
-                    </div>
-                    <div>
-                      <Label htmlFor="roles" className="dark:text-gray-300">{t('roles')}</Label>
-                      <Controller
-                        name="roles"
-                        control={control}
-                        render={({ field }) => (
-                          <Input
-                            id="roles"
-                            {...field}
-                            placeholder={t('rolesPlaceholder')}
-                          />
-                        )}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="profilePictureUrl" className="dark:text-gray-300">{t('profilePicture')}</Label>
-                      <div className="flex items-center space-x-4">
-                        {profilePicPreview && (
-                          <Image
-                            src={profilePicPreview}
-                            alt="Profile preview"
-                            width={80}
-                            height={80}
-                            className="rounded-full w-20 h-20 object-cover"
-                          />
-                        )}
-                        <div className="flex flex-col space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={() => document.getElementById('profilePictureUrl')?.click()}
-                              className="text-sm"
-                            >
-                              {t('chooseFile')}
-                            </Button>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">
-                              {profilePicFile ? profilePicFile.name : t('noFileChosen')}
-                            </span>
-                          </div>
-                          <Input 
-                            id="profilePictureUrl" 
-                            type="file" 
-                            onChange={(e) => handleFileChange(e, 'profile')} 
-                            className="hidden" 
-                            accept="image/*"
-                          />
-                        </div>
+          {/* Settings Form */}
+          <section className="w-full py-20 bg-white dark:bg-gray-900 relative">
+            <div className="container px-4 md:px-6 max-w-4xl mx-auto">
+              <motion.div
+                initial="hidden"
+                animate="visible"
+                variants={staggerContainer}
+              >
+                <Card className="shadow-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
+                  <CardHeader className="text-center pb-8">
+                    <motion.div variants={fadeInUp}>
+                      <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-[#4A1D2C] to-[#6A2D3C] rounded-2xl mb-6">
+                        <User className="h-8 w-8 text-white" />
                       </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="coverImageUrl" className="dark:text-gray-300">{t('coverImage')}</Label>
-                      <div className="flex items-center space-x-4">
-                        {coverImagePreview && (
-                          <Image
-                            src={coverImagePreview}
-                            alt="Cover preview"
-                            width={200}
-                            height={100}
-                            className="rounded-md w-48 h-24 object-cover"
+                      <CardTitle className="text-3xl font-bold text-[#4A1D2C] dark:text-[#e5a3b4] mb-2">
+                        Profile Settings
+                      </CardTitle>
+                      <p className="text-gray-600 dark:text-gray-400 text-lg">
+                        Update your profile information and preferences
+                      </p>
+                    </motion.div>
+                  </CardHeader>
+                  
+                  <CardContent className="p-8">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+                      {/* Profile Information */}
+                      <motion.div variants={fadeInUp} className="space-y-6">
+                        <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                            Profile Information
+                          </h3>
+                          <p className="text-gray-600 dark:text-gray-400">
+                            Update your basic profile information
+                          </p>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <div className="space-y-2">
+                            <Label htmlFor="displayName" className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
+                              <User className="h-4 w-4" />
+                              Display Name *
+                            </Label>
+                            <Controller
+                              name="displayName"
+                              control={control}
+                              render={({ field }) => (
+                                <Input
+                                  id="displayName"
+                                  {...field}
+                                  className="h-12 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-[#4A1D2C] dark:focus:border-[#e5a3b4] focus:outline-none transition-all duration-300"
+                                  placeholder="Enter your display name"
+                                />
+                              )}
+                            />
+                            {errors.displayName && (
+                              <p className="text-sm text-red-500 flex items-center gap-1">
+                                {errors.displayName.message}
+                              </p>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <Label htmlFor="roles" className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
+                              <Settings className="h-4 w-4" />
+                              Roles
+                            </Label>
+                            <Controller
+                              name="roles"
+                              control={control}
+                              render={({ field }) => (
+                                <Input
+                                  id="roles"
+                                  {...field}
+                                  className="h-12 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-[#4A1D2C] dark:focus:border-[#e5a3b4] focus:outline-none transition-all duration-300"
+                                  placeholder="Admin, Composer, User"
+                                />
+                              )}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="bio" className="text-gray-700 dark:text-gray-300 font-medium">
+                            Bio
+                          </Label>
+                          <Controller
+                            name="bio"
+                            control={control}
+                            render={({ field }) => (
+                              <Textarea
+                                id="bio"
+                                {...field}
+                                rows={4}
+                                className="px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-[#4A1D2C] dark:focus:border-[#e5a3b4] focus:outline-none transition-all duration-300 resize-none"
+                                placeholder="Tell us about yourself..."
+                              />
+                            )}
                           />
-                        )}
-                        <div className="flex flex-col space-y-2">
-                          <div className="flex items-center space-x-2">
+                          {errors.bio && (
+                            <p className="text-sm text-red-500 flex items-center gap-1">
+                              {errors.bio.message}
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
+
+                      {/* Profile Picture */}
+                      <motion.div variants={fadeInUp} className="space-y-6">
+                        <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                            Profile Picture
+                          </h3>
+                          <p className="text-gray-600 dark:text-gray-400">
+                            Upload a profile picture to help others recognize you
+                          </p>
+                        </div>
+                        
+                        <div className="flex items-center gap-6">
+                          <div className="flex-shrink-0">
+                            {profilePicPreview ? (
+                              <div className="relative">
+                                <Image
+                                  src={profilePicPreview}
+                                  alt="Profile preview"
+                                  width={120}
+                                  height={120}
+                                  className="rounded-full w-30 h-30 object-cover border-4 border-gray-200 dark:border-gray-600"
+                                />
+                                <div className="absolute inset-0 rounded-full bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+                                  <Camera className="h-8 w-8 text-white opacity-0 hover:opacity-100 transition-all duration-300" />
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="w-30 h-30 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center border-4 border-gray-200 dark:border-gray-600">
+                                <User className="h-12 w-12 text-gray-400" />
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="flex-1 space-y-3">
+                            <div className="flex items-center gap-3">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => document.getElementById('profilePictureUrl')?.click()}
+                                className="h-12 px-6 border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium transition-all duration-300"
+                              >
+                                <Camera className="h-4 w-4 mr-2" />
+                                Choose File
+                              </Button>
+                              <span className="text-sm text-gray-600 dark:text-gray-400">
+                                {profilePicFile ? profilePicFile.name : "No file chosen"}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              Recommended: Square image, at least 400x400 pixels
+                            </p>
+                            <Input 
+                              id="profilePictureUrl" 
+                              type="file" 
+                              onChange={(e) => handleFileChange(e, 'profile')} 
+                              className="hidden" 
+                              accept="image/*"
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+
+                      {/* Cover Image */}
+                      <motion.div variants={fadeInUp} className="space-y-6">
+                        <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                            Cover Image
+                          </h3>
+                          <p className="text-gray-600 dark:text-gray-400">
+                            Upload a cover image for your profile header
+                          </p>
+                        </div>
+                        
+                        <div className="space-y-4">
+                          {coverImagePreview && (
+                            <div className="relative">
+                              <Image
+                                src={coverImagePreview}
+                                alt="Cover preview"
+                                width={600}
+                                height={200}
+                                className="rounded-lg w-full h-48 object-cover border-2 border-gray-200 dark:border-gray-600"
+                              />
+                              <div className="absolute inset-0 rounded-lg bg-black bg-opacity-0 hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
+                                <ImageIcon className="h-12 w-12 text-white opacity-0 hover:opacity-100 transition-all duration-300" />
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center gap-3">
                             <Button
                               type="button"
                               variant="outline"
                               onClick={() => document.getElementById('coverImageUrl')?.click()}
-                              className="text-sm"
+                              className="h-12 px-6 border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium transition-all duration-300"
                             >
-                              {t('chooseFile')}
+                              <ImageIcon className="h-4 w-4 mr-2" />
+                              Choose File
                             </Button>
-                            <span className="text-sm text-gray-500 dark:text-gray-400">
-                              {coverImageFile ? coverImageFile.name : t('noFileChosen')}
+                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                              {coverImageFile ? coverImageFile.name : "No file chosen"}
                             </span>
                           </div>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Recommended: 1200x400 pixels, landscape orientation
+                          </p>
                           <Input 
                             id="coverImageUrl" 
                             type="file" 
@@ -373,26 +624,60 @@ export default function SettingsPage() {
                             accept="image/*"
                           />
                         </div>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('email')}: {authUser?.email || t('notSet')}</p>
-                    </div>
-                  </div>
-                </div>
-                <Button 
-                  type="submit" 
-                  style={{ backgroundColor: textColor, color: 'white' }} 
-                  disabled={saving}
-                >
-                  {saving ? t('saving') : t('saveChanges')}
-                </Button>
-              </form>
+                      </motion.div>
 
+                      {/* Account Information */}
+                      <motion.div variants={fadeInUp} className="space-y-6">
+                        <div className="pb-4 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                            Account Information
+                          </h3>
+                          <p className="text-gray-600 dark:text-gray-400">
+                            Your account details and contact information
+                          </p>
+                        </div>
+                        
+                        <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                          <div className="flex items-center gap-3">
+                            <Mail className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                            <div>
+                              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">
+                                {authUser?.email || "Not set"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
 
-            </CardContent>
-          </Card>
+                      {/* Submit Button */}
+                      <motion.div variants={fadeInUp} className="pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <Button
+                          type="submit"
+                          disabled={saving}
+                          className="w-full h-14 bg-[#4A1D2C] hover:bg-[#3A1520] text-white font-medium text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {saving ? (
+                            <div className="flex items-center gap-3">
+                              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                              <span>Saving Changes...</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-3">
+                              <Save className="h-5 w-5" />
+                              <span>Save Changes</span>
+                            </div>
+                          )}
+                        </Button>
+                      </motion.div>
+                    </form>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+          </section>
         </main>
+        
         <Footer />
       </div>
     </ProtectedRoute>

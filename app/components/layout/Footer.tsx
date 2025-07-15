@@ -26,7 +26,7 @@ export default function Footer() {
               {t('footer.description')}
             </p>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-8 xl:gap-12">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-8 xl:gap-12">
             <div>
               <h3 
                 className="text-base font-bold mb-4 dark:text-[#e5a3b4]" 
@@ -36,7 +36,12 @@ export default function Footer() {
               </h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
+                  <Link href="/about" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
+                    {t('footer.organization.aboutUs')}
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/database" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
                     {t('footer.thaitune.databaseOverview')}
                   </Link>
                 </li>
@@ -53,36 +58,6 @@ export default function Footer() {
                 <li>
                   <Link href="/community" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
                     {t('footer.thaitune.community')}
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h3 
-                className="text-base font-bold mb-4 dark:text-[#e5a3b4]" 
-                style={{ color: resolvedTheme === 'dark' ? undefined : maroonColor }}
-              >
-                {t('footer.organization.title')}
-              </h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/about" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    {t('footer.organization.aboutUs')}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    {t('footer.organization.blog')}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    {t('footer.organization.careers')}
-                  </Link>
-                </li>
-                <li>
-                  <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
-                    {t('footer.organization.partners')}
                   </Link>
                 </li>
               </ul>
@@ -126,7 +101,7 @@ export default function Footer() {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
+                  <Link href="/feedback" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
                     {t('footer.contact.feedback')}
                   </Link>
                 </li>

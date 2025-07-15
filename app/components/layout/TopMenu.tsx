@@ -115,14 +115,14 @@ export function TopMenu({ user: propUser, collapsible = false }: TopMenuProps) {
   }
 
   return (
-    <div className="relative z-10">
+    <div className="relative z-50">
       <header className={`fixed top-0 left-0 right-0 z-50 flex h-16 items-center px-6 ${
         collapsible 
           ? 'bg-white/95 dark:bg-[#1a1f2c]/95 backdrop-blur-sm' 
           : 'bg-white dark:bg-[#1a1f2c]'
       } shadow-sm dark:shadow-none border-b border-transparent dark:border-gray-800 transition-all duration-300 ${
         collapsible ? (isVisible ? 'translate-y-0' : '-translate-y-full') : ''
-      }`}>
+      }`} style={{ pointerEvents: 'auto' }}>
         <div className="container mx-auto flex justify-between items-center">
           <div className="flex items-center gap-12">
             <Logo 

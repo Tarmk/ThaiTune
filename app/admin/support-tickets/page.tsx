@@ -83,6 +83,10 @@ export default function AdminSupportTicketsPage() {
   const [replyAsUser, setReplyAsUser] = useState(false)
   const [gmailChecking, setGmailChecking] = useState(false)
   const [gmailStatus, setGmailStatus] = useState<string>('')
+  const [autoCheckEnabled, setAutoCheckEnabled] = useState(true)
+  const [autoCheckInterval, setAutoCheckInterval] = useState<NodeJS.Timeout | null>(null)
+  const [nextCheckTime, setNextCheckTime] = useState<Date | null>(null)
+  const [countdownTick, setCountdownTick] = useState(0)
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -97,6 +101,20 @@ export default function AdminSupportTicketsPage() {
 
     fetchTickets()
   }, [router])
+
+  // Auto-start email checking when component mounts
+  useEffect(() => {
+    if (mounted) {
+      startAutoCheck()
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      if (autoCheckInterval) {
+        clearInterval(autoCheckInterval)
+      }
+    }
+  }, [mounted])
 
   // Reset filter if it's set to "closed" since closed tickets are now deleted
   useEffect(() => {
@@ -288,6 +306,62 @@ export default function AdminSupportTicketsPage() {
     }
   }
 
+  const startAutoCheck = () => {
+    if (autoCheckInterval) {
+      clearInterval(autoCheckInterval)
+    }
+    
+    setAutoCheckEnabled(true)
+    
+    // Check emails immediately
+    checkGmail()
+    
+    // Set up interval to check every 2 minutes
+    const interval = setInterval(() => {
+      checkGmail()
+      // Update next check time after each check
+      const nextCheck = new Date()
+      nextCheck.setMinutes(nextCheck.getMinutes() + 2)
+      setNextCheckTime(nextCheck)
+    }, 2 * 60 * 1000) // 2 minutes
+    
+    setAutoCheckInterval(interval)
+    
+    // Set initial next check time
+    const initialNextCheck = new Date()
+    initialNextCheck.setMinutes(initialNextCheck.getMinutes() + 2)
+    setNextCheckTime(initialNextCheck)
+  }
+
+  const stopAutoCheck = () => {
+    if (autoCheckInterval) {
+      clearInterval(autoCheckInterval)
+      setAutoCheckInterval(null)
+    }
+    setAutoCheckEnabled(false)
+    setNextCheckTime(null)
+    setGmailStatus('Auto-check stopped')
+    setTimeout(() => setGmailStatus(''), 3000)
+  }
+
+  // Update countdown display every second
+  useEffect(() => {
+    let displayInterval: NodeJS.Timeout
+    
+    if (autoCheckEnabled && nextCheckTime) {
+      displayInterval = setInterval(() => {
+        // Update counter to force re-render of countdown
+        setCountdownTick(prev => prev + 1)
+      }, 1000) // Update every second
+    }
+    
+    return () => {
+      if (displayInterval) {
+        clearInterval(displayInterval)
+      }
+    }
+  }, [autoCheckEnabled, nextCheckTime])
+
   const filteredTickets = tickets.filter(ticket => {
     const matchesSearch = ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ticket.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -302,8 +376,63 @@ export default function AdminSupportTicketsPage() {
 
   const formatDate = (timestamp: any) => {
     if (!timestamp) return "N/A"
-    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
-    return date.toLocaleDateString() + " " + date.toLocaleTimeString()
+    try {
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
+      if (isNaN(date.getTime())) return "Invalid Date"
+      return date.toLocaleDateString() + " " + date.toLocaleTimeString()
+    } catch (error) {
+      return "Invalid Date"
+    }
+  }
+
+  const formatMessageDate = (timestamp: any) => {
+    if (!timestamp) return "Now"
+    try {
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
+      if (isNaN(date.getTime())) return "Invalid Date"
+      
+      const now = new Date()
+      const messageDate = new Date(date)
+      
+      // If message is from today, show only time
+      if (messageDate.toDateString() === now.toDateString()) {
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+      
+      // If message is from yesterday, show "Yesterday HH:MM"
+      const yesterday = new Date(now)
+      yesterday.setDate(yesterday.getDate() - 1)
+      if (messageDate.toDateString() === yesterday.toDateString()) {
+        return `Yesterday ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+      }
+      
+      // If message is from this year, show "MM/DD HH:MM"
+      if (messageDate.getFullYear() === now.getFullYear()) {
+        return `${date.toLocaleDateString([], { month: '2-digit', day: '2-digit' })} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+      }
+      
+      // For older messages, show full date and time
+      return `${date.toLocaleDateString([], { month: '2-digit', day: '2-digit', year: '2-digit' })} ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    } catch (error) {
+      return "Invalid Date"
+    }
+  }
+
+  const getTimeUntilNextCheck = () => {
+    if (!nextCheckTime) return null
+    const now = new Date()
+    const timeLeft = nextCheckTime.getTime() - now.getTime()
+    
+    if (timeLeft <= 0) return "Soon"
+    
+    const minutes = Math.floor(timeLeft / 60000)
+    const seconds = Math.floor((timeLeft % 60000) / 1000)
+    
+    if (minutes > 0) {
+      return `${minutes}m ${seconds}s`
+    } else {
+      return `${seconds}s`
+    }
   }
 
   if (!mounted) {
@@ -331,6 +460,22 @@ export default function AdminSupportTicketsPage() {
                     {gmailStatus}
                   </p>
                 )}
+                {autoCheckEnabled && nextCheckTime && (
+                  <p className="text-sm text-green-200 mt-1">
+                    <span className="inline-flex items-center gap-2">
+                      <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                      Auto-checking emails every 2 minutes • Next check in: {getTimeUntilNextCheck()}
+                    </span>
+                  </p>
+                )}
+                {!autoCheckEnabled && (
+                  <p className="text-sm text-red-200 mt-1">
+                    <span className="inline-flex items-center gap-2">
+                      <span className="w-2 h-2 bg-red-400 rounded-full"></span>
+                      Auto-check disabled
+                    </span>
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-4">
                 <Button
@@ -340,7 +485,24 @@ export default function AdminSupportTicketsPage() {
                   disabled={gmailChecking}
                 >
                   <Mail className="h-4 w-4 mr-2" />
-                  {gmailChecking ? 'Checking...' : 'Check Emails'}
+                  {gmailChecking ? 'Checking...' : 'Check Now'}
+                </Button>
+                <Button
+                  onClick={autoCheckEnabled ? stopAutoCheck : startAutoCheck}
+                  variant="ghost"
+                  className={`text-white hover:bg-white/10 ${autoCheckEnabled ? 'bg-green-600/20' : 'bg-red-600/20'}`}
+                >
+                  {autoCheckEnabled ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Stop Auto-Check
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                      Start Auto-Check
+                    </>
+                  )}
                 </Button>
                 <Button
                   onClick={fetchTickets}
@@ -732,12 +894,11 @@ export default function AdminSupportTicketsPage() {
                           <span className="text-xs font-medium opacity-70">
                             {message.senderName}
                           </span>
-                          <span className="text-xs opacity-50">
-                            {message.createdAt ? (
-                              message.createdAt.toDate ? 
-                                message.createdAt.toDate().toLocaleTimeString() : 
-                                new Date(message.createdAt).toLocaleTimeString()
-                            ) : 'Now'}
+                          <span 
+                            className="text-xs opacity-50 cursor-help" 
+                            title={formatDate(message.createdAt)}
+                          >
+                            {formatMessageDate(message.createdAt)}
                           </span>
                           {message.addedVia === 'email_webhook' && (
                             <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
