@@ -81,6 +81,8 @@ export default function AdminSupportTicketsPage() {
   const [conversation, setConversation] = useState<ConversationMessage[]>([])
   const [loadingConversation, setLoadingConversation] = useState(false)
   const [replyAsUser, setReplyAsUser] = useState(false)
+  const [gmailChecking, setGmailChecking] = useState(false)
+  const [gmailStatus, setGmailStatus] = useState<string>('')
   const chatEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -223,6 +225,37 @@ export default function AdminSupportTicketsPage() {
     router.push("/report-issue")
   }
 
+  const checkGmail = async () => {
+    try {
+      setGmailChecking(true)
+      setGmailStatus('Checking for new email replies...')
+      
+      const response = await fetch('/api/check-emails', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      const result = await response.json()
+      
+      if (result.success) {
+        setGmailStatus(`✅ Email check complete! ${result.message}`)
+        // Refresh tickets to show any new conversations
+        fetchTickets()
+      } else {
+        setGmailStatus(`❌ Email check failed: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('Error checking emails:', error)
+      setGmailStatus('❌ Email check failed: Network error')
+    } finally {
+      setGmailChecking(false)
+      // Clear status after 5 seconds
+      setTimeout(() => setGmailStatus(''), 5000)
+    }
+  }
+
   const filteredTickets = tickets.filter(ticket => {
     const matchesSearch = ticket.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          ticket.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -261,8 +294,22 @@ export default function AdminSupportTicketsPage() {
                 <p className="text-gray-200">
                   Manage and respond to user support requests
                 </p>
+                {gmailStatus && (
+                  <p className="text-sm text-yellow-200 mt-2">
+                    {gmailStatus}
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-4">
+                <Button
+                  onClick={checkGmail}
+                  variant="ghost"
+                  className="text-white hover:bg-white/10"
+                  disabled={gmailChecking}
+                >
+                  <Mail className="h-4 w-4 mr-2" />
+                  {gmailChecking ? 'Checking...' : 'Check Emails'}
+                </Button>
                 <Button
                   onClick={fetchTickets}
                   variant="ghost"
@@ -615,8 +662,8 @@ export default function AdminSupportTicketsPage() {
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {selectedTicket.ticketId} • {selectedTicket.title}
                     </p>
-                    <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                      💡 Use "Reply as user" to manually add email replies for now. Webhook automation available with free Gmail API setup.
+                    <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                      ✅ Gmail API integration ready! Click "Check Gmail" to automatically import email replies.
                     </p>
                   </div>
                 </div>
@@ -664,6 +711,11 @@ export default function AdminSupportTicketsPage() {
                           {message.addedVia === 'email_webhook' && (
                             <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                               📧 Email
+                            </span>
+                          )}
+                          {message.addedVia === 'gmail_api' && (
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
+                              📬 Gmail
                             </span>
                           )}
                         </div>
