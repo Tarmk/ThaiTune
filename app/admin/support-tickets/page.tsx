@@ -98,6 +98,13 @@ export default function AdminSupportTicketsPage() {
     fetchTickets()
   }, [router])
 
+  // Reset filter if it's set to "closed" since closed tickets are now deleted
+  useEffect(() => {
+    if (filterStatus === "closed") {
+      setFilterStatus("all")
+    }
+  }, [filterStatus])
+
   // Auto-scroll to bottom when conversation changes
   useEffect(() => {
     if (chatEndRef.current) {
@@ -140,6 +147,16 @@ export default function AdminSupportTicketsPage() {
   }
 
   const handleStatusChange = async (ticketId: string, newStatus: string) => {
+    // Confirm deletion if status is being changed to "closed"
+    if (newStatus === 'closed') {
+      const confirmDelete = window.confirm(
+        'Are you sure you want to close this ticket? This will permanently delete the ticket and all its conversation history.'
+      )
+      if (!confirmDelete) {
+        return
+      }
+    }
+
     try {
       const response = await fetch('/api/admin/tickets/update-status', {
         method: 'POST',
@@ -150,16 +167,31 @@ export default function AdminSupportTicketsPage() {
       })
 
       if (response.ok) {
-        // Update local state
-        setTickets(tickets.map(ticket => 
-          ticket.id === ticketId ? { ...ticket, status: newStatus as any } : ticket
-        ))
+        const result = await response.json()
         
-        // If resolving, send resolution email
-        if (newStatus === 'resolved') {
-          const ticket = tickets.find(t => t.id === ticketId)
-          if (ticket) {
-            await handleSendResolutionEmail(ticket)
+        // If ticket was deleted (closed), remove it from local state
+        if (result.deleted) {
+          setTickets(tickets.filter(ticket => ticket.id !== ticketId))
+          
+          // Close chat modal if this ticket was open
+          if (selectedTicket?.id === ticketId) {
+            setShowChatModal(false)
+            setSelectedTicket(null)
+            setReplyMessage("")
+            setConversation([])
+          }
+        } else {
+          // Update local state with new status
+          setTickets(tickets.map(ticket => 
+            ticket.id === ticketId ? { ...ticket, status: newStatus as any } : ticket
+          ))
+          
+          // If resolving, send resolution email
+          if (newStatus === 'resolved') {
+            const ticket = tickets.find(t => t.id === ticketId)
+            if (ticket) {
+              await handleSendResolutionEmail(ticket)
+            }
           }
         }
       }
@@ -456,7 +488,6 @@ export default function AdminSupportTicketsPage() {
                     <option value="open">Open</option>
                     <option value="in_progress">In Progress</option>
                     <option value="resolved">Resolved</option>
-                    <option value="closed">Closed</option>
                   </select>
                   <select
                     value={filterPriority}
@@ -601,7 +632,7 @@ export default function AdminSupportTicketsPage() {
                                 <option value="open">Open</option>
                                 <option value="in_progress">In Progress</option>
                                 <option value="resolved">Resolved</option>
-                                <option value="closed">Closed</option>
+                                <option value="closed">🗑️ Delete (Close)</option>
                               </select>
                             </td>
                             <td className="py-4 px-2">
