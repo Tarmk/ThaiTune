@@ -49,6 +49,7 @@ interface ConversationMessage {
   senderName: string
   senderEmail: string
   createdAt: any
+  addedVia?: string
 }
 
 const priorityColors = {
@@ -615,7 +616,7 @@ export default function AdminSupportTicketsPage() {
                       {selectedTicket.ticketId} • {selectedTicket.title}
                     </p>
                     <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                      💡 Email replies won't appear automatically - use "Reply as user" checkbox to add them
+                      💡 Use "Reply as user" to manually add email replies for now. Webhook automation available with free Gmail API setup.
                     </p>
                   </div>
                 </div>
@@ -660,6 +661,11 @@ export default function AdminSupportTicketsPage() {
                                 new Date(message.createdAt).toLocaleTimeString()
                             ) : 'Now'}
                           </span>
+                          {message.addedVia === 'email_webhook' && (
+                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                              📧 Email
+                            </span>
+                          )}
                         </div>
                         <p className="text-sm whitespace-pre-wrap">{message.message}</p>
                       </div>

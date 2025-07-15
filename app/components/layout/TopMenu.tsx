@@ -110,7 +110,8 @@ export function TopMenu({ user: propUser, collapsible = false }: TopMenuProps) {
     getStarted: t('getStarted'),
     settings: t('settings'),
     logout: t('logout'),
-    myBookmarks: t('myBookmarks', { ns: 'community' })
+    myBookmarks: t('myBookmarks', { ns: 'community' }),
+    feedback: 'Feedback'
   }
 
   return (
@@ -151,6 +152,11 @@ export function TopMenu({ user: propUser, collapsible = false }: TopMenuProps) {
                       <Button variant="ghost" className="font-medium text-gray-700 hover:text-[#4A1D2C] transition-colors dark:text-gray-200 dark:hover:text-white flex items-center gap-2">
                         <Bookmark className="h-4 w-4" />
                         {translatedStrings.myBookmarks}
+                      </Button>
+                    </Link>
+                    <Link href="/feedback">
+                      <Button variant="ghost" className="font-medium text-gray-700 hover:text-[#4A1D2C] transition-colors dark:text-gray-200 dark:hover:text-white">
+                        {translatedStrings.feedback}
                       </Button>
                     </Link>
                   </>
@@ -204,6 +210,12 @@ export function TopMenu({ user: propUser, collapsible = false }: TopMenuProps) {
                         </div>
                       </PopoverContent>
                     </Popover>
+                    
+                    <Link href="/feedback">
+                      <Button variant="ghost" className="font-medium text-gray-700 hover:text-[#4A1D2C] transition-colors dark:text-gray-200 dark:hover:text-white">
+                        {translatedStrings.feedback}
+                      </Button>
+                    </Link>
                   </>
                 </NoSSR>
               )}
@@ -332,6 +344,11 @@ export function TopMenu({ user: propUser, collapsible = false }: TopMenuProps) {
                         </Button>
                       </Link>
                     )}
+                    <Link href="/feedback">
+                      <Button variant="ghost" className="w-full justify-start text-lg dark:text-gray-200">
+                        {translatedStrings.feedback}
+                      </Button>
+                    </Link>
                     {!user && (
                       <Button variant="ghost" className="w-full justify-start text-lg dark:text-gray-200">
                         {translatedStrings.ourProducts}
