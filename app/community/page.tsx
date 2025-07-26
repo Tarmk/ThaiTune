@@ -1,12 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { MoreVertical, ChevronUp, ChevronDown, Star, Bookmark } from 'lucide-react'
+import { MoreVertical, ChevronUp, ChevronDown, Star, Bookmark, Trash2, Pencil, EyeOff, Flag } from 'lucide-react'
 import { Button } from "@/app/components/ui/button"
 import { Card, CardContent } from "@/app/components/ui/card"
 import Link from "next/link"
 import { auth, db } from '@/lib/firebase'
-import { collection, getDocs, query, where, addDoc, deleteDoc, doc } from 'firebase/firestore'
+import { collection, getDocs, query, where, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore'
 import { Timestamp } from 'firebase/firestore'
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import { useCallback, useMemo } from 'react'
@@ -16,6 +16,8 @@ import { useTheme } from "next-themes"
 import { SearchBar } from "@/app/components/common/SearchBar"
 import Footer from "../components/layout/Footer"
 import { useRouter } from "next/navigation"
+import { Popover, PopoverTrigger, PopoverContent } from "@/app/components/ui/popover"
+import { onAuthStateChanged, User } from "firebase/auth"
 
 interface CommunityScore {
   id: string;
@@ -38,6 +40,7 @@ interface BookmarkData {
 export default function CommunityPage() {
   const { t } = useTranslation('community')
   const [scores, setScores] = React.useState<CommunityScore[]>([]);
+  const [currentUser, setCurrentUser] = React.useState<User | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [sortColumn, setSortColumn] = React.useState<keyof CommunityScore | null>(null)
   const [sortDirection, setSortDirection] = React.useState<'asc' | 'desc'>('asc')
@@ -82,6 +85,9 @@ export default function CommunityPage() {
   };
 
   React.useEffect(() => {
+    // Listen for auth changes so we know if user is logged in
+    const unsubscribe = onAuthStateChanged(auth, (u) => setCurrentUser(u))
+
     const fetchScores = async () => {
       try {
         setLoading(true);
@@ -123,6 +129,8 @@ export default function CommunityPage() {
     }
 
     fetchScores()
+
+    return () => unsubscribe()
   }, [t])
 
   const handleBookmark = async (scoreId: string, isCurrentlyBookmarked: boolean) => {
@@ -199,6 +207,67 @@ export default function CommunityPage() {
       score.author.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [scores, searchQuery]);
+
+  const handleDeleteScore = async (scoreId: string) => {
+    if (!currentUser) return
+    const confirmed = window.confirm("Delete this score? This action cannot be undone.")
+    if (!confirmed) return
+    try {
+      await deleteDoc(doc(db, "scores", scoreId))
+      setScores(prev => prev.filter(s => s.id !== scoreId))
+    } catch (error) {
+      console.error("Error deleting score:", error)
+    }
+  }
+
+  const handleRenameScore = async (scoreId: string, oldName: string) => {
+    const newName = window.prompt("Enter new score name", oldName)
+    if (!newName || newName.trim() === oldName) return
+    try {
+      await updateDoc(doc(db, "scores", scoreId), { name: newName.trim() })
+      setScores(prev => prev.map(s => s.id === scoreId ? { ...s, name: newName.trim() } : s))
+    } catch (error) {
+      console.error("Error renaming score:", error)
+    }
+  }
+
+  const handleToggleSharing = async (scoreId: string, currentSharing: string) => {
+    const newSharing = currentSharing === "public" ? "private" : "public"
+    try {
+      await updateDoc(doc(db, "scores", scoreId), { sharing: newSharing })
+      if (newSharing === "private") {
+        // Remove from community list when made private
+        setScores(prev => prev.filter(s => s.id !== scoreId))
+      } else {
+        setScores(prev => prev.map(s => s.id === scoreId ? { ...s, sharing: newSharing } : s))
+      }
+    } catch (error) {
+      console.error("Error updating sharing:", error)
+    }
+  }
+
+  const handleHideScore = (scoreId: string) => {
+    // Simple local hide – store in localStorage
+    const hidden = JSON.parse(localStorage.getItem("hiddenScores") || "[]") as string[]
+    if (!hidden.includes(scoreId)) {
+      hidden.push(scoreId)
+      localStorage.setItem("hiddenScores", JSON.stringify(hidden))
+    }
+    setScores(prev => prev.filter(s => s.id !== scoreId))
+  }
+
+  const handleReportScore = async (scoreId: string) => {
+    try {
+      await addDoc(collection(db, "scoreReports"), {
+        scoreId,
+        reportedAt: new Date(),
+        reporterId: currentUser?.uid || "anonymous"
+      })
+      alert("Score reported. Thank you for helping keep the community safe.")
+    } catch (error) {
+      console.error("Error reporting score:", error)
+    }
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-[#1a1f2c] transition-colors duration-300" style={{ background: pageBg }}>
@@ -332,9 +401,59 @@ export default function CommunityPage() {
                             }`}
                           />
                         </Button>
-                        <Button variant="ghost" className="p-1">
-                          <MoreVertical className="h-5 w-5 text-[#666666] dark:text-gray-400" />
-                        </Button>
+                        {currentUser && (
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="ghost" className="p-1">
+                                <MoreVertical className="h-5 w-5 text-[#666666] dark:text-gray-400" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-48 p-2 bg-white dark:bg-[#232838] dark:border-gray-700">
+                              {currentUser.uid === score.userId ? (
+                                <div className="flex flex-col space-y-2">
+                                  <Button
+                                    variant="ghost"
+                                    className="justify-start text-sm text-red-600 dark:text-red-400"
+                                    onClick={() => handleDeleteScore(score.id)}
+                                  >
+                                    <Trash2 className="h-4 w-4 mr-2" /> Delete
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    className="justify-start text-sm"
+                                    onClick={() => handleRenameScore(score.id, score.name)}
+                                  >
+                                    <Pencil className="h-4 w-4 mr-2" /> Rename
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    className="justify-start text-sm"
+                                    onClick={() => handleToggleSharing(score.id, score.sharing)}
+                                  >
+                                    <EyeOff className="h-4 w-4 mr-2" /> {score.sharing === 'public' ? 'Make Private' : 'Make Public'}
+                                  </Button>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col space-y-2">
+                                  <Button
+                                    variant="ghost"
+                                    className="justify-start text-sm"
+                                    onClick={() => handleHideScore(score.id)}
+                                  >
+                                    <EyeOff className="h-4 w-4 mr-2" /> Hide Score
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    className="justify-start text-sm text-red-600 dark:text-red-400"
+                                    onClick={() => handleReportScore(score.id)}
+                                  >
+                                    <Flag className="h-4 w-4 mr-2" /> Report Score
+                                  </Button>
+                                </div>
+                              )}
+                            </PopoverContent>
+                          </Popover>
+                        )}
                       </td>
                     </tr>
                   ))

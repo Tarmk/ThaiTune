@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { MoreVertical, DoorClosedIcon as CloseIcon, Star } from "lucide-react"
+import { MoreVertical, DoorClosedIcon as CloseIcon, Star, EyeOff, Eye, Pencil, Trash2 } from "lucide-react"
 import { WebcamIcon as ChatIcon } from "lucide-react"
 import { Button } from "@/app/components/ui/button"
 import { Card, CardContent } from "@/app/components/ui/card"
@@ -11,7 +11,7 @@ import Link from "next/link"
 import { auth, db } from "@/lib/firebase"
 import { onAuthStateChanged } from "firebase/auth"
 import { ProtectedRoute } from "@/app/components/auth/protectedroute"
-import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore"
+import { collection, query, where, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore"
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import { SortableTable } from "@/app/components/common/SortableTable"
 import OpenAI from "openai"
@@ -161,6 +161,27 @@ export default function Dashboard() {
     }
   }
 
+  const handleRenameScore = async (scoreId: string, oldName: string) => {
+    const newName = window.prompt("Enter new score name", oldName)
+    if (!newName || newName.trim() === oldName) return
+    try {
+      await updateDoc(doc(db, "scores", scoreId), { name: newName.trim() })
+      setScores(prev => prev.map(s => s.score_id === scoreId ? { ...s, name: newName.trim() } : s))
+    } catch (error) {
+      console.error("Error renaming score:", error)
+    }
+  }
+
+  const handleToggleSharing = async (scoreId: string, currentSharing: string) => {
+    const newSharing = currentSharing === "public" ? "private" : "public"
+    try {
+      await updateDoc(doc(db, "scores", scoreId), { sharing: newSharing })
+      setScores(prev => prev.map(s => s.score_id === scoreId ? { ...s, sharing: newSharing } : s))
+    } catch (error) {
+      console.error("Error updating sharing:", error)
+    }
+  }
+
   const columns = [
     {
       key: "name" as keyof Score,
@@ -193,8 +214,27 @@ export default function Dashboard() {
           <MoreVertical className="h-5 w-5 text-[#666666] dark:text-gray-400" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-48 p-2 bg-white dark:bg-[#232838] dark:border-gray-700">
+      <PopoverContent className="w-56 p-2 bg-white dark:bg-[#232838] dark:border-gray-700">
         <div className="flex flex-col space-y-2">
+          <Button
+            variant="ghost"
+            className="justify-start text-sm"
+            onClick={() => handleRenameScore(score.score_id, score.name)}
+          >
+            <Pencil className="h-4 w-4 mr-2" /> Rename
+          </Button>
+          <Button
+            variant="ghost"
+            className="justify-start text-sm"
+            onClick={() => handleToggleSharing(score.score_id, score.sharing)}
+          >
+            {score.sharing === 'public' ? (
+              <EyeOff className="h-4 w-4 mr-2" />
+            ) : (
+              <Eye className="h-4 w-4 mr-2" />
+            )}
+            {score.sharing === 'public' ? 'Make Private' : 'Make Public'}
+          </Button>
           <Button
             variant="ghost"
             className="justify-start text-sm text-red-600 dark:text-red-400"
@@ -203,7 +243,7 @@ export default function Dashboard() {
               handleDeleteScore(score.score_id)
             }}
           >
-            {t("delete")}
+            <Trash2 className="h-4 w-4 mr-2" /> {t("delete")}
           </Button>
         </div>
       </PopoverContent>

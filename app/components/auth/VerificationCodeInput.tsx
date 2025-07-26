@@ -4,6 +4,7 @@ import * as React from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { ArrowRight, CheckCircle, Clock, Mail, RefreshCw, AlertCircle } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { useTheme } from "next-themes"
 
@@ -15,6 +16,7 @@ interface VerificationCodeInputProps {
 }
 
 export function VerificationCodeInput({ email, onVerify, onResend, error }: VerificationCodeInputProps) {
+  const router = useRouter()
   const [code, setCode] = React.useState<string[]>(Array(6).fill(""))
   const [isVerifying, setIsVerifying] = React.useState(false)
   const [isVerified, setIsVerified] = React.useState(false)
@@ -253,7 +255,7 @@ export function VerificationCodeInput({ email, onVerify, onResend, error }: Veri
           <Button
             className="w-full text-white"
             style={{ backgroundColor: buttonColor }}
-            onClick={() => window.location.href = "/dashboard"}
+            onClick={() => router.push("/dashboard")}
           >
             Continue to Dashboard
           </Button>

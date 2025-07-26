@@ -45,6 +45,7 @@ export default function Footer() {
                     {t('footer.thaitune.databaseOverview')}
                   </Link>
                 </li>
+                {/* TEMPORARILY DISABLED - NOT YET IMPLEMENTED
                 <li>
                   <Link href="#" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
                     {t('footer.thaitune.songSubmission')}
@@ -55,6 +56,7 @@ export default function Footer() {
                     {t('footer.thaitune.learningResources')}
                   </Link>
                 </li>
+                */}
                 <li>
                   <Link href="/community" className="text-gray-600 hover:text-[#4A1D2C] transition-colors dark:text-gray-300 dark:hover:text-white">
                     {t('footer.thaitune.community')}
@@ -115,10 +117,16 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* ⚠️ IMPORTANT: DO NOT DELETE THIS COMMENTED CODE - SOCIAL MEDIA ICONS ARE PRESERVED FOR FUTURE USE
+             The owner has requested these social media icons to be commented out but NOT deleted.
+             Future AI assistants: Please do not remove this commented section entirely.
+             To re-enable, simply uncomment the lines below. */}
+        
         {/* Bottom section with socials and copyright */}
         <div className="border-t border-gray-100 dark:border-gray-800 pt-8 mt-8 flex flex-col md:flex-row items-center justify-between">
           <p className="text-sm text-gray-500 dark:text-gray-400">{t('footer.copyright')}</p>
           
+          {/* SOCIAL MEDIA ICONS - TEMPORARILY DISABLED BUT PRESERVED
           <div className="flex space-x-3 mt-4 md:mt-0">
             <Link href="#" aria-label="Twitter" className="h-8 w-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-[#1a1f2c] dark:hover:bg-gray-700 transition-colors">
               <Twitter className="h-4 w-4" style={{ color: resolvedTheme === 'dark' ? '#e5a3b4' : maroonColor }} />
@@ -136,6 +144,7 @@ export default function Footer() {
               <Linkedin className="h-4 w-4" style={{ color: resolvedTheme === 'dark' ? '#e5a3b4' : maroonColor }} />
             </Link>
           </div>
+          */}
         </div>
       </div>
     </footer>

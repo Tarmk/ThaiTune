@@ -7,10 +7,165 @@ import { Button } from "@/app/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
 import { Input } from "@/app/components/ui/input"
 import { Label } from "@/app/components/ui/label"
-import { AlertTriangle, Bug, MessageSquare, Zap, Send, Shield, Eye, EyeOff } from "lucide-react"
+import { AlertTriangle, Bug, MessageSquare, Zap, Send, Shield, Eye, EyeOff, ExternalLink, Calendar, Clock } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useTheme } from "next-themes"
 import { useRouter } from "next/navigation"
+
+interface KnownIssue {
+  id: string
+  title: string
+  description: string
+  status: "investigating" | "fix_planned" | "in_progress" | "testing"
+  priority: "low" | "medium" | "high" | "critical"
+  category: string
+  estimatedFix?: string
+  workaround?: string
+  createdAt: string
+  updatedAt: string
+}
+
+function KnownIssuesSection() {
+  const { theme } = useTheme()
+  const [knownIssues, setKnownIssues] = useState<KnownIssue[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showAll, setShowAll] = useState(false)
+
+  useEffect(() => {
+    fetchKnownIssues()
+  }, [])
+
+  const fetchKnownIssues = async () => {
+    try {
+      const response = await fetch('/api/known-issues')
+      if (response.ok) {
+        const data = await response.json()
+        setKnownIssues(data.issues)
+      }
+    } catch (error) {
+      console.error('Error fetching known issues:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const statusColors = {
+    investigating: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400",
+    fix_planned: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400", 
+    in_progress: "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400",
+    testing: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+  }
+
+  const statusLabels = {
+    investigating: "Investigating",
+    fix_planned: "Fix Planned",
+    in_progress: "In Progress", 
+    testing: "Testing"
+  }
+
+  const priorityColors = {
+    low: "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400",
+    medium: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400",
+    high: "bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400",
+    critical: "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400"
+  }
+
+  if (loading) {
+    return (
+      <section className="w-full py-16 bg-gray-50 dark:bg-[#232838]">
+        <div className="container px-4 md:px-6 max-w-6xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              Known Issues
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300">
+              Loading known issues...
+            </p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  if (knownIssues.length === 0) {
+    return null // Don't show section if no known issues
+  }
+
+  const displayedIssues = showAll ? knownIssues : knownIssues.slice(0, 3)
+
+  return (
+    <section className="w-full py-16 bg-gray-50 dark:bg-[#232838]">
+      <div className="container px-4 md:px-6 max-w-6xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            Known Issues
+          </h2>
+          <p className="text-gray-600 dark:text-gray-300">
+            Before reporting, check if your issue is already being addressed
+          </p>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {displayedIssues.map((issue) => (
+            <Card key={issue.id} className="bg-white dark:bg-[#2a3349] shadow-lg hover:shadow-xl dark:shadow-none border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden transition-shadow">
+              <div className="h-2" style={{ background: `linear-gradient(to right, ${theme === 'dark' ? '#8A3D4C' : '#4A1D2C'}, ${theme === 'dark' ? '#af5169' : '#6A2D3C'})` }} />
+              <CardContent className="p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex gap-2 flex-wrap">
+                    <span className={`inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium capitalize ${statusColors[issue.status]}`}>
+                      {statusLabels[issue.status]}
+                    </span>
+                    <span className={`inline-flex items-center px-3 py-0.5 rounded-full text-xs font-medium capitalize ${priorityColors[issue.priority]}`}>
+                      {issue.priority}
+                    </span>
+                  </div>
+                </div>
+                
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+                  {issue.title}
+                </h3>
+                
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
+                  {issue.description}
+                </p>
+
+                {issue.workaround && (
+                  <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
+                    <h4 className="text-sm font-medium text-blue-900 dark:text-blue-400 mb-1">
+                      Workaround:
+                    </h4>
+                    <p className="text-sm text-blue-800 dark:text-blue-300">
+                      {issue.workaround}
+                    </p>
+                  </div>
+                )}
+
+                {issue.estimatedFix && (
+                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                    <Clock className="h-4 w-4 mr-1" />
+                    Est. fix: {issue.estimatedFix}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {knownIssues.length > 3 && (
+          <div className="text-center mt-8">
+            <Button
+              onClick={() => setShowAll(!showAll)}
+              variant="outline"
+              className="border-[#4A1D2C] text-[#4A1D2C] hover:bg-[#4A1D2C] hover:text-white dark:border-[#8A3D4C] dark:text-[#e5a3b4] dark:hover:bg-[#8A3D4C] dark:hover:text-white"
+            >
+              {showAll ? 'Show Less' : `Show All ${knownIssues.length} Issues`}
+            </Button>
+          </div>
+        )}
+      </div>
+    </section>
+  )
+}
 
 export default function ReportIssuePage() {
   const { t } = useTranslation("common")
@@ -486,6 +641,9 @@ export default function ReportIssuePage() {
             </Card>
           </div>
         </section>
+
+        {/* Known Issues Section */}
+        <KnownIssuesSection />
 
         {/* Additional Info */}
         <section className="w-full py-16 bg-white dark:bg-[#1a1f2c]">

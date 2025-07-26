@@ -22,7 +22,12 @@ import {
   Mail,
   ExternalLink,
   LogOut,
-  Send
+  Send,
+  Plus,
+  Edit,
+  Trash2,
+  Settings,
+  FileText
 } from "lucide-react"
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import Footer from "@/app/components/layout/Footer"
@@ -52,6 +57,19 @@ interface ConversationMessage {
   addedVia?: string
 }
 
+interface KnownIssue {
+  id: string
+  title: string
+  description: string
+  status: "investigating" | "fix_planned" | "in_progress" | "testing"
+  priority: "low" | "medium" | "high" | "critical"
+  category: string
+  estimatedFix?: string
+  workaround?: string
+  createdAt: string
+  updatedAt: string
+}
+
 const priorityColors = {
   low: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
   medium: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400",
@@ -64,6 +82,21 @@ const statusColors = {
   in_progress: "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400",
   resolved: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400",
   closed: "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400"
+}
+
+// NEW: Status helpers for known issues
+const knownIssueStatusColors = {
+  investigating: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400",
+  fix_planned: "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400",
+  in_progress: "bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400",
+  testing: "bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400"
+}
+
+const knownIssueStatusLabels = {
+  investigating: "Investigating",
+  fix_planned: "Fix Planned",
+  in_progress: "In Progress",
+  testing: "Testing"
 }
 
 export default function AdminSupportTicketsPage() {
@@ -88,6 +121,22 @@ export default function AdminSupportTicketsPage() {
   const [nextCheckTime, setNextCheckTime] = useState<Date | null>(null)
   const [countdownTick, setCountdownTick] = useState(0)
   const chatEndRef = useRef<HTMLDivElement>(null)
+  
+  // Known Issues state
+  const [activeTab, setActiveTab] = useState<'tickets' | 'known-issues'>('tickets')
+  const [knownIssues, setKnownIssues] = useState<KnownIssue[]>([])
+  const [showKnownIssueModal, setShowKnownIssueModal] = useState(false)
+  const [editingKnownIssue, setEditingKnownIssue] = useState<KnownIssue | null>(null)
+  const [knownIssueForm, setKnownIssueForm] = useState({
+    title: '',
+    description: '',
+    status: 'investigating' as KnownIssue['status'],
+    priority: 'medium' as KnownIssue['priority'],
+    category: '',
+    estimatedFix: '',
+    workaround: ''
+  })
+  const [isSubmittingKnownIssue, setIsSubmittingKnownIssue] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -100,6 +149,7 @@ export default function AdminSupportTicketsPage() {
     }
 
     fetchTickets()
+    fetchKnownIssues()
   }, [router])
 
   // Auto-start email checking when component mounts
@@ -144,6 +194,86 @@ export default function AdminSupportTicketsPage() {
       console.error('Error fetching tickets:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchKnownIssues = async () => {
+    try {
+      const response = await fetch('/api/known-issues')
+      if (response.ok) {
+        const data = await response.json()
+        setKnownIssues(data.issues)
+      }
+    } catch (error) {
+      console.error('Error fetching known issues:', error)
+    }
+  }
+
+  const handleKnownIssueSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmittingKnownIssue(true)
+    
+    try {
+      const url = editingKnownIssue 
+        ? `/api/known-issues/${editingKnownIssue.id}`
+        : '/api/known-issues'
+      
+      const method = editingKnownIssue ? 'PUT' : 'POST'
+      
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(knownIssueForm)
+      })
+
+      if (response.ok) {
+        await fetchKnownIssues()
+        setShowKnownIssueModal(false)
+        setEditingKnownIssue(null)
+        setKnownIssueForm({
+          title: '',
+          description: '',
+          status: 'investigating',
+          priority: 'medium',
+          category: '',
+          estimatedFix: '',
+          workaround: ''
+        })
+      }
+    } catch (error) {
+      console.error('Error submitting known issue:', error)
+    } finally {
+      setIsSubmittingKnownIssue(false)
+    }
+  }
+
+  const handleEditKnownIssue = (issue: KnownIssue) => {
+    setEditingKnownIssue(issue)
+    setKnownIssueForm({
+      title: issue.title,
+      description: issue.description,
+      status: issue.status,
+      priority: issue.priority,
+      category: issue.category,
+      estimatedFix: issue.estimatedFix || '',
+      workaround: issue.workaround || ''
+    })
+    setShowKnownIssueModal(true)
+  }
+
+  const handleDeleteKnownIssue = async (issueId: string) => {
+    if (!confirm('Are you sure you want to delete this known issue?')) return
+    
+    try {
+      const response = await fetch(`/api/known-issues/${issueId}`, {
+        method: 'DELETE'
+      })
+      
+      if (response.ok) {
+        await fetchKnownIssues()
+      }
+    } catch (error) {
+      console.error('Error deleting known issue:', error)
     }
   }
 
@@ -525,8 +655,41 @@ export default function AdminSupportTicketsPage() {
           </div>
         </section>
 
-        {/* Stats Cards */}
-        <section className="w-full py-8 bg-gray-50 dark:bg-[#232838]">
+        {/* Tab Navigation */}
+        <section className="w-full bg-white dark:bg-[#232838] border-b border-gray-200 dark:border-gray-700">
+          <div className="container px-4 md:px-6 max-w-7xl mx-auto">
+            <div className="flex space-x-8">
+              <button
+                onClick={() => setActiveTab('tickets')}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'tickets'
+                    ? 'border-[#4A1D2C] text-[#4A1D2C] dark:border-[#e5a3b4] dark:text-[#e5a3b4]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                <MessageSquare className="h-4 w-4 mr-2 inline" />
+                Support Tickets ({tickets.length})
+              </button>
+              <button
+                onClick={() => setActiveTab('known-issues')}
+                className={`py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
+                  activeTab === 'known-issues'
+                    ? 'border-[#4A1D2C] text-[#4A1D2C] dark:border-[#e5a3b4] dark:text-[#e5a3b4]'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+                }`}
+              >
+                <FileText className="h-4 w-4 mr-2 inline" />
+                Known Issues ({knownIssues.length})
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Tickets Tab Content */}
+        {activeTab === 'tickets' && (
+          <>
+            {/* Stats Cards */}
+            <section className="w-full py-8 bg-gray-50 dark:bg-[#232838]">
           <div className="container px-4 md:px-6 max-w-7xl mx-auto">
             <div className="grid gap-6 md:grid-cols-4">
               {loading ? (
@@ -837,6 +1000,215 @@ export default function AdminSupportTicketsPage() {
             </Card>
           </div>
         </section>
+
+        {/* Close Tickets Fragment */}
+        </>
+        )}
+
+        {/* Known Issues Tab Content - Placeholder */}
+        {activeTab === 'known-issues' && (
+          <section className="w-full py-8 bg-gray-50 dark:bg-[#232838]">
+            <div className="container px-4 md:px-6 max-w-7xl mx-auto">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Known Issues ({knownIssues.length})
+                </h2>
+                <Button
+                  onClick={() => {
+                    setEditingKnownIssue(null)
+                    setKnownIssueForm({
+                      title: '',
+                      description: '',
+                      status: 'investigating',
+                      priority: 'medium',
+                      category: '',
+                      estimatedFix: '',
+                      workaround: ''
+                    })
+                    setShowKnownIssueModal(true)
+                  }}
+                  className="flex items-center gap-2 bg-[#4A1D2C] hover:bg-[#3A1520] text-white"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Issue
+                </Button>
+              </div>
+
+              {knownIssues.length === 0 ? (
+                <p className="text-gray-600 dark:text-gray-400">No known issues found.</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-200 dark:border-gray-700">
+                        <th className="text-left py-3 px-2 font-medium">Title</th>
+                        <th className="text-left py-3 px-2 font-medium">Category</th>
+                        <th className="text-left py-3 px-2 font-medium">Priority</th>
+                        <th className="text-left py-3 px-2 font-medium">Status</th>
+                        <th className="text-left py-3 px-2 font-medium">Created</th>
+                        <th className="text-left py-3 px-2 font-medium">Updated</th>
+                        <th className="text-left py-3 px-2 font-medium">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {knownIssues.map(issue => (
+                        <tr key={issue.id} className="border-b border-gray-100 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/20">
+                          <td className="py-3 px-2">{issue.title}</td>
+                          <td className="py-3 px-2">{issue.category}</td>
+                          <td className="py-3 px-2">
+                            <Badge className={`${priorityColors[issue.priority]} text-xs`}>
+                              {issue.priority}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-2">
+                            <Badge className={`${knownIssueStatusColors[issue.status]} text-xs`}>
+                              {knownIssueStatusLabels[issue.status]}
+                            </Badge>
+                          </td>
+                          <td className="py-3 px-2 text-xs">{formatDate(issue.createdAt)}</td>
+                          <td className="py-3 px-2 text-xs">{formatDate(issue.updatedAt)}</td>
+                          <td className="py-3 px-2">
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="outline" onClick={() => handleEditKnownIssue(issue)}>
+                                <Edit className="h-3 w-3" />
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => handleDeleteKnownIssue(issue.id)}>
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Known Issue Modal */}
+        {showKnownIssueModal && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-[#2a3349] rounded-lg shadow-xl max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-600">
+                <h3 className="font-semibold text-gray-900 dark:text-white">
+                  {editingKnownIssue ? 'Edit Known Issue' : 'Add Known Issue'}
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowKnownIssueModal(false)
+                    setEditingKnownIssue(null)
+                  }}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                >
+                  ×
+                </Button>
+              </div>
+
+              <div className="p-6">
+                <form onSubmit={handleKnownIssueSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="ki-title">Title</Label>
+                    <Input
+                      id="ki-title"
+                      value={knownIssueForm.title}
+                      onChange={e => setKnownIssueForm({...knownIssueForm, title: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="ki-description">Description</Label>
+                    <textarea
+                      id="ki-description"
+                      value={knownIssueForm.description}
+                      onChange={e => setKnownIssueForm({...knownIssueForm, description: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-[#1a1f2c] dark:text-white"
+                      rows={4}
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <Label htmlFor="ki-category">Category</Label>
+                      <Input
+                        id="ki-category"
+                        value={knownIssueForm.category}
+                        onChange={e => setKnownIssueForm({...knownIssueForm, category: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="ki-priority">Priority</Label>
+                      <select
+                        id="ki-priority"
+                        value={knownIssueForm.priority}
+                        onChange={e => setKnownIssueForm({...knownIssueForm, priority: e.target.value as KnownIssue['priority']})}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-[#1a1f2c] dark:text-white"
+                      >
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="critical">Critical</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <Label htmlFor="ki-status">Status</Label>
+                      <select
+                        id="ki-status"
+                        value={knownIssueForm.status}
+                        onChange={e => setKnownIssueForm({...knownIssueForm, status: e.target.value as KnownIssue['status']})}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-[#1a1f2c] dark:text-white"
+                      >
+                        <option value="investigating">Investigating</option>
+                        <option value="fix_planned">Fix Planned</option>
+                        <option value="in_progress">In Progress</option>
+                        <option value="testing">Testing</option>
+                      </select>
+                    </div>
+                    <div>
+                      <Label htmlFor="ki-estimated-fix">Estimated Fix</Label>
+                      <Input
+                        id="ki-estimated-fix"
+                        value={knownIssueForm.estimatedFix}
+                        onChange={e => setKnownIssueForm({...knownIssueForm, estimatedFix: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="ki-workaround">Workaround (optional)</Label>
+                    <textarea
+                      id="ki-workaround"
+                      value={knownIssueForm.workaround}
+                      onChange={e => setKnownIssueForm({...knownIssueForm, workaround: e.target.value})}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-[#1a1f2c] dark:text-white"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button type="submit" disabled={isSubmittingKnownIssue} className="bg-[#4A1D2C] hover:bg-[#3A1520] text-white">
+                      {isSubmittingKnownIssue ? 'Saving...' : editingKnownIssue ? 'Update Issue' : 'Create Issue'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowKnownIssueModal(false)
+                        setEditingKnownIssue(null)
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Chat Modal */}
         {showChatModal && selectedTicket && (
