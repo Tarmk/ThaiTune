@@ -9,7 +9,7 @@ const isClient = typeof window !== "undefined"
 // Initialize i18next
 if (!i18n.isInitialized) {
   const i18nConfig = {
-    ns: ["common", "auth", "dashboard", "editor"],
+    ns: ["common", "auth", "dashboard", "editor", "community"],
     defaultNS: "common",
     lng: "en",
     fallbackLng: "en",
@@ -45,12 +45,14 @@ if (!i18n.isInitialized) {
             auth: {},
             dashboard: {},
             editor: {},
+            community: {},
           },
           th: {
             common: {},
             auth: {},
             dashboard: {},
             editor: {},
+            community: {},
           },
         },
       })
