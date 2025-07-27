@@ -111,7 +111,7 @@ export function TopMenu({ user: propUser, collapsible = false }: TopMenuProps) {
     settings: t('settings'),
     logout: t('logout'),
     myBookmarks: t('myBookmarks', { ns: 'community' }),
-    feedback: 'Feedback'
+    feedback: t('footer.contact.feedback')
   }
 
   return (
