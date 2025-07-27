@@ -210,11 +210,11 @@ export default function Main() {
         <div className="container px-4 md:px-6 max-w-7xl mx-auto">
           <div className="grid gap-16 lg:grid-cols-2 items-center">
             <div className="flex flex-col justify-center space-y-8">
-              <div className="space-y-6">
-                <div className="relative">
+              <div className="space-y-8">
+                <div className="relative min-h-[4rem]">
                   <div className="absolute -top-3 -left-3 w-6 h-6 bg-gradient-to-r from-[#4A1D2C] to-[#8A3D4C] rounded-full animate-ping"></div>
                   <div className="absolute -top-3 -left-3 w-6 h-6 bg-gradient-to-r from-[#4A1D2C] to-[#8A3D4C] rounded-full animate-pulse"></div>
-                  <h1 className={`text-5xl font-bold tracking-tight text-gray-900 dark:text-white lg:text-6xl/none leading-tight bg-gradient-to-r from-[#4A1D2C] via-[#8A3D4C] to-[#4A1D2C] dark:from-[#8A3D4C] dark:via-[#af5169] dark:to-[#8A3D4C] bg-clip-text text-transparent animate-gradient transform transition-all duration-1000 ${
+                  <h1 className={`text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white lg:text-5xl leading-relaxed bg-gradient-to-r from-[#4A1D2C] via-[#8A3D4C] to-[#4A1D2C] dark:from-[#8A3D4C] dark:via-[#af5169] dark:to-[#8A3D4C] bg-clip-text text-transparent animate-gradient transform transition-all duration-1000 overflow-visible ${
                     isVisible ? 'translate-x-0 opacity-100 scale-100' : '-translate-x-20 opacity-0 scale-95'
                   }`}>
                     {t("learnTitle")}

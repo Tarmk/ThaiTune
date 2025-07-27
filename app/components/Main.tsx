@@ -43,7 +43,7 @@ export default function Main() {
                   style={{ backgroundColor: maroonLightest, color: maroonColor }}>
                   {t("newFeature")}
                 </div>
-                <h1 className="text-5xl font-bold tracking-tight text-gray-900 lg:text-6xl/none leading-tight">
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 lg:text-5xl leading-relaxed overflow-visible">
                   {t("learnTitle")}
                 </h1>
                 <p className="text-xl text-gray-500 max-w-[600px]">{t("description")}</p>
