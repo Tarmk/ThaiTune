@@ -579,7 +579,7 @@ export default function EditScoreClient({ id }: ClientProps) {
         )}
 
         {/* Footer */}
-        <div className="py-3 px-4 bg-white dark:bg-[#232838] rounded-md border border-gray-200 dark:border-gray-700 flex justify-between items-center">
+        <div className="py-3 px-4 bg-white dark:bg-[#232838] rounded-md border border-gray-200 dark:border-gray-700 flex justify-between items-center mb-8">
           <div className="text-sm text-gray-600 dark:text-gray-400">
             Modified: {lastSavedTime ? lastSavedTime : new Date().toLocaleString()}
           </div>

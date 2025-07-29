@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Settings, User, Camera, Image as ImageIcon, Mail, Save, Eye } from "lucide-react"
+import { ArrowLeft, Settings, User, Camera, Image as ImageIcon, Mail, Save, Eye, EyeOff } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { auth, db, storage } from "@/lib/firebase"
@@ -382,7 +382,7 @@ export default function SettingsPage() {
                   Manage your account and profile settings to personalize your ThaiTune experience
                 </motion.p>
                 
-                <motion.div variants={fadeInUp} className="flex justify-center gap-4">
+                <motion.div variants={fadeInUp} className="flex justify-center gap-4 flex-wrap">
                   <Button
                     onClick={() => router.back()}
                     variant="ghost"
@@ -398,6 +398,14 @@ export default function SettingsPage() {
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     View Profile
+                  </Button>
+                  <Button
+                    onClick={() => router.push('/settings/hidden-scores')}
+                    variant="ghost"
+                    className="text-white hover:bg-white/10 transition-all duration-300 border border-white/20 hover:border-white/30"
+                  >
+                    <EyeOff className="h-4 w-4 mr-2" />
+                    Hidden Scores
                   </Button>
                 </motion.div>
               </motion.div>

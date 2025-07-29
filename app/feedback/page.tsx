@@ -11,9 +11,11 @@ import { Lock, Send, MessageSquare, Star, Heart, CheckCircle, Mail, User, FileTe
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import Footer from "@/app/components/layout/Footer"
 import { motion } from "framer-motion"
+import { useTranslation } from "react-i18next"
 
 export default function FeedbackPage() {
   const router = useRouter()
+  const { t } = useTranslation('feedback')
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -75,7 +77,7 @@ export default function FeedbackPage() {
       localStorage.setItem('admin_session', 'true')
       router.push('/admin/feedback')
     } else {
-      alert('Invalid password')
+      alert(t('invalidPassword'))
     }
   }
 
@@ -104,11 +106,11 @@ export default function FeedbackPage() {
   }
 
   const feedbackTypes = [
-    { value: 'general', label: 'General Feedback', icon: '💬' },
-    { value: 'feature', label: 'Feature Request', icon: '🚀' },
-    { value: 'bug', label: 'Bug Report', icon: '🐛' },
-    { value: 'improvement', label: 'Improvement Suggestion', icon: '💡' },
-    { value: 'compliment', label: 'Compliment', icon: '❤️' }
+    { value: 'general', label: t('feedbackTypes.general'), icon: '💬' },
+    { value: 'feature', label: t('feedbackTypes.feature'), icon: '🚀' },
+    { value: 'bug', label: t('feedbackTypes.bug'), icon: '🐛' },
+    { value: 'improvement', label: t('feedbackTypes.improvement'), icon: '💡' },
+    { value: 'compliment', label: t('feedbackTypes.compliment'), icon: '❤️' }
   ]
 
   return (
@@ -141,17 +143,14 @@ export default function FeedbackPage() {
                 variants={fadeInUp}
                 className="text-4xl md:text-5xl font-bold text-white mb-6 leading-tight"
               >
-                We Value Your 
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-pink-200 to-yellow-200">
-                  Feedback
-                </span>
+                {t('pageTitle')}
               </motion.h1>
               
               <motion.p 
                 variants={fadeInUp}
                 className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto leading-relaxed"
               >
-                Help us improve ThaiTune by sharing your thoughts, suggestions, and experiences. Your voice matters to us!
+                {t('pageSubtitle')}
               </motion.p>
               
               {/* Admin Access Button */}
@@ -165,7 +164,7 @@ export default function FeedbackPage() {
                   className="text-white hover:bg-white/10 transition-all duration-300 border border-white/20 hover:border-white/30"
                 >
                   <Lock className="h-4 w-4 mr-2" />
-                  Admin Access
+                  {t('adminAccess')}
                 </Button>
               </motion.div>
 
@@ -193,20 +192,20 @@ export default function FeedbackPage() {
                       </div>
                       
                       <h2 className="text-center text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                        Admin Access
+                        {t('adminLogin')}
                       </h2>
                       <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-6">
-                        Enter admin password to access the dashboard
+                        {t('enterPassword')}
                       </p>
                       
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Password
+                            {t('password')}
                           </label>
                           <Input
                             type="password"
-                            placeholder="Enter admin password"
+                            placeholder={t('enterPassword')}
                             value={adminPassword}
                             onChange={(e) => setAdminPassword(e.target.value)}
                             className="h-12 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-[#4A1D2C] dark:focus:border-[#e5a3b4] focus:outline-none transition-all duration-300"
@@ -220,7 +219,7 @@ export default function FeedbackPage() {
                             variant="outline"
                             className="flex-1 h-12 border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium transition-all duration-300"
                           >
-                            Cancel
+                            {t('cancel')}
                           </Button>
                           <Button
                             onClick={handleAdminLogin}
@@ -228,7 +227,7 @@ export default function FeedbackPage() {
                           >
                             <div className="flex items-center gap-2">
                               <Lock className="h-4 w-4" />
-                              Access Panel
+                              {t('accessPanel')}
                             </div>
                           </Button>
                         </div>
@@ -256,16 +255,16 @@ export default function FeedbackPage() {
                       <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
                     </div>
                     <h2 className="text-3xl font-bold text-green-800 dark:text-green-200 mb-4">
-                      Thank You!
+                      {t('thankYou')}
                     </h2>
                     <p className="text-lg text-green-700 dark:text-green-300 mb-8 max-w-md mx-auto">
-                      Your feedback has been received and will help us improve ThaiTune. We appreciate your time and input!
+                      {t('feedbackReceived')}
                     </p>
                     <Button
                       onClick={() => setIsSubmitted(false)}
                       className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                     >
-                      Submit Another Feedback
+                      {t('submitAnother')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -283,10 +282,10 @@ export default function FeedbackPage() {
                         <MessageSquare className="h-8 w-8 text-white" />
                       </div>
                       <CardTitle className="text-3xl font-bold text-[#4A1D2C] dark:text-[#e5a3b4] mb-2">
-                        Share Your Feedback
+                        {t('shareYourFeedback')}
                       </CardTitle>
                       <p className="text-gray-600 dark:text-gray-400 text-lg">
-                        Your thoughts help us create better experiences
+                        {t('thoughtsHelp')}
                       </p>
                     </motion.div>
                   </CardHeader>
@@ -298,7 +297,7 @@ export default function FeedbackPage() {
                         <div className="space-y-2 flex-1">
                           <Label htmlFor="name" className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
                             <User className="h-4 w-4" />
-                            Full Name *
+                            {t('fullName')} *
                           </Label>
                           <Input
                             id="name"
@@ -308,13 +307,13 @@ export default function FeedbackPage() {
                             onChange={handleInputChange}
                             required
                             className="w-full h-12 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-[#4A1D2C] dark:focus:border-[#e5a3b4] focus:outline-none transition-all duration-300"
-                            placeholder="Enter your full name"
+                            placeholder={t('enterFullName')}
                           />
                         </div>
                         <div className="space-y-2 flex-1">
                           <Label htmlFor="email" className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
                             <Mail className="h-4 w-4" />
-                            Email Address *
+                            {t('emailAddress')} *
                           </Label>
                           <Input
                             id="email"
@@ -324,7 +323,7 @@ export default function FeedbackPage() {
                             onChange={handleInputChange}
                             required
                             className="w-full h-12 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-[#4A1D2C] dark:focus:border-[#e5a3b4] focus:outline-none transition-all duration-300"
-                            placeholder="Enter your email address"
+                            placeholder={t('enterEmail')}
                           />
                         </div>
                       </motion.div>
@@ -334,7 +333,7 @@ export default function FeedbackPage() {
                         <div className="space-y-2 flex-1">
                           <Label htmlFor="feedbackType" className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
                             <FileText className="h-4 w-4" />
-                            Feedback Type
+                            {t('feedbackType')}
                           </Label>
                           <div className="relative">
                             <select
@@ -361,7 +360,7 @@ export default function FeedbackPage() {
                         <div className="space-y-2 flex-1">
                           <Label className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
                             <Star className="h-4 w-4" />
-                            Rating (1-5)
+                            {t('rating')}
                           </Label>
                           <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-gray-200 dark:border-gray-600 h-12">
                             <div className="flex gap-1">
@@ -395,7 +394,7 @@ export default function FeedbackPage() {
                       <motion.div variants={fadeInUp} className="w-full space-y-2">
                         <Label htmlFor="title" className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
                           <MessageCircle className="h-4 w-4" />
-                          Title *
+                          {t('title')} *
                         </Label>
                         <Input
                           id="title"
@@ -405,14 +404,14 @@ export default function FeedbackPage() {
                           onChange={handleInputChange}
                           required
                           className="w-full h-12 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-[#4A1D2C] dark:focus:border-[#e5a3b4] focus:outline-none transition-all duration-300"
-                          placeholder="Brief summary of your feedback"
+                          placeholder={t('titlePlaceholder')}
                         />
                       </motion.div>
 
                                             {/* Message */}
                       <motion.div variants={fadeInUp} className="w-full space-y-2">
                         <Label htmlFor="message" className="text-gray-700 dark:text-gray-300 font-medium">
-                          Your Message *
+                          {t('yourMessage')} *
                         </Label>
                         <Textarea
                           id="message"
@@ -422,7 +421,7 @@ export default function FeedbackPage() {
                           required
                           rows={6}
                           className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-[#4A1D2C] dark:focus:border-[#e5a3b4] focus:outline-none transition-all duration-300 resize-none"
-                          placeholder="Please share your detailed feedback, suggestions, or thoughts here..."
+                          placeholder={t('messagePlaceholder')}
                         />
                       </motion.div>
 
@@ -436,12 +435,12 @@ export default function FeedbackPage() {
                           {isSubmitting ? (
                             <div className="flex items-center gap-3">
                               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                              <span>Submitting Your Feedback...</span>
+                              <span>{t('submittingFeedback')}</span>
                             </div>
                           ) : (
                             <div className="flex items-center gap-3">
                               <Send className="h-5 w-5" />
-                              <span>Submit Feedback</span>
+                              <span>{t('submitFeedback')}</span>
                             </div>
                           )}
                         </Button>

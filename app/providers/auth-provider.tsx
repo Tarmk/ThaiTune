@@ -2,7 +2,7 @@
 
 import React, { createContext, useState, useContext, useEffect } from "react"
 import { auth } from "@/lib/firebase"
-import { onAuthStateChanged, User } from "firebase/auth"
+import { onAuthStateChanged, type User } from "firebase/auth"
 
 interface AuthContextType {
   user: User | null
@@ -14,11 +14,18 @@ const AuthContext = createContext<AuthContextType>({
   loading: true,
 })
 
-export const useAuth = () => useContext(AuthContext)
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider")
+  }
+  return context
+}
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [initialLoad, setInitialLoad] = useState(true)
 
   useEffect(() => {
     let mounted = true
@@ -27,12 +34,19 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       if (mounted) {
         setUser(user)
         setLoading(false)
+        // Set initialLoad to false after first auth check
+        if (initialLoad) {
+          setInitialLoad(false)
+        }
       }
     }, (error) => {
       // Handle auth errors silently to prevent flashing
       if (mounted) {
         console.warn('Auth state change error:', error)
         setLoading(false)
+        if (initialLoad) {
+          setInitialLoad(false)
+        }
       }
     })
 
@@ -40,10 +54,17 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
       mounted = false
       unsubscribe()
     }
-  }, [])
+  }, [initialLoad])
 
-  // Don't render children until auth state is determined to prevent flashing
-  if (loading) {
+  // Show minimal loading only on very first load and only for a short time
+  if (initialLoad && loading) {
+    // Set a timeout to show content even if auth is still loading
+    setTimeout(() => {
+      if (initialLoad) {
+        setInitialLoad(false)
+      }
+    }, 800) // Max 800ms loading screen
+
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-[#1a1f2c]">
         <div className="flex flex-col items-center space-y-3">

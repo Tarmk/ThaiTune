@@ -1,12 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { MoreVertical, ChevronUp, ChevronDown, Star, Bookmark } from 'lucide-react'
+import { ChevronUp, ChevronDown, Star, Bookmark, BookmarkX } from 'lucide-react'
 import { Button } from "@/app/components/ui/button"
 import { Card, CardContent } from "@/app/components/ui/card"
 import Link from "next/link"
 import { auth, db } from '@/lib/firebase'
-import { collection, getDocs, query, where } from 'firebase/firestore'
+import { collection, getDocs, query, where, deleteDoc, doc } from 'firebase/firestore'
 import { Timestamp } from 'firebase/firestore'
 import { TopMenu } from "@/app/components/layout/TopMenu"
 import { useCallback, useMemo } from 'react'
@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next'
 import { useTheme } from "next-themes"
 import { SearchBar } from "@/app/components/common/SearchBar"
 import Footer from "../components/layout/Footer"
+import { toast } from "@/components/ui/use-toast"
 
 interface BookmarkedScore {
   id: string;
@@ -108,6 +109,42 @@ export default function MyBookmarksPage() {
     fetchBookmarkedScores();
   }, [t]);
 
+  const handleUnbookmark = async (scoreId: string) => {
+    const user = auth.currentUser;
+    if (!user) return;
+
+    try {
+      // Find and remove the bookmark
+      const bookmarksRef = collection(db, 'bookmarks');
+      const bookmarkQuery = query(
+        bookmarksRef,
+        where('userId', '==', user.uid),
+        where('scoreId', '==', scoreId)
+      );
+      const bookmarkSnapshot = await getDocs(bookmarkQuery);
+      
+      if (!bookmarkSnapshot.empty) {
+        await deleteDoc(doc(db, 'bookmarks', bookmarkSnapshot.docs[0].id));
+        
+        // Remove from local state
+        setScores(prevScores => prevScores.filter(score => score.id !== scoreId));
+        
+        toast({
+          title: "Success",
+          description: "Bookmark removed successfully",
+          type: "success"
+        });
+      }
+    } catch (error) {
+      console.error('Error removing bookmark:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove bookmark. Please try again.",
+        type: "error"
+      });
+    }
+  };
+
   const handleSort = (column: keyof BookmarkedScore) => {
     if (sortColumn === column) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -188,7 +225,7 @@ export default function MyBookmarksPage() {
                       <SortIcon column="modified" />
                     </button>
                   </th>
-                  <th className="py-2 dark:text-white">{t('actions')}</th>
+                  <th className="py-2 dark:text-white">Remove</th>
                 </tr>
               </thead>
               <tbody>
@@ -251,8 +288,14 @@ export default function MyBookmarksPage() {
                       <td className="py-3 text-[#666666] dark:text-gray-300">{score.created}</td>
                       <td className="py-3 text-[#666666] dark:text-gray-300">{score.modified}</td>
                       <td className="py-3">
-                        <Button variant="ghost" className="p-1">
-                          <MoreVertical className="h-5 w-5 text-[#666666] dark:text-gray-400" />
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleUnbookmark(score.id)}
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 transition-colors"
+                          title="Remove bookmark"
+                        >
+                          <BookmarkX className="h-4 w-4" />
                         </Button>
                       </td>
                     </tr>

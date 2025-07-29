@@ -101,6 +101,9 @@ export default function CommunityPage() {
           bookmarkedScoreIds = bookmarks.map(bookmark => bookmark.scoreId);
         }
         
+        // Get hidden scores from localStorage
+        const hiddenScoreIds = JSON.parse(localStorage.getItem("hiddenScores") || "[]") as string[]
+        
         const scoresList = scoresSnapshot.docs
           .map(doc => {
             const data = doc.data()
@@ -119,7 +122,7 @@ export default function CommunityPage() {
               isBookmarked: bookmarkedScoreIds.includes(doc.id)
             }
           })
-          .filter(score => score.sharing === 'public')
+          .filter(score => score.sharing === 'public' && !hiddenScoreIds.includes(score.id))
         setScores(scoresList)
       } catch (error) {
         console.error('Error fetching scores:', error)
@@ -131,6 +134,72 @@ export default function CommunityPage() {
     fetchScores()
 
     return () => unsubscribe()
+  }, [t])
+
+  // Listen for changes to hidden scores in localStorage
+  React.useEffect(() => {
+    const refetchScores = async () => {
+      try {
+        setLoading(true);
+        const user = auth.currentUser;
+        const scoresCollection = collection(db, 'scores')
+        const scoresSnapshot = await getDocs(scoresCollection)
+        
+        let bookmarkedScoreIds: string[] = [];
+        if (user) {
+          const bookmarks = await fetchBookmarkedScores(user.uid);
+          bookmarkedScoreIds = bookmarks.map(bookmark => bookmark.scoreId);
+        }
+        
+        // Get updated hidden scores from localStorage
+        const hiddenScoreIds = JSON.parse(localStorage.getItem("hiddenScores") || "[]") as string[]
+        
+        const scoresList = scoresSnapshot.docs
+          .map(doc => {
+            const data = doc.data()
+            const modifiedTimestamp = data.modified as Timestamp
+            const createdTimestamp = data.created as Timestamp
+            return {
+              id: doc.id,
+              name: data.name || '',
+              author: data.author || '',
+              modified: modifiedTimestamp?.toDate().toLocaleString() || t('unknownDate'),
+              created: createdTimestamp?.toDate().toLocaleString() || t('unknownDate'),
+              sharing: data.sharing || 'private',
+              rating: data.rating || 0,
+              ratingCount: data.ratingCount || 0,
+              userId: data.userId || '',
+              isBookmarked: bookmarkedScoreIds.includes(doc.id)
+            }
+          })
+          .filter(score => score.sharing === 'public' && !hiddenScoreIds.includes(score.id))
+        setScores(scoresList)
+      } catch (error) {
+        console.error('Error refetching scores:', error)
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Handle storage changes from other tabs
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'hiddenScores') {
+        refetchScores()
+      }
+    }
+
+    // Handle custom events from same tab (e.g., hidden scores management page)
+    const handleHiddenScoresChanged = () => {
+      refetchScores()
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    window.addEventListener('hiddenScoresChanged', handleHiddenScoresChanged)
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('hiddenScoresChanged', handleHiddenScoresChanged)
+    }
   }, [t])
 
   const handleBookmark = async (scoreId: string, isCurrentlyBookmarked: boolean) => {
@@ -252,6 +321,11 @@ export default function CommunityPage() {
     if (!hidden.includes(scoreId)) {
       hidden.push(scoreId)
       localStorage.setItem("hiddenScores", JSON.stringify(hidden))
+      
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new CustomEvent('hiddenScoresChanged', { 
+        detail: { action: 'hide', scoreId, updatedIds: hidden } 
+      }))
     }
     setScores(prev => prev.filter(s => s.id !== scoreId))
   }

@@ -70,29 +70,67 @@ export default function Main() {
     return () => clearInterval(interval)
   }, [])
 
+  // Initialize Flat.io embed
+  useEffect(() => {
+    if (!isClient) return
+
+    // Load Flat.io embed script
+    const script = document.createElement('script')
+    script.src = 'https://prod.flat-cdn.com/embed-js/v2.4.1/embed.min.js'
+    script.async = true
+    
+    script.onload = () => {
+      const container = document.getElementById('embed-container')
+      if (container && (window as any).Flat) {
+        // Clear any existing content
+        container.innerHTML = ''
+        
+        // Theme colors adjusted for maroon scheme
+        const isDark = theme === 'dark'
+        const embedColors = {
+          themePrimary: isDark ? "#8A3D4C" : "#4A1D2C",
+          themePrimaryDark: isDark ? "#6A2D3C" : "#3A1520", 
+          themeControlsBackground: isDark ? "#2a3349" : "#F8F1F3",
+          themeSlider: isDark ? "#af5169" : "#6A2D3C",
+          themeCursorV0: isDark ? "#e5a3b4" : "#8A3D4C",
+          themeCursorV1: isDark ? "#B85C70" : "#B85C70",
+          themeSelection: isDark ? "#8A3D4C" : "#E5A3B4"
+        }
+        
+        new (window as any).Flat.Embed(container, {
+          width: "100%",
+          height: "100%",
+          score: "688856b573b9c1497c731b74",
+          embedParams: {
+            mode: "edit",
+            branding: false,
+            appId: "6755790be2eebcce112acde7",
+            ...embedColors
+          }
+        })
+      }
+    }
+    
+    document.head.appendChild(script)
+    
+    return () => {
+      // Cleanup script if component unmounts
+      const existingScript = document.querySelector('script[src*="flat-cdn.com"]')
+      if (existingScript) {
+        document.head.removeChild(existingScript)
+      }
+    }
+  }, [isClient, theme])
+
   // Theme colors
   const maroonColor = "#4A1D2C"
   const maroonLighter = "#6A2D3C"
   const maroonLightest = "#F8F1F3"
   const maroonDark = "#8A3D4C"
 
-  // Show loading placeholder when translations aren't ready
-  if (!ready || !isClient) {
-    return (
-      <main className="flex-1 pt-16 dark:bg-[#1a1f2c]">
-        <div className="container px-4 md:px-6 max-w-7xl mx-auto">
-          <div className="h-[600px] flex items-center justify-center">
-            <div className="animate-pulse">
-              <div className="h-12 w-96 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
-              <div className="h-6 w-72 bg-gray-200 dark:bg-gray-700 rounded mb-8"></div>
-              <div className="h-10 w-32 bg-gray-200 dark:bg-gray-700 rounded"></div>
-            </div>
-          </div>
-        </div>
-      </main>
-    )
-  }
-
+  // Show loading placeholder when translations aren't ready - REMOVED for better UX
+  // Instead, render content with fallback text while translations load
+  
   return (
     <main className="flex-1 min-h-screen bg-gray-50 dark:bg-[#1a1f2c] pt-16 overflow-hidden">
       {/* Enhanced Animated Background */}
@@ -217,13 +255,13 @@ export default function Main() {
                   <h1 className={`text-4xl md:text-5xl font-bold tracking-tight text-gray-900 dark:text-white lg:text-5xl leading-relaxed bg-gradient-to-r from-[#4A1D2C] via-[#8A3D4C] to-[#4A1D2C] dark:from-[#8A3D4C] dark:via-[#af5169] dark:to-[#8A3D4C] bg-clip-text text-transparent animate-gradient transform transition-all duration-1000 overflow-visible ${
                     isVisible ? 'translate-x-0 opacity-100 scale-100' : '-translate-x-20 opacity-0 scale-95'
                   }`}>
-                    {t("learnTitle")}
+                    {t("learnTitle", "Discover Traditional Thai Music")}
                   </h1>
                 </div>
                 <p className={`text-xl text-gray-500 dark:text-gray-300 max-w-[600px] transform transition-all duration-1000 delay-300 ${
                   isVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
                 }`}>
-                  {t("description")}
+                  {t("description", "Explore and contribute to the world of Traditional Thai Music")}
                 </p>
               </div>
               <div className={`flex flex-col sm:flex-row gap-4 transform transition-all duration-1000 delay-500 ${
@@ -389,14 +427,13 @@ export default function Main() {
               <div className="absolute inset-0 bg-gradient-to-br from-[#4A1D2C]/8 to-[#8A3D4C]/8 dark:from-[#8A3D4C]/15 dark:to-[#af5169]/15"></div>
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1500"></div>
               <div className="w-full h-full relative overflow-hidden">
-                <Image
-                  src="/images/music-editor-preview.png"
-                  alt="Music Score Editor Interface"
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-110"
-                  priority
+                {/* Flat.io Music Editor Embed */}
+                <div 
+                  id="embed-container" 
+                  className="w-full h-full transition-transform duration-700 group-hover:scale-105"
+                  style={{ minHeight: '450px' }}
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
               </div>
               
               {/* Enhanced Floating UI Elements */}
