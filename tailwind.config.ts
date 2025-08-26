@@ -6,6 +6,8 @@ module.exports = {
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
+    "./layouts/**/*.{ts,tsx}",
+    "./modules/**/*.{ts,tsx}",
     "*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
@@ -19,6 +21,9 @@ module.exports = {
     extend: {
       colors: {
         // Shadcn/ui colors (using CSS variables)
+        maroon: "#4A1D2C",
+        "maroon-lite": "#e5a3b4",
+        "maroon-dark": "#6A2D3C",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -76,4 +81,4 @@ module.exports = {
     },
   },
   plugins: [require("tailwindcss-animate")],
-}
+};
