@@ -346,15 +346,15 @@ export default function ScoreDetailsPage({ id }: ScoreDetailsPageProps) {
           console.log("Current user:", user?.uid);
           console.log("Score user:", scoreData.userId);
 
-          if (
-            scoreData.sharing === "private" ||
-            !user ||
-            user.uid !== scoreData.userId
-          ) {
+          // Check if score is private and user is not the owner
+          if (scoreData.sharing === "private" && (!user || user.uid !== scoreData.userId)) {
             setError("This score is private");
             setLoading(false);
             return;
           }
+
+          // For public and unlisted scores, anyone can view
+          // For private scores, only the owner can view
 
           // Check if user has already rated this score
           let userRating = 0;
