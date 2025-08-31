@@ -20,24 +20,6 @@ import {
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
 
-<<<<<<< HEAD:app/feedback/page.tsx
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/app/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/app/components/ui/card"
-import { Input } from "@/app/components/ui/input"
-import { Label } from "@/app/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Lock, Send, MessageSquare, Star, Heart, CheckCircle, Mail, User, FileText, MessageCircle } from "lucide-react"
-import { TopMenu } from "@/app/components/layout/TopMenu"
-import Footer from "@/app/components/layout/Footer"
-import { motion } from "framer-motion"
-import { useTranslation } from "react-i18next"
-
-export default function FeedbackPage() {
-  const router = useRouter()
-  const { t } = useTranslation('feedback')
-=======
 const fadeInUp = {
   hidden: { opacity: 0, y: 60 },
   visible: {
@@ -61,7 +43,6 @@ const staggerContainer = {
 const Feedback = () => {
   const router = useRouter();
   const { t } = useTranslation("feedback");
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -127,11 +108,7 @@ const Feedback = () => {
       localStorage.setItem("admin_session", "true");
       router.push("/admin/feedback");
     } else {
-<<<<<<< HEAD:app/feedback/page.tsx
-      alert(t('invalidPassword'))
-=======
       alert(t("invalidPassword"));
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
     }
   };
 
@@ -140,21 +117,12 @@ const Feedback = () => {
   };
 
   const feedbackTypes = [
-<<<<<<< HEAD:app/feedback/page.tsx
-    { value: 'general', label: t('feedbackTypes.general'), icon: '💬' },
-    { value: 'feature', label: t('feedbackTypes.feature'), icon: '🚀' },
-    { value: 'bug', label: t('feedbackTypes.bug'), icon: '🐛' },
-    { value: 'improvement', label: t('feedbackTypes.improvement'), icon: '💡' },
-    { value: 'compliment', label: t('feedbackTypes.compliment'), icon: '❤️' }
-  ]
-=======
     { value: "general", label: t("feedbackTypes.general"), icon: "💬" },
     { value: "feature", label: t("feedbackTypes.feature"), icon: "🚀" },
     { value: "bug", label: t("feedbackTypes.bug"), icon: "🐛" },
     { value: "improvement", label: t("feedbackTypes.improvement"), icon: "💡" },
     { value: "compliment", label: t("feedbackTypes.compliment"), icon: "❤️" },
   ];
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col">
@@ -177,22 +145,14 @@ const Feedback = () => {
                 variants={fadeInUp}
                 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight"
               >
-<<<<<<< HEAD:app/feedback/page.tsx
-                {t('pageTitle')}
-=======
                 {t("pageTitle")}
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
               </motion.h1>
 
               <motion.p
                 variants={fadeInUp}
                 className="text-xl text-gray-200 mb-8 max-w-2xl mx-auto leading-relaxed"
               >
-<<<<<<< HEAD:app/feedback/page.tsx
-                {t('pageSubtitle')}
-=======
                 {t("pageSubtitle")}
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
               </motion.p>
 
               {/* Admin Access Button */}
@@ -206,11 +166,7 @@ const Feedback = () => {
                   className="text-white hover:bg-white/10 transition-all duration-300 border border-white/20 hover:border-white/30"
                 >
                   <Lock className="h-4 w-4 mr-2" />
-<<<<<<< HEAD:app/feedback/page.tsx
-                  {t('adminAccess')}
-=======
                   {t("adminAccess")}
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                 </Button>
               </motion.div>
 
@@ -238,35 +194,20 @@ const Feedback = () => {
                       </div>
 
                       <h2 className="text-center text-2xl font-bold text-gray-900 dark:text-white mb-2">
-<<<<<<< HEAD:app/feedback/page.tsx
-                        {t('adminLogin')}
-                      </h2>
-                      <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-6">
-                        {t('enterPassword')}
-=======
                         {t("adminLogin")}
                       </h2>
                       <p className="text-center text-sm text-gray-600 dark:text-gray-400 mb-6">
                         {t("enterPassword")}
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                       </p>
 
                       <div className="space-y-4">
                         <div className="space-y-2">
                           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-<<<<<<< HEAD:app/feedback/page.tsx
-                            {t('password')}
-                          </label>
-                          <Input
-                            type="password"
-                            placeholder={t('enterPassword')}
-=======
                             {t("password")}
                           </label>
                           <Input
                             type="password"
                             placeholder={t("enterPassword")}
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                             value={adminPassword}
                             onChange={(e) => setAdminPassword(e.target.value)}
                             className="h-12 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-maroon dark:focus:border-maroon-lite focus:outline-none transition-all duration-300"
@@ -282,11 +223,7 @@ const Feedback = () => {
                             variant="outline"
                             className="flex-1 h-12 border-2 border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium transition-all duration-300"
                           >
-<<<<<<< HEAD:app/feedback/page.tsx
-                            {t('cancel')}
-=======
                             {t("cancel")}
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                           </Button>
                           <Button
                             onClick={handleAdminLogin}
@@ -294,11 +231,7 @@ const Feedback = () => {
                           >
                             <div className="flex items-center gap-2">
                               <Lock className="h-4 w-4" />
-<<<<<<< HEAD:app/feedback/page.tsx
-                              {t('accessPanel')}
-=======
                               {t("accessPanel")}
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                             </div>
                           </Button>
                         </div>
@@ -326,27 +259,16 @@ const Feedback = () => {
                       <CheckCircle className="h-10 w-10 text-green-600 dark:text-green-400" />
                     </div>
                     <h2 className="text-3xl font-bold text-green-800 dark:text-green-200 mb-4">
-<<<<<<< HEAD:app/feedback/page.tsx
-                      {t('thankYou')}
-                    </h2>
-                    <p className="text-lg text-green-700 dark:text-green-300 mb-8 max-w-md mx-auto">
-                      {t('feedbackReceived')}
-=======
                       {t("thankYou")}
                     </h2>
                     <p className="text-lg text-green-700 dark:text-green-300 mb-8 max-w-md mx-auto">
                       {t("feedbackReceived")}
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                     </p>
                     <Button
                       onClick={() => setIsSubmitted(false)}
                       className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 text-lg font-medium shadow-lg hover:shadow-xl transition-all duration-300"
                     >
-<<<<<<< HEAD:app/feedback/page.tsx
-                      {t('submitAnother')}
-=======
                       {t("submitAnother")}
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                     </Button>
                   </CardContent>
                 </Card>
@@ -363,19 +285,11 @@ const Feedback = () => {
                       <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-maroon to-maroon-dark rounded-2xl mb-6">
                         <MessageSquare className="h-8 w-8 text-white" />
                       </div>
-<<<<<<< HEAD:app/feedback/page.tsx
-                      <CardTitle className="text-3xl font-bold text-[#4A1D2C] dark:text-[#e5a3b4] mb-2">
-                        {t('shareYourFeedback')}
-                      </CardTitle>
-                      <p className="text-gray-600 dark:text-gray-400 text-lg">
-                        {t('thoughtsHelp')}
-=======
                       <CardTitle className="text-3xl font-bold text-maroon dark:text-maroon-lite mb-2">
                         {t("shareYourFeedback")}
                       </CardTitle>
                       <p className="text-gray-600 dark:text-gray-400 text-lg">
                         {t("thoughtsHelp")}
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                       </p>
                     </motion.div>
                   </CardHeader>
@@ -393,11 +307,7 @@ const Feedback = () => {
                             className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"
                           >
                             <User className="h-4 w-4" />
-<<<<<<< HEAD:app/feedback/page.tsx
-                            {t('fullName')} *
-=======
                             {t("fullName")} *
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                           </Label>
                           <Input
                             id="name"
@@ -406,13 +316,8 @@ const Feedback = () => {
                             value={formData.name}
                             onChange={handleInputChange}
                             required
-<<<<<<< HEAD:app/feedback/page.tsx
-                            className="w-full h-12 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-[#4A1D2C] dark:focus:border-[#e5a3b4] focus:outline-none transition-all duration-300"
-                            placeholder={t('enterFullName')}
-=======
                             className="w-full h-12 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-maroon dark:focus:border-maroon-lite focus:outline-none transition-all duration-300"
                             placeholder={t("enterFullName")}
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                           />
                         </div>
                         <div className="space-y-2 flex-1">
@@ -421,11 +326,7 @@ const Feedback = () => {
                             className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"
                           >
                             <Mail className="h-4 w-4" />
-<<<<<<< HEAD:app/feedback/page.tsx
-                            {t('emailAddress')} *
-=======
                             {t("emailAddress")} *
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                           </Label>
                           <Input
                             id="email"
@@ -434,13 +335,8 @@ const Feedback = () => {
                             value={formData.email}
                             onChange={handleInputChange}
                             required
-<<<<<<< HEAD:app/feedback/page.tsx
-                            className="w-full h-12 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-[#4A1D2C] dark:focus:border-[#e5a3b4] focus:outline-none transition-all duration-300"
-                            placeholder={t('enterEmail')}
-=======
                             className="w-full h-12 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-maroon dark:focus:border-maroon-lite focus:outline-none transition-all duration-300"
                             placeholder={t("enterEmail")}
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                           />
                         </div>
                       </motion.div>
@@ -456,11 +352,7 @@ const Feedback = () => {
                             className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"
                           >
                             <FileText className="h-4 w-4" />
-<<<<<<< HEAD:app/feedback/page.tsx
-                            {t('feedbackType')}
-=======
                             {t("feedbackType")}
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                           </Label>
                           <div className="relative">
                             <select
@@ -497,11 +389,7 @@ const Feedback = () => {
                         <div className="space-y-2 flex-1">
                           <Label className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2">
                             <Star className="h-4 w-4" />
-<<<<<<< HEAD:app/feedback/page.tsx
-                            {t('rating')}
-=======
                             {t("rating")}
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                           </Label>
                           <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-gray-200 dark:border-gray-600 h-12">
                             <div className="flex gap-1">
@@ -541,11 +429,7 @@ const Feedback = () => {
                           className="text-gray-700 dark:text-gray-300 font-medium flex items-center gap-2"
                         >
                           <MessageCircle className="h-4 w-4" />
-<<<<<<< HEAD:app/feedback/page.tsx
-                          {t('title')} *
-=======
                           {t("title")} *
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                         </Label>
                         <Input
                           id="title"
@@ -554,17 +438,6 @@ const Feedback = () => {
                           value={formData.title}
                           onChange={handleInputChange}
                           required
-<<<<<<< HEAD:app/feedback/page.tsx
-                          className="w-full h-12 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-[#4A1D2C] dark:focus:border-[#e5a3b4] focus:outline-none transition-all duration-300"
-                          placeholder={t('titlePlaceholder')}
-                        />
-                      </motion.div>
-
-                                            {/* Message */}
-                      <motion.div variants={fadeInUp} className="w-full space-y-2">
-                        <Label htmlFor="message" className="text-gray-700 dark:text-gray-300 font-medium">
-                          {t('yourMessage')} *
-=======
                           className="w-full h-12 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-maroon dark:focus:border-maroon-lite focus:outline-none transition-all duration-300"
                           placeholder={t("titlePlaceholder")}
                         />
@@ -580,7 +453,6 @@ const Feedback = () => {
                           className="text-gray-700 dark:text-gray-300 font-medium"
                         >
                           {t("yourMessage")} *
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                         </Label>
                         <Textarea
                           id="message"
@@ -589,13 +461,8 @@ const Feedback = () => {
                           onChange={handleInputChange}
                           required
                           rows={6}
-<<<<<<< HEAD:app/feedback/page.tsx
-                          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-[#4A1D2C] dark:focus:border-[#e5a3b4] focus:outline-none transition-all duration-300 resize-none"
-                          placeholder={t('messagePlaceholder')}
-=======
                           className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:border-maroon dark:focus:border-maroon-lite focus:outline-none transition-all duration-300 resize-none"
                           placeholder={t("messagePlaceholder")}
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                         />
                       </motion.div>
 
@@ -609,20 +476,12 @@ const Feedback = () => {
                           {isSubmitting ? (
                             <div className="flex items-center gap-3">
                               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-<<<<<<< HEAD:app/feedback/page.tsx
-                              <span>{t('submittingFeedback')}</span>
-=======
                               <span>{t("submittingFeedback")}</span>
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                             </div>
                           ) : (
                             <div className="flex items-center gap-3">
                               <Send className="h-5 w-5" />
-<<<<<<< HEAD:app/feedback/page.tsx
-                              <span>{t('submitFeedback')}</span>
-=======
                               <span>{t("submitFeedback")}</span>
->>>>>>> 11c124abbab0d0a1241e4366a2a31a0d93fe3340:modules/feedback/index.tsx
                             </div>
                           )}
                         </Button>
